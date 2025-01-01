@@ -15,12 +15,14 @@ main! = \_ ->
         Chart.empty
         |> Chart.add_trace
             (
-                BarTrace.new_trace [("Apples", 2), ("Oranges", 3), ("Bananas", 4)]
+                BarTrace.new [("Apples", 2), ("Oranges", 3), ("Bananas", 4)]
+                |> BarTrace.with_name "Fruit"
             )
         |> Chart.add_trace
             (
-                BarTrace.new_trace [("Apples", 3), ("Oranges", 1), ("Bananas", 5)]
+                BarTrace.new [("Tuna", 3), ("Musli Bar", 1), ("Carrot", 5)]
                 |> BarTrace.with_color fuscia
+                |> BarTrace.with_name "Snacks"
             )
 
     File.write_utf8! (Chart.to_html chart) "out.html"

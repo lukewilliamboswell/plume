@@ -8,12 +8,12 @@ module [
 # REFERENCE https://plotly.com/javascript/reference/bar/
 
 import "static/template.html" as template : Str
-#import Color exposing [Color]
+# import Color exposing [Color]
 import BarTrace exposing [BarTrace]
 
 Chart := {
-    title: Str,
-    traces: List (BarTrace Str U64)
+    title : Str,
+    traces : List (BarTrace Str U64),
 }
 
 empty : Chart
@@ -38,8 +38,6 @@ to_html = \@Chart chart ->
             "data": [$(traces_str)]
         }
         """
-
-
 
 add_trace : Chart, BarTrace Str U64 -> Chart
 add_trace = \@Chart chart, trace ->
