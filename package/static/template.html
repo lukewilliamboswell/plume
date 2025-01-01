@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Simple Chart</title>
+        <script
+            src="https://cdn.plot.ly/plotly-2.35.2.min.js"
+            integrity="sha384-cCVCZkAjYNxaYKbM8lsArLznDF/SvMFr1jcZrvOpSTCa0W40ZAdLzHCEulnUa5i7"
+            crossorigin="anonymous"
+        ></script>
+    </head>
+    <body>
+        <div id="chart"></div>
+        <script type="application/json" id="chartData">
+            {{REPLACE_ME}}
+        </script>
+
+        <script>
+            // Parse the JSON data from the script tag
+            const chartData = JSON.parse(
+                document.getElementById("chartData").textContent,
+            );
+
+            // Create the chart
+            Plotly.newPlot("chart", chartData.data);
+        </script>
+    </body>
+</html>
