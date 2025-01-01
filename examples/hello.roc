@@ -4,26 +4,29 @@ app [main!] {
 }
 
 import cli.File
-import plume.Chart
+import plume.Chart exposing [Chart]
 import plume.BarTrace
-import plume.Color
+import plume.ScatterTrace
+import plume.Color exposing [Color]
 
 main! = \_ ->
 
+    fuscia : Color
     fuscia = Color.hex? "#ff00ff"
 
+    chart : Chart Str F64
     chart =
         Chart.empty
         |> Chart.with_title "Snacks vs Fruit"
-        |> Chart.add_trace
+        |> Chart.add_scatter_trace
             (
-                BarTrace.new [("Apples", 2), ("Oranges", 3), ("Bananas", 4)]
-                |> BarTrace.with_name "Fruit"
-                |> BarTrace.with_color (Color.named? "FireBrick")
+                ScatterTrace.new [("Apples", 2.1), ("Oranges", 3), ("Bananas", 4)]
+                |> ScatterTrace.with_name "Fruit"
+                |> ScatterTrace.with_color (Color.named? "FireBrick")
             )
-        |> Chart.add_trace
+        |> Chart.add_bar_trace
             (
-                BarTrace.new [("Tuna", 3), ("Muesli Bar", 1), ("Carrot", 5)]
+                BarTrace.new [("Tuna", 0.3), ("Muesli Bar", 2.5), ("Carrot", 5.5)]
                 |> BarTrace.with_color fuscia
                 |> BarTrace.with_name "Snacks"
                 |> BarTrace.with_bar_width? 0.9
