@@ -1,7 +1,9 @@
 <!doctype html>
 <html>
     <head>
-        <title>Simple Chart</title>
+        <title>{{CHART_TITLE}}</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <script
             src="https://cdn.plot.ly/plotly-2.35.2.min.js"
             integrity="sha384-cCVCZkAjYNxaYKbM8lsArLznDF/SvMFr1jcZrvOpSTCa0W40ZAdLzHCEulnUa5i7"
@@ -11,7 +13,7 @@
     <body>
         <div id="chart"></div>
         <script type="application/json" id="chartData">
-            {{REPLACE_ME}}
+            {{CHART_JSON}}
         </script>
 
         <script>

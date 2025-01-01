@@ -14,6 +14,7 @@ main! = \_ ->
 
     chart =
         Chart.empty
+        |> Chart.with_title "Snacks vs Fruit"
         |> Chart.add_trace
             (
                 BarTrace.new [("Apples", 2), ("Oranges", 3), ("Bananas", 4)]
@@ -22,7 +23,7 @@ main! = \_ ->
             )
         |> Chart.add_trace
             (
-                BarTrace.new [("Tuna", 3), ("Musli Bar", 1), ("Carrot", 5)]
+                BarTrace.new [("Tuna", 3), ("Muesli Bar", 1), ("Carrot", 5)]
                 |> BarTrace.with_color fuscia
                 |> BarTrace.with_name "Snacks"
                 |> BarTrace.with_bar_width? 0.9
