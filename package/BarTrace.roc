@@ -16,6 +16,7 @@ BarTrace x y := {
     name : Str,
     bar_width : F32,
 }
+    implements [Inspect]
 
 new : List (x, y) -> BarTrace x y where x implements Inspect, y implements Inspect
 new = \xy -> @BarTrace {

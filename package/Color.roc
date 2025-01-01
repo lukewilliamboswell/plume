@@ -11,6 +11,7 @@ Color := [
     Named Str,
     Hex Str,
 ]
+    implements [Inspect]
 
 rgb : U8, U8, U8 -> Color
 rgb = \r, g, b -> @Color (RGB r g b)

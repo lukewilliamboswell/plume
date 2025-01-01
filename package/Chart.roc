@@ -15,8 +15,9 @@ Chart x y := {
     title : Str,
     traces : List (Trace x y),
 }
+    implements [Inspect]
 
-Trace x y: [
+Trace x y : [
     Bar (BarTrace x y),
     Scatter (ScatterTrace x y),
 ]
