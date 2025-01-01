@@ -3,6 +3,7 @@ module [
     new,
     with_color,
     with_name,
+    with_bar_width,
     to_str,
 ]
 
@@ -13,6 +14,7 @@ BarTrace x y := {
     orientation : [Vertical, Horizontal],
     color : Color,
     name : Str,
+    bar_width: F32,
 }
 
 new : List (x, y) -> BarTrace x y where x implements Inspect, y implements Inspect
@@ -21,6 +23,7 @@ new = \xy -> @BarTrace {
         orientation: Vertical,
         color: RGB 124 56 245,
         name : "",
+        bar_width: 0.5,
     }
 
 with_color : BarTrace x y, Color -> BarTrace x y
@@ -30,6 +33,10 @@ with_color = \@BarTrace trace, color ->
 with_name : BarTrace x y, Str -> BarTrace x y
 with_name = \@BarTrace trace, name ->
     @BarTrace { trace & name }
+
+with_bar_width : BarTrace x y, F32 -> BarTrace x y
+with_bar_width = \@BarTrace trace, bar_width ->
+    @BarTrace { trace & bar_width }
 
 to_str : BarTrace x y -> Str where x implements Inspect, y implements Inspect
 to_str = \@BarTrace data ->
@@ -52,6 +59,7 @@ to_str = \@BarTrace data ->
         },
         "opacity": 1,
         $(orientation_str)
-        "name": \"$(data.name)\"
+        "name": \"$(data.name)\",
+        "width": $(Num.toStr data.bar_width)
     }
     """

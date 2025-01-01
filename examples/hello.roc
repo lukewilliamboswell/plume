@@ -23,6 +23,7 @@ main! = \_ ->
                 BarTrace.new [("Tuna", 3), ("Musli Bar", 1), ("Carrot", 5)]
                 |> BarTrace.with_color fuscia
                 |> BarTrace.with_name "Snacks"
+                |> BarTrace.with_bar_width 0.9
             )
 
     File.write_utf8! (Chart.to_html chart) "out.html"

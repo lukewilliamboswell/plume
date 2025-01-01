@@ -5,10 +5,7 @@ module [
     to_html,
 ]
 
-# REFERENCE https://plotly.com/javascript/reference/bar/
-
 import "static/template.html" as template : Str
-# import Color exposing [Color]
 import BarTrace exposing [BarTrace]
 
 Chart := {
@@ -33,11 +30,7 @@ to_html = \@Chart chart ->
     Str.replaceFirst
         template
         "{{REPLACE_ME}}"
-        """
-        {
-            "data": [$(traces_str)]
-        }
-        """
+        "{ \"data\": [$(traces_str)] }"
 
 add_trace : Chart, BarTrace Str U64 -> Chart
 add_trace = \@Chart chart, trace ->
