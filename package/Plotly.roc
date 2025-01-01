@@ -1,4 +1,8 @@
 module [
+    Color,
+    BarTrace,
+    new,
+    with_color,
     to_html,
 ]
 
@@ -10,11 +14,13 @@ to_html : {} -> Str
 to_html = \{} ->
 
     data : BarTrace Str U64
-    data = new [
-        ("Apples", 2),
-        ("Organes", 3),
-        ("Bananas", 4),
-    ]
+    data =
+        new [
+            ("Apples", 2),
+            ("Organes", 3),
+            ("Bananas", 4),
+        ]
+        |> with_color (Hex "#ff00ff")
 
     template
     |> Str.replaceFirst
@@ -25,13 +31,35 @@ to_html = \{} ->
         }
         """
 
+Color : [
+    RGB U8 U8 U8,
+    Named Str,
+    Hex Str,
+]
+
 BarTrace x y := {
-    xy: List (x, y),
-    orientation: [Vertical, Horizontal],
+    xy : List (x, y),
+    orientation : [Vertical, Horizontal],
+    color : Color,
 }
 
 new : List (x, y) -> BarTrace x y where x implements Inspect, y implements Inspect
-new = \xy -> @BarTrace { xy, orientation: Horizontal }
+new = \xy -> @BarTrace {
+        xy,
+        orientation: Vertical,
+        color: RGB 124 56 245,
+    }
+
+with_color : BarTrace x y, Color -> BarTrace x y
+with_color = \@BarTrace trace, color ->
+    @BarTrace { trace & color }
+
+color_to_str : Color -> Str
+color_to_str = \color ->
+    when color is
+        RGB r g b -> "rgb($(Num.toStr r), $(Num.toStr g), $(Num.toStr b))"
+        Named name -> name
+        Hex hex -> hex
 
 data_to_str : BarTrace x y -> Str where x implements Inspect, y implements Inspect
 data_to_str = \@BarTrace data ->
@@ -48,9 +76,9 @@ data_to_str = \@BarTrace data ->
         "showlegend": true,
         "type": "bar",
         "marker": {
-            "color": "rgb(142, 124, 195)"
+            "color": "$(color_to_str data.color)"
         },
-        "opacity": 0.6,
+        "opacity": 1,
         $(if data.orientation == Vertical then "\"orientation\": \"v\"," else "\"orientation\": \"h\",")
         "name": "Fruits"
     }
