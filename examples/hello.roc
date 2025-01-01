@@ -17,7 +17,7 @@ main! = \_ ->
     fuscia = Color.hex? "#ff00ff"
 
     purple : Color
-    purple = Color.rgb 124 56 245
+    purple = Color.rgba 124 56 245 150
 
     firebrick : Color
     firebrick = Color.named? "FireBrick"

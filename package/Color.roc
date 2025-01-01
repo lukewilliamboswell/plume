@@ -2,12 +2,14 @@ module [
     Color,
     to_str,
     rgb,
+    rgba,
     hex,
     named,
 ]
 
 Color := [
     RGB U8 U8 U8,
+    RGBA U8 U8 U8 Dec,
     Named Str,
     Hex Str,
 ]
@@ -15,6 +17,11 @@ Color := [
 
 rgb : U8, U8, U8 -> Color
 rgb = \r, g, b -> @Color (RGB r g b)
+
+rgba : U8, U8, U8, U8 -> Color
+rgba = \r, g, b, a ->
+    rounded = Num.toFrac a / 255.0
+    @Color (RGBA r g b rounded)
 
 hex : Str -> Result Color [InvalidHex Str]
 hex = \str ->
@@ -43,10 +50,12 @@ to_str : Color -> Str
 to_str = \@Color color ->
     when color is
         RGB r g b -> "rgb($(Num.toStr r), $(Num.toStr g), $(Num.toStr b))"
+        RGBA r g b a -> "rgba($(Num.toStr r), $(Num.toStr g), $(Num.toStr b), $(Num.toStr a))"
         Named inner -> inner
         Hex inner -> inner
 
 expect to_str (rgb 124 56 245) == "rgb(124, 56, 245)"
+expect to_str (rgba 124 56 245 255) == "rgba(124, 56, 245, 1.0)"
 expect hex "#ff00ff" |> Result.map to_str == Ok "#ff00ff"
 
 named : Str -> Result Color [UnknownColor Str]
