@@ -5,6 +5,6 @@ set -euxo pipefail
 
 rm -f out.html
 
-roc examples/hello.roc > out.html
+roc examples/hello.roc
 
 open out.html

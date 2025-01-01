@@ -1,3 +1,5 @@
 package [
-    Plotly,
+    Chart,
+    BarTrace,
+    Color,
 ] {}

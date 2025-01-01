@@ -3,20 +3,24 @@ app [main!] {
     plume: "../package/main.roc",
 }
 
-import cli.Stdout
-import plume.Plotly
+import cli.File
+import plume.Chart
+import plume.BarTrace
 
 main! = \_ ->
 
-    data : Plotly.BarTrace Str U64
-    data =
-        Plotly.new [
-            ("Apples", 2),
-            ("Organes", 3),
-            ("Bananas", 4),
-        ]
-        |> Plotly.with_color (Hex "#ff00ff")
+    fuscia = Hex "#ff00ff"
 
-    html = Plotly.to_html data
+    chart =
+        Chart.empty
+        |> Chart.add_trace
+            (
+                BarTrace.new_trace [("Apples", 2), ("Oranges", 3), ("Bananas", 4)]
+            )
+        |> Chart.add_trace
+            (
+                BarTrace.new_trace [("Apples", 3), ("Oranges", 1), ("Bananas", 5)]
+                |> BarTrace.with_color fuscia
+            )
 
-    Stdout.line! html
+    File.write_utf8! (Chart.to_html chart) "out.html"
