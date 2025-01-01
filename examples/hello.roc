@@ -6,10 +6,11 @@ app [main!] {
 import cli.File
 import plume.Chart
 import plume.BarTrace
+import plume.Color
 
 main! = \_ ->
 
-    fuscia = Hex "#ff00ff"
+    fuscia = Color.hex? "#ff00ff"
 
     chart =
         Chart.empty
@@ -17,13 +18,14 @@ main! = \_ ->
             (
                 BarTrace.new [("Apples", 2), ("Oranges", 3), ("Bananas", 4)]
                 |> BarTrace.with_name "Fruit"
+                |> BarTrace.with_color (Color.named? "FireBrick")
             )
         |> Chart.add_trace
             (
                 BarTrace.new [("Tuna", 3), ("Musli Bar", 1), ("Carrot", 5)]
                 |> BarTrace.with_color fuscia
                 |> BarTrace.with_name "Snacks"
-                |> BarTrace.with_bar_width 0.9
+                |> BarTrace.with_bar_width? 0.9
             )
 
     File.write_utf8! (Chart.to_html chart) "out.html"
