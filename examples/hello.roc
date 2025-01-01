@@ -8,6 +8,15 @@ import plume.Plotly
 
 main! = \_ ->
 
-    html = Plotly.to_html {}
+    data : Plotly.BarTrace Str U64
+    data =
+        Plotly.new [
+            ("Apples", 2),
+            ("Organes", 3),
+            ("Bananas", 4),
+        ]
+        |> Plotly.with_color (Hex "#ff00ff")
+
+    html = Plotly.to_html data
 
     Stdout.line! html

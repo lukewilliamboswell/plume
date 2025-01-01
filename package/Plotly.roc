@@ -10,20 +10,10 @@ module [
 
 import "static/template.html" as template : Str
 
-to_html : {} -> Str
-to_html = \{} ->
-
-    data : BarTrace Str U64
-    data =
-        new [
-            ("Apples", 2),
-            ("Organes", 3),
-            ("Bananas", 4),
-        ]
-        |> with_color (Hex "#ff00ff")
-
-    template
-    |> Str.replaceFirst
+to_html : BarTrace x y -> Str where x implements Inspect, y implements Inspect
+to_html = \data ->
+    Str.replaceFirst
+        template
         "{{REPLACE_ME}}"
         """
         {
