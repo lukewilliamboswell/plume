@@ -4,6 +4,7 @@ app [main!] {
 }
 
 import cli.File
+import cli.Cmd
 import plume.Chart exposing [Chart]
 import plume.Bar
 import plume.Scatter
@@ -89,6 +90,10 @@ main! = \_ ->
             ],
         ]
 
+    # we can inspect a Chart using `dbg` to
+    # help with debugging
     dbg chart
 
-    File.write_utf8! (Chart.to_html chart) "out.html"
+    File.write_utf8!? (Chart.to_html chart) "out.html"
+
+    Cmd.exec! "open" ["out.html"]
