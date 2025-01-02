@@ -35,13 +35,24 @@ with_name : Trace node value, Str -> Trace node value
 with_name = \@Trace trace, name ->
     @Trace { trace & name }
 
-node_help : List Str -> Str
+node_help : List { label : node, color : Color.Color } -> Str where node implements Inspect
 node_help = \nodes ->
+
+    nodes_str =
+        nodes
+        |> List.map \node -> "$(Inspect.toStr node.label)"
+        |> Str.joinWith ","
+
+    color_str =
+        nodes
+        |> List.map \node -> "\"$(Color.to_str node.color)\""
+        |> Str.joinWith ","
+
     if List.isEmpty nodes then
         "{}"
     else
         """
-        {"label": [$(Str.joinWith nodes ",")]}
+        {"label":[$(nodes_str)],"color":[$(color_str)]}
         """
 
 link_help : List Str, List { source : Str, target : Str, value : Str } -> Str
@@ -112,7 +123,7 @@ to_str = \@Trace data ->
             # and avoid some type craziness
             { source: Inspect.toStr source, target: Inspect.toStr target, value: Inspect.toStr value }
 
-    node_str = node_help labels
+    node_str = node_help data.nodes
 
     links_str = link_help labels links
 

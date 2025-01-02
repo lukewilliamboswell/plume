@@ -32,19 +32,19 @@ main! = \_ ->
                 Sankey.new {
                     name: "TEST",
                     nodes: [
-                        { label: "A", color: purple },
-                        { label: "B", color: purple },
-                        { label: "C", color: fuscia },
-                        { label: "D", color: fuscia },
-                        { label: "E", color: purple },
+                        { label: "A", color: fuscia },
+                        { label: "B", color: fuscia },
+                        { label: "C", color: purple },
+                        { label: "D", color: purple },
+                        { label: "E", color: fuscia },
                     ],
                     links: [
-                        { source: "A", target: "B", value: 20 },
-                        { source: "A", target: "C", value: 10 },
-                        { source: "B", target: "D", value: 15 },
-                        { source: "C", target: "D", value: 10 },
-                        { source: "B", target: "C", value: 5 },
-                        { source: "D", target: "E", value: 5 },
+                        { source: "A", target: "C", value: 8 },
+                        { source: "B", target: "D", value: 4 },
+                        { source: "A", target: "D", value: 2 },
+                        { source: "C", target: "E", value: 8 },
+                        { source: "D", target: "E", value: 4 },
+                        { source: "D", target: "E", value: 2 },
                     ],
                 }
             )
