@@ -53,11 +53,12 @@ main! = \_ ->
             )
         |> Chart.with_layout [
             Layout.title [
-                Title.text "Snacks verse Fruit",
+                Title.text "snack verse FRUIT",
                 Title.font [
-                    Font.family "Courier New, monospace",
-                    Font.size 24,
-                    Font.color fuscia,
+                    Font.family "Ringbearer",
+                    Font.size? 24,
+                    Font.style Italic,
+                    Font.textcase Upper,
                 ],
             ],
         ]

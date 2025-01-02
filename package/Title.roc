@@ -27,7 +27,7 @@ from_attrs = \title_attrs ->
         |> List.map \@Attr inner ->
             when inner is
                 Text s -> "\"text\":\"$(s)\""
-                Font font_attrs -> "\"font\":{$(Font.from_attrs font_attrs)}"
+                Font font_attrs -> Font.from_attrs font_attrs
         |> Str.joinWith ","
 
     "\"title\":{$(fields_str)}"
