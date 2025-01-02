@@ -6,6 +6,7 @@ app [main!] {
 
 import cli.File
 import cli.Env
+import cli.Cmd
 import json.Json
 import plume.Chart
 import plume.Layout
@@ -76,7 +77,9 @@ main! = \_ ->
             ],
         ]
 
-    File.write_utf8! (Chart.to_html chart) "out.html"
+    File.write_utf8!? (Chart.to_html chart) "out.html"
+
+    Cmd.exec! "open" ["out.html"]
 
 hover_label : Str, Dict Str { in : F64, out : F64 } -> Result Str _
 hover_label = \label, dict ->

@@ -1,6 +1,6 @@
 app [main!] {
     cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.18.0/0APbwVN1_p1mJ96tXjaoiUCr8NBGamr8G8Ac_DrXR-o.tar.br",
-    plume: "https://github.com/lukewilliamboswell/plume/releases/download/test-1/oOETHKr8UqXzMSQMzNc7Tf6SQl-9dAxiFBv65HMwCaQ.tar.gz",
+    plume: "../package/main.roc",
 }
 
 import cli.File
@@ -27,8 +27,15 @@ main! = \_ ->
         Font.size? 18,
     ]
 
+    data : List (Str, F64)
+    data = [
+        ("Apples", 2.1),
+        ("Oranges", 3),
+        ("Bananas", 4),
+    ]
+
     scatter =
-        Scatter.new [("Apples", 2.1), ("Oranges", 3), ("Bananas", 4)]
+        Scatter.new data
         |> Scatter.with_name "Fruit"
         |> Scatter.with_mode? "lines+markers"
         |> Scatter.with_marker [
@@ -42,7 +49,6 @@ main! = \_ ->
             Line.dash? "dash",
         ]
 
-    chart : Chart.Chart Str F64
     chart =
         Chart.empty
         |> Chart.add_scatter_chart scatter
@@ -57,6 +63,6 @@ main! = \_ ->
             ],
         ]
 
-    try File.write_utf8! (Chart.to_html chart) "out.html"
+    File.write_utf8!? (Chart.to_html chart) "out.html"
 
     Cmd.exec! "open" ["out.html"]

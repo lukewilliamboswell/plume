@@ -4,6 +4,7 @@ app [main!] {
 }
 
 import cli.File
+import cli.Cmd
 import plume.Chart exposing [Chart]
 import plume.Font
 import plume.Layout
@@ -55,6 +56,6 @@ main! = \_ ->
             Layout.global_font default_font,
         ]
 
-    dbg chart
+    File.write_utf8!? (Chart.to_html chart) "out.html"
 
-    File.write_utf8! (Chart.to_html chart) "out.html"
+    Cmd.exec! "open" ["out.html"]

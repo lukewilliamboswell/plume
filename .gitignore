@@ -8,3 +8,5 @@ examples/simple
 *.tar.br
 
 .DS_Store
+
+generated-docs/
