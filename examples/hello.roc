@@ -31,12 +31,13 @@ main! = \_ ->
         Font.size? 24,
         Font.textcase Upper,
         Font.style Normal,
-        Font.color firebrick,
+        Font.color fuscia,
     ]
 
     axis_font = Title.font [
         Font.family "Ringbearer",
         Font.size? 18,
+        Font.color fuscia,
     ]
 
     default_font = [
@@ -54,8 +55,8 @@ main! = \_ ->
                 |> ScatterTrace.with_name "Fruit"
                 |> ScatterTrace.with_mode? "lines+markers"
                 |> ScatterTrace.with_marker [
-                    Marker.size 10.0,
-                    Marker.color fuscia,
+                    Marker.size 15.0,
+                    Marker.symbol? "diamond",
                 ]
                 |> ScatterTrace.with_line [
                     Line.width 2.0,
