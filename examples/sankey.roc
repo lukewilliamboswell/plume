@@ -28,11 +28,11 @@ main! = \_ ->
     sankey_chart =
         Sankey.new {
             nodes: [
-                { label: "A", color: fuscia },
-                { label: "B", color: fuscia },
-                { label: "C", color: purple },
-                { label: "D", color: purple },
-                { label: "E", color: fuscia },
+                { label: "A", color: fuscia, hover: "<em>AA</em><br>In: $12.50<br>Out: $32.00<br>" },
+                { label: "B", color: fuscia, hover: "<em>BB</em><br>In: $12.50<br>Out: $32.00<br>" },
+                { label: "C", color: purple, hover: "<em>CC</em><br>In: $12.50<br>Out: $32.00<br>" },
+                { label: "D", color: purple, hover: "<em>DD</em><br>In: $12.50<br>Out: $32.00<br>" },
+                { label: "E", color: fuscia, hover: "<em>EE</em><br>In: $12.50<br>Out: $32.00<br>" },
             ],
             links: [
                 { source: "A", target: "C", value: 8 },

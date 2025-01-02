@@ -7,7 +7,15 @@ module [
 import Color
 
 Trace node value := {
-    nodes : List { label : node, color : Color.Color },
+    nodes : List {
+        label : node,
+        color : Color.Color,
+
+        # only some html elements permitted
+        # ['br', 'sub', 'sup', 'b', 'i', 'em']
+        # https://github.com/plotly/plotly.js/blob/c1ef6911da054f3b16a7abe8fb2d56019988ba14/src/components/fx/hover.js#L1596
+        hover : Str,
+    },
     links : List { source : node, target : node, value : value },
     orientation : [Vertical, Horizontal],
 }
@@ -15,7 +23,7 @@ Trace node value := {
 
 new :
     {
-        nodes : List { label : node, color : Color.Color },
+        nodes : List { label : node, color : Color.Color, hover : Str },
         links : List { source : node, target : node, value : value },
     }
     -> Trace node value
@@ -27,7 +35,7 @@ new = \{ nodes, links } -> @Trace {
         orientation: Vertical,
     }
 
-node_help : List { label : node, color : Color.Color } -> Str where node implements Inspect
+node_help : List { label : node, color : Color.Color, hover : Str } -> Str where node implements Inspect
 node_help = \nodes ->
 
     nodes_str =
@@ -40,11 +48,26 @@ node_help = \nodes ->
         |> List.map \node -> "\"$(Color.to_str node.color)\""
         |> Str.joinWith ","
 
+    custom_data_str =
+        # if any nodes have hover text, we need to add custom data to it
+        if List.any nodes \node -> !(Str.isEmpty node.hover) then
+            custom_data_strs =
+                nodes
+                |> List.map \node -> "\"$(node.hover)\""
+                |> Str.joinWith ","
+
+            """
+            "customdata": [$(custom_data_strs)],
+            "hovertemplate": "%{customdata}<extra></extra>",
+            """
+        else
+            ""
+
     if List.isEmpty nodes then
         "{}"
     else
         """
-        {"label":[$(nodes_str)],"color":[$(color_str)]}
+        {$(custom_data_str)"label":[$(nodes_str)],"color":[$(color_str)]}
         """
 
 link_help : List Str, List { source : Str, target : Str, value : Str } -> Str
