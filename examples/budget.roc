@@ -7,7 +7,7 @@ app [main!] {
 import cli.File
 import cli.Env
 import json.Json
-import plume.Chart exposing [Chart]
+import plume.Chart
 import plume.Layout
 import plume.Title
 import plume.Color
@@ -43,6 +43,8 @@ main! = \_ ->
     scenario : Scenario
     scenario = Decode.fromBytes? (File.read_bytes!? path) Json.utf8
 
+    flows = flow_analysis scenario.links
+
     links =
         scenario.links
         |> List.map \{ source, target, monthly } -> { source, target, value: monthly }
@@ -56,17 +58,12 @@ main! = \_ ->
         |> List.map \label -> {
             label,
             color: select_color label,
-            hover: "<em>Node A</em><br>In: $12.50<br>Out: $32.00<br>",
+            hover: hover_label label flows |> Result.withDefault "NODE NOT FOUND",
         }
 
-    sankey_chart : Sankey.Trace _ _
-    sankey_chart =
-        Sankey.new { nodes, links }
-
-    chart : Chart _ _
     chart =
         Chart.empty
-        |> Chart.add_sankey_chart sankey_chart
+        |> Chart.add_sankey_chart (Sankey.new { nodes, links })
         |> Chart.with_layout [
             Layout.title [
                 Title.text "Budget Scenario: $(scenario.scenario)",
@@ -74,3 +71,28 @@ main! = \_ ->
         ]
 
     File.write_utf8! (Chart.to_html chart) "out.html"
+
+hover_label : Str, Dict Str { in : F64, out : F64 } -> Result Str _
+hover_label = \label, dict ->
+
+    { in, out } = Dict.get? dict label
+
+    net = in - out
+
+    Ok "<em>$(label)</em><br>In: $$(Num.toStr in)<br>Out: $$(Num.toStr out)<br>Net: $$(Num.toStr net)<br>"
+
+flow_analysis : List Link -> Dict Str { in : F64, out : F64 }
+flow_analysis = \links ->
+    List.walk links (Dict.empty {}) \dict, { source, target, monthly } ->
+        # Update source node's outflow
+        dictWithSource =
+            Dict.update dict source \maybeValue ->
+                when maybeValue is
+                    Err Missing -> Ok { in: 0, out: monthly }
+                    Ok value -> Ok { value & out: value.out + monthly }
+
+        # Update target node's inflow
+        Dict.update dictWithSource target \maybeValue ->
+            when maybeValue is
+                Err Missing -> Ok { in: monthly, out: 0 }
+                Ok value -> Ok { value & in: value.in + monthly }
