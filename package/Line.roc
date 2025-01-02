@@ -28,7 +28,7 @@ dash = \str ->
     if Set.contains valid str then
         Ok (@Attr (Dash str))
     else
-        Err (InvalidDash "Invalid dash style $(str), expected: solid, dot, dash, ... etc")
+        Err (InvalidDash "Invalid dash style $(str), expected one of: $(Inspect.toStr valid)")
 
 from_attrs : List Attr -> Str
 from_attrs = \attrs ->
