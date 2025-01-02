@@ -72,11 +72,9 @@ to_str = \@ScatterTrace data ->
     {
         "x": [$(x_str)],
         "y": [$(y_str)],
-        "showlegend": true,
         "type": "scatter",
         $(marker_str),
         $(line_str),
-        "opacity": 1,
         $(orientation_str)
         "name": \"$(data.name)\"
     }

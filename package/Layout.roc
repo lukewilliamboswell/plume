@@ -5,6 +5,7 @@ module [
     x_axis,
     y_axis,
     global_font,
+    show_legend,
 ]
 
 import Title
@@ -15,6 +16,7 @@ Attr := [
     Title (List Title.Attr),
     XAxis (List Title.Attr),
     YAxis (List Title.Attr),
+    ShowLegend Bool,
 ]
     implements [Inspect]
 
@@ -34,6 +36,10 @@ y_axis : List Title.Attr -> Attr
 y_axis = \y_axis_attrs ->
     @Attr (YAxis y_axis_attrs)
 
+show_legend : Bool -> Attr
+show_legend = \show ->
+    @Attr (ShowLegend show)
+
 from_attrs : List Attr -> Str
 from_attrs = \attrs ->
 
@@ -45,6 +51,12 @@ from_attrs = \attrs ->
                 Title title_attrs -> Title.from_attrs title_attrs
                 XAxis x_axis_attrs -> "\"xaxis\":{$(Title.from_attrs x_axis_attrs)}"
                 YAxis y_axis_attrs -> "\"yaxis\":{$(Title.from_attrs y_axis_attrs)}"
+                ShowLegend show ->
+                    if show then
+                        "\"showlegend\":true"
+                    else
+                        "\"showlegend\":false"
+
         |> Str.joinWith ","
 
     "\"layout\":{$(fields_str)}"

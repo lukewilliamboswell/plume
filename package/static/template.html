@@ -17,12 +17,10 @@
         </script>
 
         <script>
-            // Parse the JSON data from the script tag
             const chartData = JSON.parse(
                 document.getElementById("chartData").textContent,
             );
 
-            // Create the chart
             Plotly.newPlot("chart", chartData);
         </script>
     </body>

@@ -1,20 +1,20 @@
 module [
     BarTrace,
     new,
-    with_color,
     with_name,
     with_bar_width,
+    with_marker,
     to_str,
 ]
 
-import Color exposing [Color]
+import Marker
 
 BarTrace x y := {
     xy : List (x, y),
     orientation : [Vertical, Horizontal],
-    color : Color,
     name : Str,
     bar_width : F32,
+    marker_attrs : List Marker.Attr,
 }
     implements [Inspect]
 
@@ -22,14 +22,10 @@ new : List (x, y) -> BarTrace x y where x implements Inspect, y implements Inspe
 new = \xy -> @BarTrace {
         xy,
         orientation: Vertical,
-        color: Color.rgb 124 56 245,
         name: "",
         bar_width: 0.5,
+        marker_attrs: [],
     }
-
-with_color : BarTrace x y, Color -> BarTrace x y
-with_color = \@BarTrace trace, color ->
-    @BarTrace { trace & color }
 
 with_name : BarTrace x y, Str -> BarTrace x y
 with_name = \@BarTrace trace, name ->
@@ -44,6 +40,10 @@ with_bar_width = \@BarTrace trace, bar_width ->
     else
         Ok (@BarTrace { trace & bar_width })
 
+with_marker : BarTrace x y, List Marker.Attr -> BarTrace x y
+with_marker = \@BarTrace trace, marker_attrs ->
+    @BarTrace { trace & marker_attrs }
+
 to_str : BarTrace x y -> Str where x implements Inspect, y implements Inspect
 to_str = \@BarTrace data ->
 
@@ -54,16 +54,14 @@ to_str = \@BarTrace data ->
 
     orientation_str = if data.orientation == Vertical then "\"orientation\": \"v\"," else "\"orientation\": \"h\","
 
+    marker_str = Marker.from_attrs data.marker_attrs
+
     """
     {
         "x": [$(x_str)],
         "y": [$(y_str)],
-        "showlegend": true,
         "type": "bar",
-        "marker": {
-            "color": "$(Color.to_str data.color)"
-        },
-        "opacity": 1,
+        $(marker_str),
         $(orientation_str)
         "name": \"$(data.name)\",
         "width": $(Num.toStr data.bar_width)

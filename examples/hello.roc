@@ -25,6 +25,7 @@ main! = \_ ->
     firebrick : Color
     firebrick = Color.named? "FireBrick"
 
+    title_font : Title.Attr
     title_font = Title.font [
         Font.family "Courier New, monospace",
         Font.size? 24,
@@ -65,11 +66,14 @@ main! = \_ ->
         |> Chart.add_bar_trace
             (
                 BarTrace.new [("Tuna", 0.3), ("Muesli Bar", 2.5), ("Carrot", 5.5)]
-                |> BarTrace.with_color purple
                 |> BarTrace.with_name "Snacks"
                 |> BarTrace.with_bar_width? 0.9
+                |> BarTrace.with_marker [
+                    Marker.color purple,
+                ]
             )
         |> Chart.with_layout [
+            Layout.show_legend Bool.true,
             Layout.global_font default_font,
             Layout.title [
                 Title.text "snack verse FRUIT",
