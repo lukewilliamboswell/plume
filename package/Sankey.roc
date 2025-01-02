@@ -6,6 +6,16 @@ module [
 
 import Color
 
+Node node : {
+    label : node,
+    color : Color.Color,
+
+    # only some html elements permitted
+    # ['br', 'sub', 'sup', 'b', 'i', 'em']
+    # https://github.com/plotly/plotly.js/blob/c1ef6911da054f3b16a7abe8fb2d56019988ba14/src/components/fx/hover.js#L1596
+    hover : Str,
+}
+
 Link node value : {
     source : node,
     target : node,
@@ -14,26 +24,13 @@ Link node value : {
 }
 
 Trace node value := {
-    nodes : List {
-        label : node,
-        color : Color.Color,
-
-        # only some html elements permitted
-        # ['br', 'sub', 'sup', 'b', 'i', 'em']
-        # https://github.com/plotly/plotly.js/blob/c1ef6911da054f3b16a7abe8fb2d56019988ba14/src/components/fx/hover.js#L1596
-        hover : Str,
-    },
+    nodes : List (Node node),
     links : List (Link node value),
     orientation : [Vertical, Horizontal],
 }
     implements [Inspect]
 
-new :
-    {
-        nodes : List { label : node, color : Color.Color, hover : Str },
-        links : List (Link node value),
-    }
-    -> Trace node value
+new : { nodes : List (Node node), links : List (Link node value) } -> Trace node value
 new = \{ nodes, links } -> @Trace {
         nodes,
         links,
@@ -42,7 +39,7 @@ new = \{ nodes, links } -> @Trace {
         orientation: Vertical,
     }
 
-node_help : List { label : node, color : Color.Color, hover : Str } -> Str where node implements Inspect
+node_help : List (Node node) -> Str where node implements Inspect
 node_help = \nodes ->
 
     nodes_str =

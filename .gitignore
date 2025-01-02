@@ -3,3 +3,5 @@ examples/sankey
 examples/budget
 
 *.html
+*.tar.gz
+*.tar.br
