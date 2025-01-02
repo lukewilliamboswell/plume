@@ -5,12 +5,14 @@ module [
     with_layout,
     add_bar_trace,
     add_scatter_trace,
+    add_sankey,
     to_html,
 ]
 
 import "static/template.html" as template : Str
 import BarTrace exposing [BarTrace]
 import ScatterTrace exposing [ScatterTrace]
+import Sankey
 import Layout
 
 Chart x y := {
@@ -23,6 +25,7 @@ Chart x y := {
 Trace x y : [
     Bar (BarTrace x y),
     Scatter (ScatterTrace x y),
+    Sankey (Sankey.Trace x y),
 ]
 
 empty : Chart x y
@@ -44,6 +47,7 @@ to_json = \@Chart chart ->
             when trace is
                 Bar inner -> BarTrace.to_str inner
                 Scatter inner -> ScatterTrace.to_str inner
+                Sankey inner -> Sankey.to_str inner
         |> Str.joinWith ",\n"
 
     layout_str = Layout.from_attrs chart.layout_attrs
@@ -63,6 +67,10 @@ add_bar_trace = \@Chart inner, trace ->
 add_scatter_trace : Chart x y, ScatterTrace x y -> Chart x y
 add_scatter_trace = \@Chart inner, trace ->
     @Chart { inner & traces: List.append inner.traces (Scatter trace) }
+
+add_sankey : Chart x y, Sankey.Trace x y -> Chart x y
+add_sankey = \@Chart inner, trace ->
+    @Chart { inner & traces: List.append inner.traces (Sankey trace) }
 
 with_layout : Chart x y, List Layout.Attr -> Chart x y
 with_layout = \@Chart inner, layout_attrs ->
