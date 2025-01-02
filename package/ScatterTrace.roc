@@ -4,6 +4,7 @@ module [
     with_name,
     with_marker,
     with_line,
+    with_mode,
     to_str,
 ]
 
@@ -16,6 +17,7 @@ ScatterTrace x y := {
     name : Str,
     marker_attrs : List Marker.Attr,
     line_attrs : List Line.Attr,
+    mode : Str,
 }
     implements [Inspect]
 
@@ -26,6 +28,7 @@ new = \xy -> @ScatterTrace {
         name: "",
         marker_attrs: [],
         line_attrs: [],
+        mode: "lines",
     }
 
 with_marker : ScatterTrace x y, List Marker.Attr -> ScatterTrace x y
@@ -39,6 +42,18 @@ with_line = \@ScatterTrace trace, line_attrs ->
 with_name : ScatterTrace x y, Str -> ScatterTrace x y
 with_name = \@ScatterTrace trace, name ->
     @ScatterTrace { trace & name }
+
+with_mode : ScatterTrace x y, Str -> Result (ScatterTrace x y) [InvalidMode Str]
+with_mode = \@ScatterTrace inner, mode ->
+
+    valid_modes = Set.fromList ["lines", "markers", "text"]
+
+    if mode == "none" then
+        Ok (@ScatterTrace { inner & mode })
+    else if Str.splitOn mode "+" |> List.all \m -> Set.contains valid_modes m then
+        Ok (@ScatterTrace { inner & mode })
+    else
+        Err (InvalidMode "Invalid mode: $(mode), expected one of: $(Inspect.toStr valid_modes)")
 
 to_str : ScatterTrace x y -> Str where x implements Inspect, y implements Inspect
 to_str = \@ScatterTrace data ->

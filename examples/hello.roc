@@ -30,6 +30,7 @@ main! = \_ ->
             (
                 ScatterTrace.new [("Apples", 2.1), ("Oranges", 3), ("Bananas", 4)]
                 |> ScatterTrace.with_name "Fruit"
+                |> ScatterTrace.with_mode? "lines+markers"
                 |> ScatterTrace.with_marker [
                     Marker.size 10.0,
                     Marker.color fuscia,
