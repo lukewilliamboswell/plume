@@ -1,6 +1,7 @@
 examples/hello
 examples/sankey
 examples/budget
+examples/simple
 
 *.html
 *.tar.gz
