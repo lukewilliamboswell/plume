@@ -1,5 +1,5 @@
 module [
-    ScatterTrace,
+    Trace,
     new,
     with_name,
     with_marker,
@@ -11,7 +11,7 @@ module [
 import Marker
 import Line
 
-ScatterTrace x y := {
+Trace x y := {
     xy : List (x, y),
     orientation : [Vertical, Horizontal],
     name : Str,
@@ -21,8 +21,8 @@ ScatterTrace x y := {
 }
     implements [Inspect]
 
-new : List (x, y) -> ScatterTrace x y where x implements Inspect, y implements Inspect
-new = \xy -> @ScatterTrace {
+new : List (x, y) -> Trace x y where x implements Inspect, y implements Inspect
+new = \xy -> @Trace {
         xy,
         orientation: Vertical,
         name: "",
@@ -31,32 +31,32 @@ new = \xy -> @ScatterTrace {
         mode: "lines",
     }
 
-with_marker : ScatterTrace x y, List Marker.Attr -> ScatterTrace x y
-with_marker = \@ScatterTrace trace, marker_attrs ->
-    @ScatterTrace { trace & marker_attrs }
+with_marker : Trace x y, List Marker.Attr -> Trace x y
+with_marker = \@Trace trace, marker_attrs ->
+    @Trace { trace & marker_attrs }
 
-with_line : ScatterTrace x y, List Line.Attr -> ScatterTrace x y
-with_line = \@ScatterTrace trace, line_attrs ->
-    @ScatterTrace { trace & line_attrs }
+with_line : Trace x y, List Line.Attr -> Trace x y
+with_line = \@Trace trace, line_attrs ->
+    @Trace { trace & line_attrs }
 
-with_name : ScatterTrace x y, Str -> ScatterTrace x y
-with_name = \@ScatterTrace trace, name ->
-    @ScatterTrace { trace & name }
+with_name : Trace x y, Str -> Trace x y
+with_name = \@Trace trace, name ->
+    @Trace { trace & name }
 
-with_mode : ScatterTrace x y, Str -> Result (ScatterTrace x y) [InvalidMode Str]
-with_mode = \@ScatterTrace inner, mode ->
+with_mode : Trace x y, Str -> Result (Trace x y) [InvalidMode Str]
+with_mode = \@Trace inner, mode ->
 
     valid_modes = Set.fromList ["lines", "markers", "text"]
 
     if mode == "none" then
-        Ok (@ScatterTrace { inner & mode })
+        Ok (@Trace { inner & mode })
     else if Str.splitOn mode "+" |> List.all \m -> Set.contains valid_modes m then
-        Ok (@ScatterTrace { inner & mode })
+        Ok (@Trace { inner & mode })
     else
         Err (InvalidMode "Invalid mode: $(mode), expected one of: $(Inspect.toStr valid_modes)")
 
-to_str : ScatterTrace x y -> Str where x implements Inspect, y implements Inspect
-to_str = \@ScatterTrace data ->
+to_str : Trace x y -> Str where x implements Inspect, y implements Inspect
+to_str = \@Trace data ->
 
     data2 = List.walk data.xy ([], []) \(xs, ys), (x, y) -> (List.append xs x, List.append ys y)
 

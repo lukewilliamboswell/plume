@@ -1,5 +1,12 @@
 package [
+    Bar,
     Chart,
-    BarTrace,
     Color,
+    Font,
+    Layout,
+    Line,
+    Marker,
+    Sankey,
+    Scatter,
+    Title,
 ] {}

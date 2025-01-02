@@ -1,5 +1,5 @@
 module [
-    BarTrace,
+    Trace,
     new,
     with_name,
     with_bar_width,
@@ -9,7 +9,7 @@ module [
 
 import Marker
 
-BarTrace x y := {
+Trace x y := {
     xy : List (x, y),
     orientation : [Vertical, Horizontal],
     name : Str,
@@ -18,8 +18,8 @@ BarTrace x y := {
 }
     implements [Inspect]
 
-new : List (x, y) -> BarTrace x y where x implements Inspect, y implements Inspect
-new = \xy -> @BarTrace {
+new : List (x, y) -> Trace x y where x implements Inspect, y implements Inspect
+new = \xy -> @Trace {
         xy,
         orientation: Vertical,
         name: "",
@@ -27,25 +27,25 @@ new = \xy -> @BarTrace {
         marker_attrs: [],
     }
 
-with_name : BarTrace x y, Str -> BarTrace x y
-with_name = \@BarTrace trace, name ->
-    @BarTrace { trace & name }
+with_name : Trace x y, Str -> Trace x y
+with_name = \@Trace trace, name ->
+    @Trace { trace & name }
 
-with_bar_width : BarTrace x y, F32 -> Result (BarTrace x y) [OutOfRange Str]
-with_bar_width = \@BarTrace trace, bar_width ->
+with_bar_width : Trace x y, F32 -> Result (Trace x y) [OutOfRange Str]
+with_bar_width = \@Trace trace, bar_width ->
     if bar_width > 1.0 then
         Err (OutOfRange "Bar width must be between 0.1 to 1.0, got $(Num.toStr bar_width)")
     else if bar_width < 0.0 then
         Err (OutOfRange "Bar width must be between 0.1 to 1.0, got $(Num.toStr bar_width)")
     else
-        Ok (@BarTrace { trace & bar_width })
+        Ok (@Trace { trace & bar_width })
 
-with_marker : BarTrace x y, List Marker.Attr -> BarTrace x y
-with_marker = \@BarTrace trace, marker_attrs ->
-    @BarTrace { trace & marker_attrs }
+with_marker : Trace x y, List Marker.Attr -> Trace x y
+with_marker = \@Trace trace, marker_attrs ->
+    @Trace { trace & marker_attrs }
 
-to_str : BarTrace x y -> Str where x implements Inspect, y implements Inspect
-to_str = \@BarTrace data ->
+to_str : Trace x y -> Str where x implements Inspect, y implements Inspect
+to_str = \@Trace data ->
 
     data2 = List.walk data.xy ([], []) \(xs, ys), (x, y) -> (List.append xs x, List.append ys y)
 

@@ -1,14 +1,12 @@
 module [
     Trace,
     new,
-    with_name,
     to_str,
 ]
 
 import Color
 
 Trace node value := {
-    name : Str,
     nodes : List { label : node, color : Color.Color },
     links : List { source : node, target : node, value : value },
     orientation : [Vertical, Horizontal],
@@ -17,23 +15,17 @@ Trace node value := {
 
 new :
     {
-        name : Str,
         nodes : List { label : node, color : Color.Color },
         links : List { source : node, target : node, value : value },
     }
     -> Trace node value
-new = \{ name, nodes, links } -> @Trace {
-        name,
+new = \{ nodes, links } -> @Trace {
         nodes,
         links,
 
         # default values
         orientation: Vertical,
     }
-
-with_name : Trace node value, Str -> Trace node value
-with_name = \@Trace trace, name ->
-    @Trace { trace & name }
 
 node_help : List { label : node, color : Color.Color } -> Str where node implements Inspect
 node_help = \nodes ->
@@ -130,7 +122,6 @@ to_str = \@Trace data ->
     """
     {
         "type":"sankey",
-        "name":\"$(data.name)\",
         "node":$(node_str),
         "arrangement": "snap",
         "link":$(links_str)

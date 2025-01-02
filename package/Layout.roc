@@ -6,6 +6,7 @@ module [
     y_axis,
     global_font,
     show_legend,
+    get_title,
 ]
 
 import Title
@@ -39,6 +40,16 @@ y_axis = \y_axis_attrs ->
 show_legend : Bool -> Attr
 show_legend = \show ->
     @Attr (ShowLegend show)
+
+get_title : List Attr -> Result Str [NotFound]
+get_title = \attrs ->
+    attrs
+    |> List.keepOks \@Attr attr ->
+        when attr is
+            Title title_attrs -> Title.get_text title_attrs
+            _ -> Err NotFound
+    |> List.first
+    |> Result.mapErr \ListWasEmpty -> NotFound
 
 from_attrs : List Attr -> Str
 from_attrs = \attrs ->

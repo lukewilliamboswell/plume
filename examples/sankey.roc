@@ -7,6 +7,7 @@ import cli.File
 import plume.Chart exposing [Chart]
 import plume.Font
 import plume.Layout
+import plume.Title
 import plume.Color exposing [Color]
 import plume.Sankey
 
@@ -23,32 +24,36 @@ main! = \_ ->
         Font.style Italic,
     ]
 
+    sankey_chart : Sankey.Trace Str F64
+    sankey_chart =
+        Sankey.new {
+            nodes: [
+                { label: "A", color: fuscia },
+                { label: "B", color: fuscia },
+                { label: "C", color: purple },
+                { label: "D", color: purple },
+                { label: "E", color: fuscia },
+            ],
+            links: [
+                { source: "A", target: "C", value: 8 },
+                { source: "B", target: "D", value: 4 },
+                { source: "A", target: "D", value: 2 },
+                { source: "C", target: "E", value: 8 },
+                { source: "D", target: "E", value: 4 },
+                { source: "D", target: "E", value: 2 },
+            ],
+        }
+
     chart : Chart Str F64
     chart =
         Chart.empty
-        |> Chart.with_title "Snacks vs Fruit"
-        |> Chart.add_sankey
-            (
-                Sankey.new {
-                    name: "TEST",
-                    nodes: [
-                        { label: "A", color: fuscia },
-                        { label: "B", color: fuscia },
-                        { label: "C", color: purple },
-                        { label: "D", color: purple },
-                        { label: "E", color: fuscia },
-                    ],
-                    links: [
-                        { source: "A", target: "C", value: 8 },
-                        { source: "B", target: "D", value: 4 },
-                        { source: "A", target: "D", value: 2 },
-                        { source: "C", target: "E", value: 8 },
-                        { source: "D", target: "E", value: 4 },
-                        { source: "D", target: "E", value: 2 },
-                    ],
-                }
-            )
-        |> Chart.with_layout [Layout.global_font default_font]
+        |> Chart.add_sankey_chart sankey_chart
+        |> Chart.with_layout [
+            Layout.title [
+                Title.text "Example Sankey Chart",
+            ],
+            Layout.global_font default_font,
+        ]
 
     dbg chart
 

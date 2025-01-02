@@ -2,6 +2,7 @@ module [
     Attr,
     from_attrs,
     text,
+    get_text,
     font,
 ]
 
@@ -18,6 +19,15 @@ text = \s -> @Attr (Text s)
 
 font : List Font.Attr -> Attr
 font = \font_attrs -> @Attr (Font font_attrs)
+
+get_text : List Attr -> Result Str [NotFound]
+get_text = \attrs ->
+    List.keepOks attrs \@Attr attr ->
+        when attr is
+            Text str -> Ok str
+            _ -> Err NotFound
+    |> List.first
+    |> Result.mapErr \ListWasEmpty -> NotFound
 
 from_attrs : List Attr -> Str
 from_attrs = \title_attrs ->

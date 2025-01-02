@@ -5,8 +5,8 @@ app [main!] {
 
 import cli.File
 import plume.Chart exposing [Chart]
-import plume.BarTrace
-import plume.ScatterTrace
+import plume.Bar
+import plume.Scatter
 import plume.Marker
 import plume.Line
 import plume.Layout
@@ -48,28 +48,27 @@ main! = \_ ->
     chart : Chart Str F64
     chart =
         Chart.empty
-        |> Chart.with_title "Snacks vs Fruit"
-        |> Chart.add_scatter_trace
+        |> Chart.add_scatter_chart
             (
-                ScatterTrace.new [("Apples", 2.1), ("Oranges", 3), ("Bananas", 4)]
-                |> ScatterTrace.with_name "Fruit"
-                |> ScatterTrace.with_mode? "lines+markers"
-                |> ScatterTrace.with_marker [
+                Scatter.new [("Apples", 2.1), ("Oranges", 3), ("Bananas", 4)]
+                |> Scatter.with_name "Fruit"
+                |> Scatter.with_mode? "lines+markers"
+                |> Scatter.with_marker [
                     Marker.size 15.0,
                     Marker.symbol? "diamond",
                 ]
-                |> ScatterTrace.with_line [
+                |> Scatter.with_line [
                     Line.width 2.0,
                     Line.color firebrick,
                     Line.dash? "dash",
                 ]
             )
-        |> Chart.add_bar_trace
+        |> Chart.add_bar_chart
             (
-                BarTrace.new [("Tuna", 0.3), ("Muesli Bar", 2.5), ("Carrot", 5.5)]
-                |> BarTrace.with_name "Snacks"
-                |> BarTrace.with_bar_width? 0.9
-                |> BarTrace.with_marker [
+                Bar.new [("Tuna", 0.3), ("Muesli Bar", 2.5), ("Carrot", 5.5)]
+                |> Bar.with_name "Snacks"
+                |> Bar.with_bar_width? 0.9
+                |> Bar.with_marker [
                     Marker.color purple,
                 ]
             )

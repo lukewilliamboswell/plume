@@ -7,6 +7,6 @@ rm -f out.html
 
 roc test package/main.roc
 
-roc examples/sankey.roc
+roc examples/hello.roc
 
 open out.html
