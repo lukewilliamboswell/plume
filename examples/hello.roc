@@ -9,6 +9,9 @@ import plume.BarTrace
 import plume.ScatterTrace
 import plume.Marker
 import plume.Line
+import plume.Layout
+import plume.Font
+import plume.Title
 import plume.Color exposing [Color]
 
 main! = \_ ->
@@ -48,6 +51,16 @@ main! = \_ ->
                 |> BarTrace.with_name "Snacks"
                 |> BarTrace.with_bar_width? 0.9
             )
+        |> Chart.with_layout [
+            Layout.title [
+                Title.text "Snacks verse Fruit",
+                Title.font [
+                    Font.family "Courier New, monospace",
+                    Font.size 24,
+                    Font.color fuscia,
+                ],
+            ],
+        ]
 
     dbg chart
 
