@@ -79,7 +79,15 @@ hover_label = \label, dict ->
 
     net = in - out
 
-    Ok "<em>$(label)</em><br>In: $$(Num.toStr in)<br>Out: $$(Num.toStr out)<br>Net: $$(Num.toStr net)<br>"
+    [
+        "<em>$(label)</em>",
+        "In: $$(Num.toStr in)",
+        "Out: $$(Num.toStr out)",
+        "Net: $$(Num.toStr net)",
+    ]
+    |> List.intersperse "<br>"
+    |> Str.joinWith ""
+    |> Ok
 
 flow_analysis : List Link -> Dict Str { in : F64, out : F64 }
 flow_analysis = \links ->
