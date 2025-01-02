@@ -24,27 +24,27 @@ main! = \_ ->
         Font.style Italic,
     ]
 
-    sankey_chart : Sankey.Trace Str F64
+    sankey_chart : Sankey.Trace U8 F64
     sankey_chart =
         Sankey.new {
             nodes: [
-                { label: "A", color: fuscia, hover: "<em>AA</em><br>In: $12.50<br>Out: $32.00<br>" },
-                { label: "B", color: fuscia, hover: "<em>BB</em><br>In: $12.50<br>Out: $32.00<br>" },
-                { label: "C", color: purple, hover: "<em>CC</em><br>In: $12.50<br>Out: $32.00<br>" },
-                { label: "D", color: purple, hover: "<em>DD</em><br>In: $12.50<br>Out: $32.00<br>" },
-                { label: "E", color: fuscia, hover: "<em>EE</em><br>In: $12.50<br>Out: $32.00<br>" },
+                { label: 1, color: fuscia, hover: "<em>Node A</em><br>In: $12.50<br>Out: $32.00<br>" },
+                { label: 2, color: fuscia, hover: "<em>Node B</em><br>In: $12.50<br>Out: $32.00<br>" },
+                { label: 3, color: purple, hover: "<em>Node C</em><br>In: $12.50<br>Out: $32.00<br>" },
+                { label: 4, color: purple, hover: "<em>Node D</em><br>In: $12.50<br>Out: $32.00<br>" },
+                { label: 5, color: fuscia, hover: "<em>Node E</em><br>In: $12.50<br>Out: $32.00<br>" },
             ],
             links: [
-                { source: "A", target: "C", value: 8 },
-                { source: "B", target: "D", value: 4 },
-                { source: "A", target: "D", value: 2 },
-                { source: "C", target: "E", value: 8 },
-                { source: "D", target: "E", value: 4 },
-                { source: "D", target: "E", value: 2 },
+                { source: 1, target: 3, value: 8.0 },
+                { source: 2, target: 4, value: 4.0 },
+                { source: 1, target: 4, value: 2.0 },
+                { source: 3, target: 5, value: 8.0 },
+                { source: 4, target: 5, value: 4.0 },
+                { source: 4, target: 5, value: 2.0 },
             ],
         }
 
-    chart : Chart Str F64
+    chart : Chart U8 F64
     chart =
         Chart.empty
         |> Chart.add_sankey_chart sankey_chart

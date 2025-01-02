@@ -1,0 +1,14 @@
+{
+  "scenario": "Baseline",
+  "links": [
+    { "source": "John", "target": "Income", "monthly": 1000 },
+    { "source": "Mary", "target": "Income", "monthly": 1000 },
+    { "source": "Income", "target": "House", "monthly": 1500 },
+    { "source": "Income", "target": "Bills", "monthly": 500 },
+    { "source": "Bills", "target": "Subscriptions", "monthly": 100 },
+    { "source": "Bills", "target": "Water & Electricity", "monthly": 300 },
+    { "source": "Bills", "target": "Internet", "monthly": 100 },
+    { "source": "House", "target": "Rent", "monthly": 1000 },
+    { "source": "House", "target": "Insurance", "monthly": 500 }
+  ]
+}

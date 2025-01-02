@@ -1,4 +1,5 @@
 examples/hello
 examples/sankey
+examples/budget
 
 *.html

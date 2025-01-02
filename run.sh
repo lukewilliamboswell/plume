@@ -7,6 +7,6 @@ rm -f out.html
 
 roc test package/main.roc
 
-roc examples/sankey.roc
+INPUT=examples/baseline.json roc examples/budget.roc
 
 open out.html
