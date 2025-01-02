@@ -25,6 +25,24 @@ main! = \_ ->
     firebrick : Color
     firebrick = Color.named? "FireBrick"
 
+    title_font = Title.font [
+        Font.family "Courier New, monospace",
+        Font.size? 24,
+        Font.textcase Upper,
+        Font.style Normal,
+        Font.color firebrick,
+    ]
+
+    axis_font = Title.font [
+        Font.family "Ringbearer",
+        Font.size? 18,
+    ]
+
+    default_font = [
+        Font.family "'Comic Sans MS', 'Chalkboard SE', 'Comic Neue', sans-serif;",
+        Font.style Italic,
+    ]
+
     chart : Chart Str F64
     chart =
         Chart.empty
@@ -52,14 +70,18 @@ main! = \_ ->
                 |> BarTrace.with_bar_width? 0.9
             )
         |> Chart.with_layout [
+            Layout.global_font default_font,
             Layout.title [
                 Title.text "snack verse FRUIT",
-                Title.font [
-                    Font.family "Ringbearer",
-                    Font.size? 24,
-                    Font.style Italic,
-                    Font.textcase Upper,
-                ],
+                title_font,
+            ],
+            Layout.x_axis [
+                Title.text "Fruit",
+                axis_font,
+            ],
+            Layout.y_axis [
+                Title.text "Snacks",
+                axis_font,
             ],
         ]
 
