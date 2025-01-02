@@ -35,12 +35,12 @@ main! = \_ ->
                 { label: 5, color: fuscia, hover: "<em>Node E</em><br>In: $12.50<br>Out: $32.00<br>" },
             ],
             links: [
-                { source: 1, target: 3, value: 8.0 },
-                { source: 2, target: 4, value: 4.0 },
-                { source: 1, target: 4, value: 2.0 },
-                { source: 3, target: 5, value: 8.0 },
-                { source: 4, target: 5, value: 4.0 },
-                { source: 4, target: 5, value: 2.0 },
+                { source: 1, target: 3, value: 8.0, hover: "" },
+                { source: 2, target: 4, value: 4.0, hover: "" },
+                { source: 1, target: 4, value: 2.0, hover: "" },
+                { source: 3, target: 5, value: 8.0, hover: "" },
+                { source: 4, target: 5, value: 4.0, hover: "" },
+                { source: 4, target: 5, value: 2.0, hover: "" },
             ],
         }
 
