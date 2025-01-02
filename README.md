@@ -9,8 +9,14 @@ Early development / Proof of Concept -- usable, and easy to extend... let me kno
 ## Usage
 
 ```sh
-$ roc examples/simple.roc
+$ roc simple.roc
 ```
+
+### Screenshot
+
+![Screenshot of the simple app](examples/simple.png)
+
+### `simple.roc`
 
 ```roc
 app [main!] {

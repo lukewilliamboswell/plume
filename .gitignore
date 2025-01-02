@@ -6,3 +6,5 @@ examples/simple
 *.html
 *.tar.gz
 *.tar.br
+
+.DS_Store
