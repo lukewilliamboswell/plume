@@ -8,7 +8,6 @@ module [
 ]
 
 import Marker
-import Helpers
 
 Trace x y := {
     xy : List (x, y),
@@ -81,6 +80,6 @@ to_str = \@Trace data ->
         "\"width\":$(Num.toStr data.bar_width)",
         "\"type\":\"bar\"",
     ]
-    |> List.keepIf Helpers.non_empty_str
+    |> List.dropIf Str.isEmpty
     |> Str.joinWith ","
     |> \str -> "{$(str)}"

@@ -6,7 +6,6 @@ module [
 
 import Marker
 import Line
-import Helpers
 
 Trace x y := {
     data : List { x : x, y : y },
@@ -78,6 +77,6 @@ to_str = \@Trace inner ->
         "$(mode_str)",
         "\"type\":\"scatter\"",
     ]
-    |> List.keepIf Helpers.non_empty_str
+    |> List.dropIf Str.isEmpty
     |> Str.joinWith ","
     |> \str -> "{$(str)}"

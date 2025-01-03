@@ -6,7 +6,6 @@ module [
     to_str,
 ]
 
-import Helpers
 import Title
 import Color
 
@@ -64,7 +63,7 @@ to_str = \@Axis outer ->
                 title_str,
                 color_str,
             ]
-            |> List.keepIf Helpers.non_empty_str
+            |> List.dropIf Str.isEmpty
             |> Str.joinWith ","
             |> \str -> "{$(str)}"
 

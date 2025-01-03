@@ -5,7 +5,6 @@ module [
     get_title,
 ]
 
-import Helpers
 import Title
 import Font
 import Axis
@@ -40,13 +39,6 @@ new = \{ global_font ? [], title ? [], x_axis ? Axis.default, y_axis ? Axis.defa
 get_title : Layout -> Result Str [NotFound]
 get_title = \@Layout { title } ->
     Title.get_text title
-# attrs
-# |> List.keepOks \@Attr attr ->
-#    when attr is
-#        Title title_attrs ->
-#        _ -> Err NotFound
-# |> List.first
-# |> Result.mapErr \ListWasEmpty -> NotFound
 
 to_str : Layout -> Str
 to_str = \@Layout inner ->
@@ -82,6 +74,6 @@ to_str = \@Layout inner ->
         title_str,
         show_legend_str,
     ]
-    |> List.keepIf Helpers.non_empty_str
+    |> List.dropIf Str.isEmpty
     |> Str.joinWith ","
     |> \str -> "{$(str)}"
