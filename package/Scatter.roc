@@ -63,6 +63,8 @@ to_str = \@Trace inner ->
 
     line_str = Line.from_attrs inner.line_attrs
 
+    mode_str = "\"mode\": \"$(inner.mode)\","
+
     name_str = if Str.isEmpty inner.name then "" else "\"name\": \"$(inner.name)\","
 
     """
@@ -73,6 +75,7 @@ to_str = \@Trace inner ->
         $(line_str)
         $(orientation_str)
         $(name_str)
+        $(mode_str)
         "type": "scatter"
     }
     """
