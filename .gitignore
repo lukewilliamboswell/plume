@@ -8,6 +8,7 @@ examples/pie
 examples/donut
 examples/equation-sine
 examples/equation-cosine
+examples/scatter
 
 *.html
 *.tar.gz
