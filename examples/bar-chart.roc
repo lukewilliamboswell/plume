@@ -29,9 +29,7 @@ main! = \_ ->
     bar =
         Bar.new? {
             data,
-            marker: [
-                Marker.color blue,
-            ],
+            #marker: Marker.new? { color: blue },
         }
 
     chart : Chart Str F64
@@ -42,4 +40,8 @@ main! = \_ ->
 
     File.write_utf8!? (Chart.to_html chart) "out.html"
 
-    Cmd.exec! "open" ["out.html"]
+    # Cmd.exec! "open" ["out.html"]
+
+    dbg chart
+
+    Ok {}

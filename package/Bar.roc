@@ -3,7 +3,6 @@ module [
     new,
     with_name,
     with_bar_width,
-    with_marker,
     to_str,
 ]
 
@@ -14,7 +13,7 @@ Trace x y := {
     orientation : [Vertical, Horizontal],
     name : Str,
     bar_width : F32,
-    marker_attrs : List Marker.Attr,
+    marker : Marker.Marker,
 }
     implements [Inspect]
 
@@ -24,10 +23,10 @@ new :
         orientation ? [Vertical, Horizontal],
         name ? Str,
         bar_width ? F32,
-        marker ? List Marker.Attr,
+        #marker : Marker.Marker,
     }
     -> Result (Trace x y) _
-new = \{ data, orientation ? Vertical, name ? "", bar_width ? 0.75, marker ? [] } ->
+new = \{ data, orientation ? Vertical, name ? "", bar_width ? 0.75 } ->
     Ok
         (
             @Trace {
@@ -35,7 +34,7 @@ new = \{ data, orientation ? Vertical, name ? "", bar_width ? 0.75, marker ? [] 
                 orientation,
                 name,
                 bar_width: check_valid_bar_width? bar_width,
-                marker_attrs: marker,
+                marker: Marker.default,
             }
         )
 
@@ -55,10 +54,6 @@ check_valid_bar_width = \bar_width ->
     else
         Ok bar_width
 
-with_marker : Trace x y, List Marker.Attr -> Trace x y
-with_marker = \@Trace trace, marker_attrs ->
-    @Trace { trace & marker_attrs }
-
 to_str : Trace x y -> Str where x implements Inspect, y implements Inspect
 to_str = \@Trace data ->
 
@@ -69,12 +64,13 @@ to_str = \@Trace data ->
 
     orientation_str = if data.orientation == Vertical then "\"orientation\":\"v\"" else "\"orientation\":\"h\""
 
-    marker_str = Marker.from_attrs data.marker_attrs
+    marker_str : Str
+    marker_str = Marker.to_str data.marker
 
     [
         "\"x\":[$(x_str)]",
         "\"y\":[$(y_str)]",
-        "$(marker_str)",
+        marker_str,
         "$(orientation_str)",
         "\"name\":\"$(data.name)\"",
         "\"width\":$(Num.toStr data.bar_width)",

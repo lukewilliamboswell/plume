@@ -11,7 +11,7 @@ Trace x y := {
     data : List { x : x, y : y },
     orientation : [Vertical, Horizontal],
     name : Str,
-    marker_attrs : List Marker.Attr,
+    marker : Marker.Marker,
     line_attrs : List Line.Attr,
     mode : Str,
 }
@@ -22,19 +22,19 @@ new :
         data : List { x : x, y : y },
         orientation ? [Vertical, Horizontal],
         name ? Str,
-        marker ? List Marker.Attr,
+        #marker ? Marker.Marker,
         line ? List Line.Attr,
         mode ? Str,
     }
     -> Result (Trace x y) _
-new = \{ data, orientation ? Vertical, name ? "", marker ? [], line ? [], mode ? "lines" } ->
+new = \{ data, orientation ? Vertical, name ? "", line ? [], mode ? "lines" } ->
     Ok
         (
             @Trace {
                 data,
                 orientation,
                 name,
-                marker_attrs: marker,
+                marker: Marker.default,
                 line_attrs: line,
                 mode: check_valid_mode? mode,
             }
@@ -59,18 +59,19 @@ to_str = \@Trace inner ->
 
     orientation_str = if inner.orientation == Vertical then "\"orientation\":\"v\"" else "\"orientation\":\"h\""
 
-    marker_str = Marker.from_attrs inner.marker_attrs
-
     line_str = Line.from_attrs inner.line_attrs
 
     mode_str = "\"mode\":\"$(inner.mode)\""
 
     name_str = if Str.isEmpty inner.name then "" else "\"name\":\"$(inner.name)\""
 
+    marker_str : Str
+    marker_str = Marker.to_str inner.marker
+
     [
         "\"x\":[$(x_str)]",
         "\"y\":[$(y_str)]",
-        "$(marker_str)",
+        marker_str,
         "$(line_str)",
         "$(orientation_str)",
         "$(name_str)",
