@@ -16,27 +16,28 @@ import plume.Color
 ## Thank you https://www.w3schools.com
 main! = \_ ->
 
-    blue = Color.rgb 0 0 255
+    light_red = Color.rgba 255 0 0 153
 
-    data : List (Str, F64)
+    data : List (F64, Str)
     data = [
-        ("Italy", 55),
-        ("France", 49),
-        ("Spain", 44),
-        ("USA", 24),
-        ("Australia", 15),
+        (55, "Italy"),
+        (49, "France"),
+        (44, "Spain"),
+        (24, "USA"),
+        (15, "Australia"),
     ]
 
-    bar : Bar.Trace Str F64
+    bar : Bar.Trace F64 Str
     bar =
         Bar.new? {
             data,
+            orientation: Horizontal,
             marker: [
-                Marker.color blue,
+                Marker.color light_red,
             ],
         }
 
-    chart : Chart Str F64
+    chart : Chart F64 Str
     chart =
         Chart.empty
         |> Chart.add_bar_chart bar

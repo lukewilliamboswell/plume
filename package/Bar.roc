@@ -18,14 +18,23 @@ Trace x y := {
 }
     implements [Inspect]
 
-new : List (x, y) -> Trace x y where x implements Inspect, y implements Inspect
-new = \xy -> @Trace {
-        xy,
-        orientation: Vertical,
-        name: "",
-        bar_width: 0.5,
-        marker_attrs: [],
+new :
+    {
+        data : List (x, y),
+        orientation ? [Vertical, Horizontal],
+        name ? Str,
+        bar_width ? F32,
+        marker ? List Marker.Attr,
     }
+    -> Result (Trace x y) _
+new = \{ data, orientation ? Vertical, name ? "", bar_width ? 0.75, marker ? [] } ->
+    Ok (@Trace {
+        xy: data,
+        orientation,
+        name,
+        bar_width: check_valid_bar_width? bar_width,
+        marker_attrs: marker,
+    })
 
 with_name : Trace x y, Str -> Trace x y
 with_name = \@Trace trace, name ->
@@ -33,12 +42,15 @@ with_name = \@Trace trace, name ->
 
 with_bar_width : Trace x y, F32 -> Result (Trace x y) [OutOfRange Str]
 with_bar_width = \@Trace trace, bar_width ->
+    Ok (@Trace { trace & bar_width: check_valid_bar_width? bar_width })
+
+check_valid_bar_width = \bar_width ->
     if bar_width > 1.0 then
         Err (OutOfRange "Bar width must be between 0.1 to 1.0, got $(Num.toStr bar_width)")
     else if bar_width < 0.0 then
         Err (OutOfRange "Bar width must be between 0.1 to 1.0, got $(Num.toStr bar_width)")
     else
-        Ok (@Trace { trace & bar_width })
+        Ok bar_width
 
 with_marker : Trace x y, List Marker.Attr -> Trace x y
 with_marker = \@Trace trace, marker_attrs ->

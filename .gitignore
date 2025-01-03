@@ -3,6 +3,7 @@ examples/sankey
 examples/budget
 examples/simple
 examples/bar-chart
+examples/horizontal-bar-chart
 
 *.html
 *.tar.gz

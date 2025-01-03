@@ -66,12 +66,13 @@ main! = \_ ->
             )
         |> Chart.add_bar_chart
             (
-                Bar.new [("Tuna", 0.3), ("Muesli Bar", 2.5), ("Carrot", 5.5)]
-                |> Bar.with_name "Snacks"
-                |> Bar.with_bar_width? 0.9
-                |> Bar.with_marker [
-                    Marker.color purple,
-                ]
+                Bar.new? {
+                    data: [("Tuna", 0.3), ("Muesli Bar", 2.5), ("Carrot", 5.5)],
+                    bar_width: 0.9,
+                    marker: [
+                        Marker.color purple,
+                    ],
+                }
             )
         |> Chart.with_layout [
             Layout.show_legend Bool.true,
