@@ -48,13 +48,12 @@ main! = \_ ->
 
     links =
         scenario.links
-        |> List.map \{ source, target, monthly } ->
-            {
-                source,
-                target,
-                value: monthly,
-                hover: "$(source) -> $(target): $$(Num.toStr monthly)",
-            }
+        |> List.map \{ source, target, monthly } -> {
+            source,
+            target,
+            value: monthly,
+            hover: "$(source) -> $(target): $$(Num.toStr monthly)",
+        }
 
     nodes =
         scenario.links

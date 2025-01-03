@@ -5,6 +5,7 @@ module [
     add_bar_chart,
     add_scatter_chart,
     add_sankey_chart,
+    add_pie_chart,
     to_html,
 ]
 
@@ -13,6 +14,7 @@ import Bar
 import Scatter
 import Sankey
 import Layout
+import Pie
 
 Chart x y := {
     traces : List (Trace x y),
@@ -24,6 +26,7 @@ Trace x y : [
     Bar (Bar.Trace x y),
     Scatter (Scatter.Trace x y),
     Sankey (Sankey.Trace x y),
+    Pie (Pie.Trace x y),
 ]
 
 empty : Chart x y
@@ -42,6 +45,7 @@ to_json = \@Chart chart ->
                 Bar inner -> Bar.to_str inner
                 Scatter inner -> Scatter.to_str inner
                 Sankey inner -> Sankey.to_str inner
+                Pie inner -> Pie.to_str inner
         |> Str.joinWith ",\n"
 
     layout_str = Layout.from_attrs chart.layout_attrs
@@ -68,6 +72,10 @@ add_scatter_chart = \@Chart inner, trace ->
 add_sankey_chart : Chart x y, Sankey.Trace x y -> Chart x y
 add_sankey_chart = \@Chart inner, trace ->
     @Chart { inner & traces: List.append inner.traces (Sankey trace) }
+
+add_pie_chart : Chart x y, Pie.Trace x y -> Chart x y
+add_pie_chart = \@Chart inner, trace ->
+    @Chart { inner & traces: List.append inner.traces (Pie trace) }
 
 with_layout : Chart x y, List Layout.Attr -> Chart x y
 with_layout = \@Chart inner, layout_attrs ->

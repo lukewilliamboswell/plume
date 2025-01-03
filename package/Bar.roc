@@ -28,13 +28,16 @@ new :
     }
     -> Result (Trace x y) _
 new = \{ data, orientation ? Vertical, name ? "", bar_width ? 0.75, marker ? [] } ->
-    Ok (@Trace {
-        xy: data,
-        orientation,
-        name,
-        bar_width: check_valid_bar_width? bar_width,
-        marker_attrs: marker,
-    })
+    Ok
+        (
+            @Trace {
+                xy: data,
+                orientation,
+                name,
+                bar_width: check_valid_bar_width? bar_width,
+                marker_attrs: marker,
+            }
+        )
 
 with_name : Trace x y, Str -> Trace x y
 with_name = \@Trace trace, name ->
