@@ -520,14 +520,16 @@ symbol = \s ->
 
 from_attrs : List Attr -> Str
 from_attrs = \attrs ->
+    if List.isEmpty attrs then
+        ""
+    else
+        fields_str =
+            attrs
+            |> List.map \@Attr inner ->
+                when inner is
+                    Size s -> "\"size\":$(Num.toStr s)"
+                    Color c -> "\"color\":\"$(Color.to_str c)\""
+                    Symbol s -> "\"symbol\":\"$(s)\""
+            |> Str.joinWith ","
 
-    fields_str =
-        attrs
-        |> List.map \@Attr inner ->
-            when inner is
-                Size s -> "\"size\":$(Num.toStr s)"
-                Color c -> "\"color\":\"$(Color.to_str c)\""
-                Symbol s -> "\"symbol\":\"$(s)\""
-        |> Str.joinWith ","
-
-    "\"marker\":{$(fields_str)}"
+        "\"marker\":{$(fields_str)}"

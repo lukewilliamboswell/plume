@@ -6,6 +6,7 @@ package [
     Layout,
     Line,
     Marker,
+    Pie,
     Sankey,
     Scatter,
     Title,

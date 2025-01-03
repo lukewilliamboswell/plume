@@ -48,13 +48,12 @@ main! = \_ ->
 
     links =
         scenario.links
-        |> List.map \{ source, target, monthly } ->
-            {
-                source,
-                target,
-                value: monthly,
-                hover: "$(source) -> $(target): $$(Num.toStr monthly)",
-            }
+        |> List.map \{ source, target, monthly } -> {
+            source,
+            target,
+            value: monthly,
+            hover: "$(source) -> $(target): $$(Num.toStr monthly)",
+        }
 
     nodes =
         scenario.links
@@ -71,11 +70,7 @@ main! = \_ ->
     chart =
         Chart.empty
         |> Chart.add_sankey_chart (Sankey.new { nodes, links })
-        |> Chart.with_layout [
-            Layout.title [
-                Title.text "Budget Scenario: $(scenario.scenario)",
-            ],
-        ]
+        |> Chart.with_layout (Layout.new { title: Title.new { text: "Budget Scenario: $(scenario.scenario)" } })
 
     File.write_utf8!? (Chart.to_html chart) "out.html"
 

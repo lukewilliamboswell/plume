@@ -32,14 +32,16 @@ dash = \str ->
 
 from_attrs : List Attr -> Str
 from_attrs = \attrs ->
+    if List.isEmpty attrs then
+        ""
+    else
+        fields_str =
+            attrs
+            |> List.map \@Attr inner ->
+                when inner is
+                    Width s -> "\"width\":$(Num.toStr s)"
+                    Dash s -> "\"dash\":\"$(s)\""
+                    Color c -> "\"color\":\"$(Color.to_str c)\""
+            |> Str.joinWith ","
 
-    fields_str =
-        attrs
-        |> List.map \@Attr inner ->
-            when inner is
-                Width s -> "\"width\":$(Num.toStr s)"
-                Dash s -> "\"dash\":\"$(s)\""
-                Color c -> "\"color\":\"$(Color.to_str c)\""
-        |> Str.joinWith ","
-
-    "\"line\":{$(fields_str)}"
+        "\"line\":{$(fields_str)}"

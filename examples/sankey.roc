@@ -9,21 +9,18 @@ import plume.Chart exposing [Chart]
 import plume.Font
 import plume.Layout
 import plume.Title
-import plume.Color exposing [Color]
+import plume.Color
 import plume.Sankey
 
 main! = \_ ->
 
-    fuscia : Color
     fuscia = Color.hex? "#ff00ff"
-
-    purple : Color
     purple = Color.rgba 124 56 245 150
 
-    default_font = [
-        Font.family "'Comic Sans MS', 'Chalkboard SE', 'Comic Neue', sans-serif;",
-        Font.style Italic,
-    ]
+    global_font = Font.new? {
+        family: "'Comic Sans MS', 'Chalkboard SE', 'Comic Neue', sans-serif;",
+        style: Italic,
+    }
 
     sankey_chart : Sankey.Trace U8 F64
     sankey_chart =
@@ -49,12 +46,7 @@ main! = \_ ->
     chart =
         Chart.empty
         |> Chart.add_sankey_chart sankey_chart
-        |> Chart.with_layout [
-            Layout.title [
-                Title.text "Example Sankey Chart",
-            ],
-            Layout.global_font default_font,
-        ]
+        |> Chart.with_layout (Layout.new { global_font, title: Title.new { text: "Example Sankey Chart" } })
 
     File.write_utf8!? (Chart.to_html chart) "out.html"
 
