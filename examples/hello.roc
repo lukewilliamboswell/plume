@@ -12,6 +12,7 @@ import plume.Marker
 import plume.Line
 import plume.Layout
 import plume.Font
+import plume.Axis
 import plume.Title
 import plume.Color exposing [Color]
 
@@ -80,22 +81,29 @@ main! = \_ ->
                     ],
                 }
             )
-        |> Chart.with_layout [
-            Layout.show_legend Bool.true,
-            Layout.global_font default_font,
-            Layout.title [
-                Title.text "snack verse FRUIT",
-                title_font,
-            ],
-            Layout.x_axis [
-                Title.text "Fruit",
-                axis_font,
-            ],
-            Layout.y_axis [
-                Title.text "Snacks",
-                axis_font,
-            ],
-        ]
+        |> Chart.with_layout
+            (
+                Layout.new {
+                    show_legend: Bool.true,
+                    global_font: default_font,
+                    title: [
+                        Title.text "snack verse FRUIT",
+                        title_font,
+                    ],
+                    x_axis: Axis.new {
+                        title: [
+                            Title.text "Fruit",
+                            axis_font,
+                        ],
+                    },
+                    y_axis: Axis.new {
+                        title: [
+                            Title.text "Snacks",
+                            axis_font,
+                        ],
+                    },
+                }
+            )
 
     # we can inspect a Chart using `dbg` to
     # help with debugging

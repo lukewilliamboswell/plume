@@ -12,6 +12,7 @@ import plume.Line
 import plume.Layout
 import plume.Font
 import plume.Title
+import plume.Axis
 import plume.Color exposing [rgba]
 
 main! = \_ ->
@@ -54,16 +55,21 @@ main! = \_ ->
     chart =
         Chart.empty
         |> Chart.add_scatter_chart scatter
-        |> Chart.with_layout [
-            Layout.title [
-                Title.text "Fruit Sales",
-                title_font,
-            ],
-            Layout.y_axis [
-                Title.text "Qty",
-                axis_font,
-            ],
-        ]
+        |> Chart.with_layout
+            (
+                Layout.new {
+                    title: [
+                        Title.text "Fruit Sales",
+                        title_font,
+                    ],
+                    y_axis: Axis.new {
+                        title: [
+                            Title.text "Qty",
+                            axis_font,
+                        ],
+                    },
+                }
+            )
 
     File.write_utf8!? (Chart.to_html chart) "out.html"
 

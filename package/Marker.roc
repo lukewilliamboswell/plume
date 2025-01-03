@@ -532,4 +532,4 @@ from_attrs = \attrs ->
                     Symbol s -> "\"symbol\":\"$(s)\""
             |> Str.joinWith ","
 
-        "\"marker\":{$(fields_str)},"
+        "\"marker\":{$(fields_str)}"

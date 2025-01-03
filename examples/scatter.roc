@@ -9,6 +9,7 @@ import plume.Chart exposing [Chart]
 import plume.Scatter
 import plume.Layout
 import plume.Title
+import plume.Axis
 
 main! = \_ ->
 
@@ -27,17 +28,24 @@ main! = \_ ->
     chart =
         Chart.empty
         |> Chart.add_scatter_chart scatter
-        |> Chart.with_layout [
-            Layout.title [
-                Title.text "House Price vs Size",
-            ],
-            Layout.x_axis [
-                Title.text "Square Meters",
-            ],
-            Layout.y_axis [
-                Title.text "Price in Millions ($USD)",
-            ],
-        ]
+        |> Chart.with_layout
+            (
+                Layout.new {
+                    title: [
+                        Title.text "House Price vs Size",
+                    ],
+                    x_axis: Axis.new {
+                        title: [
+                            Title.text "Square Meters",
+                        ],
+                    },
+                    y_axis: Axis.new {
+                        title: [
+                            Title.text "Price in Millions ($USD)",
+                        ],
+                    },
+                }
+            )
 
     File.write_utf8!? (Chart.to_html chart) "out.html"
 

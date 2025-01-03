@@ -1,73 +1,87 @@
 module [
-    Attr,
-    from_attrs,
-    title,
-    x_axis,
-    y_axis,
-    global_font,
-    show_legend,
+    Layout,
+    new,
+    to_str,
     get_title,
 ]
 
+import Helpers
 import Title
 import Font
+import Axis
 
-Attr := [
-    GlobalFont (List Font.Attr),
-    Title (List Title.Attr),
-    XAxis (List Title.Attr),
-    YAxis (List Title.Attr),
-    ShowLegend Bool,
-]
+Layout := {
+    global_font : List Font.Attr,
+    title : List Title.Attr,
+    x_axis : Axis.Axis,
+    y_axis : Axis.Axis,
+    show_legend : Bool,
+}
     implements [Inspect]
 
-global_font : List Font.Attr -> Attr
-global_font = \font_attrs ->
-    @Attr (GlobalFont font_attrs)
+new :
+    {
+        global_font ? List Font.Attr,
+        title ? List Title.Attr,
+        x_axis ? Axis.Axis,
+        y_axis ? Axis.Axis,
+        show_legend ? Bool,
+    }
+    -> Layout
+new = \{ global_font ? [], title ? [], x_axis ? Axis.default, y_axis ? Axis.default, show_legend ? Bool.false } ->
+    @Layout {
+        global_font,
+        title,
+        x_axis,
+        y_axis,
+        show_legend,
+    }
 
-title : List Title.Attr -> Attr
-title = \title_attrs ->
-    @Attr (Title title_attrs)
+get_title : Layout -> Result Str [NotFound]
+get_title = \@Layout { title } ->
+    Title.get_text title
+# attrs
+# |> List.keepOks \@Attr attr ->
+#    when attr is
+#        Title title_attrs ->
+#        _ -> Err NotFound
+# |> List.first
+# |> Result.mapErr \ListWasEmpty -> NotFound
 
-x_axis : List Title.Attr -> Attr
-x_axis = \x_axis_attrs ->
-    @Attr (XAxis x_axis_attrs)
+to_str : Layout -> Str
+to_str = \@Layout inner ->
 
-y_axis : List Title.Attr -> Attr
-y_axis = \y_axis_attrs ->
-    @Attr (YAxis y_axis_attrs)
+    global_font_str = Font.from_attrs inner.global_font
 
-show_legend : Bool -> Attr
-show_legend = \show ->
-    @Attr (ShowLegend show)
+    x_axis_str =
+        str = Axis.to_str inner.x_axis
+        if Str.isEmpty str then
+            ""
+        else
+            "\"xaxis\":$(str)"
 
-get_title : List Attr -> Result Str [NotFound]
-get_title = \attrs ->
-    attrs
-    |> List.keepOks \@Attr attr ->
-        when attr is
-            Title title_attrs -> Title.get_text title_attrs
-            _ -> Err NotFound
-    |> List.first
-    |> Result.mapErr \ListWasEmpty -> NotFound
+    y_axis_str =
+        str = Axis.to_str inner.y_axis
+        if Str.isEmpty str then
+            ""
+        else
+            "\"yaxis\":$(str)"
 
-from_attrs : List Attr -> Str
-from_attrs = \attrs ->
+    title_str = Title.from_attrs inner.title
 
-    fields_str =
-        attrs
-        |> List.map \@Attr inner ->
-            when inner is
-                GlobalFont font_attrs -> Font.from_attrs font_attrs
-                Title title_attrs -> Title.from_attrs title_attrs
-                XAxis x_axis_attrs -> "\"xaxis\":{$(Title.from_attrs x_axis_attrs)}"
-                YAxis y_axis_attrs -> "\"yaxis\":{$(Title.from_attrs y_axis_attrs)}"
-                ShowLegend show ->
-                    if show then
-                        "\"showlegend\":true"
-                    else
-                        "\"showlegend\":false"
+    show_legend_str =
+        if inner.show_legend then
+            "\"showlegend\":true"
+        else
+            "\"showlegend\":false"
 
-        |> Str.joinWith ","
-
-    "\"layout\":{$(fields_str)}"
+    [
+        global_font_str,
+        x_axis_str,
+        y_axis_str,
+        title_str,
+        show_legend_str,
+    ]
+    |> List.keepIf Helpers.non_empty_str
+    |> Str.joinWith ","
+    |> \str -> "{$(str)}"

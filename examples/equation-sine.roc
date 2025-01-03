@@ -27,11 +27,14 @@ main! = \_ ->
     chart =
         Chart.empty
         |> Chart.add_scatter_chart scatter
-        |> Chart.with_layout [
-            Layout.title [
-                Title.text "y = Math.sin(x)",
-            ],
-        ]
+        |> Chart.with_layout
+            (
+                Layout.new {
+                    title: [
+                        Title.text "y = Math.sin(x)",
+                    ],
+                }
+            )
 
     File.write_utf8!? (Chart.to_html chart) "out.html"
 

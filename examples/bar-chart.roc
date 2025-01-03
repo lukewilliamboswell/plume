@@ -38,11 +38,14 @@ main! = \_ ->
     chart =
         Chart.empty
         |> Chart.add_bar_chart bar
-        |> Chart.with_layout [
-            Layout.title [
-                Title.text "Roc Programmers by Country",
-            ],
-        ]
+        |> Chart.with_layout
+            (
+                Layout.new {
+                    title: [
+                        Title.text "Roc Programmers by Country",
+                    ],
+                }
+            )
 
     File.write_utf8!? (Chart.to_html chart) "out.html"
 

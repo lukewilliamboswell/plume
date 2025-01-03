@@ -65,39 +65,41 @@ variant = \s -> @Attr (Variant s)
 # internal use
 from_attrs : List Attr -> Str
 from_attrs = \attrs ->
+    if List.isEmpty attrs then
+        ""
+    else
+        fields_str =
+            attrs
+            |> List.map \@Attr inner ->
+                when inner is
+                    Family s -> "\"family\":\"$(s)\""
+                    Size s -> "\"size\":$(Num.toStr s)"
+                    Color c -> "\"color\":\"$(Color.to_str c)\""
+                    Shadow s ->
+                        when s is
+                            None -> "\"shadow\":\"none\""
+                            Auto -> "\"shadow\":\"auto\""
 
-    fields_str =
-        attrs
-        |> List.map \@Attr inner ->
-            when inner is
-                Family s -> "\"family\":\"$(s)\""
-                Size s -> "\"size\":$(Num.toStr s)"
-                Color c -> "\"color\":\"$(Color.to_str c)\""
-                Shadow s ->
-                    when s is
-                        None -> "\"shadow\":\"none\""
-                        Auto -> "\"shadow\":\"auto\""
+                    Style s ->
+                        when s is
+                            Normal -> "\"style\":\"normal\""
+                            Italic -> "\"style\":\"italic\""
 
-                Style s ->
-                    when s is
-                        Normal -> "\"style\":\"normal\""
-                        Italic -> "\"style\":\"italic\""
+                    TextCase s ->
+                        when s is
+                            Normal -> "\"textcase\":\"normal\""
+                            Upper -> "\"textcase\":\"upper\""
+                            Lower -> "\"textcase\":\"lower\""
 
-                TextCase s ->
-                    when s is
-                        Normal -> "\"textcase\":\"normal\""
-                        Upper -> "\"textcase\":\"upper\""
-                        Lower -> "\"textcase\":\"lower\""
+                    Variant s ->
+                        when s is
+                            Normal -> "\"variant\":\"normal\""
+                            SmallCaps -> "\"variant\":\"small-caps\""
+                            PetiteCaps -> "\"variant\":\"petite-caps\""
+                            Unicase -> "\"variant\":\"unicase\""
+                            AllSmallCaps -> "\"variant\":\"all-small-caps\""
+                            AllPetiteCaps -> "\"variant\":\"all-petite-caps\""
 
-                Variant s ->
-                    when s is
-                        Normal -> "\"variant\":\"normal\""
-                        SmallCaps -> "\"variant\":\"small-caps\""
-                        PetiteCaps -> "\"variant\":\"petite-caps\""
-                        Unicase -> "\"variant\":\"unicase\""
-                        AllSmallCaps -> "\"variant\":\"all-small-caps\""
-                        AllPetiteCaps -> "\"variant\":\"all-petite-caps\""
+            |> Str.joinWith ","
 
-        |> Str.joinWith ","
-
-    "\"font\":{$(fields_str)}"
+        "\"font\":{$(fields_str)}"

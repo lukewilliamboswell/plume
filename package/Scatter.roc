@@ -6,6 +6,7 @@ module [
 
 import Marker
 import Line
+import Helpers
 
 Trace x y := {
     data : List { x : x, y : y },
@@ -54,28 +55,29 @@ to_str = \@Trace inner ->
 
     data2 = List.walk inner.data ([], []) \(xs, ys), { x, y } -> (List.append xs x, List.append ys y)
 
-    x_str = List.map data2.0 Inspect.toStr |> Str.joinWith ", "
-    y_str = List.map data2.1 Inspect.toStr |> Str.joinWith ", "
+    x_str = List.map data2.0 Inspect.toStr |> Str.joinWith ","
+    y_str = List.map data2.1 Inspect.toStr |> Str.joinWith ","
 
-    orientation_str = if inner.orientation == Vertical then "\"orientation\": \"v\"," else "\"orientation\": \"h\","
+    orientation_str = if inner.orientation == Vertical then "\"orientation\":\"v\"" else "\"orientation\":\"h\""
 
     marker_str = Marker.from_attrs inner.marker_attrs
 
     line_str = Line.from_attrs inner.line_attrs
 
-    mode_str = "\"mode\": \"$(inner.mode)\","
+    mode_str = "\"mode\":\"$(inner.mode)\""
 
-    name_str = if Str.isEmpty inner.name then "" else "\"name\": \"$(inner.name)\","
+    name_str = if Str.isEmpty inner.name then "" else "\"name\":\"$(inner.name)\""
 
-    """
-    {
-        "x": [$(x_str)],
-        "y": [$(y_str)],
-        $(marker_str)
-        $(line_str)
-        $(orientation_str)
-        $(name_str)
-        $(mode_str)
-        "type": "scatter"
-    }
-    """
+    [
+        "\"x\":[$(x_str)]",
+        "\"y\":[$(y_str)]",
+        "$(marker_str)",
+        "$(line_str)",
+        "$(orientation_str)",
+        "$(name_str)",
+        "$(mode_str)",
+        "\"type\":\"scatter\"",
+    ]
+    |> List.keepIf Helpers.non_empty_str
+    |> Str.joinWith ","
+    |> \str -> "{$(str)}"

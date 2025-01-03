@@ -31,13 +31,15 @@ get_text = \attrs ->
 
 from_attrs : List Attr -> Str
 from_attrs = \title_attrs ->
+    if List.isEmpty title_attrs then
+        ""
+    else
+        fields_str =
+            title_attrs
+            |> List.map \@Attr inner ->
+                when inner is
+                    Text s -> "\"text\":\"$(s)\""
+                    Font font_attrs -> Font.from_attrs font_attrs
+            |> Str.joinWith ","
 
-    fields_str =
-        title_attrs
-        |> List.map \@Attr inner ->
-            when inner is
-                Text s -> "\"text\":\"$(s)\""
-                Font font_attrs -> Font.from_attrs font_attrs
-        |> Str.joinWith ","
-
-    "\"title\":{$(fields_str)}"
+        "\"title\":{$(fields_str)}"

@@ -44,4 +44,4 @@ from_attrs = \attrs ->
                     Color c -> "\"color\":\"$(Color.to_str c)\""
             |> Str.joinWith ","
 
-        "\"line\":{$(fields_str)},"
+        "\"line\":{$(fields_str)}"

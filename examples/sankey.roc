@@ -49,12 +49,15 @@ main! = \_ ->
     chart =
         Chart.empty
         |> Chart.add_sankey_chart sankey_chart
-        |> Chart.with_layout [
-            Layout.title [
-                Title.text "Example Sankey Chart",
-            ],
-            Layout.global_font default_font,
-        ]
+        |> Chart.with_layout
+            (
+                Layout.new {
+                    global_font: default_font,
+                    title: [
+                        Title.text "Example Sankey Chart",
+                    ],
+                }
+            )
 
     File.write_utf8!? (Chart.to_html chart) "out.html"
 

@@ -18,7 +18,7 @@ import Pie
 
 Chart x y := {
     traces : List (Trace x y),
-    layout_attrs : List Layout.Attr,
+    layout : [None, Some Layout.Layout],
 }
     implements [Inspect]
 
@@ -32,7 +32,7 @@ Trace x y : [
 empty : Chart x y
 empty = @Chart {
     traces: [],
-    layout_attrs: [],
+    layout: None,
 }
 
 to_json : Chart x y -> Str where x implements Inspect, y implements Inspect
@@ -48,14 +48,21 @@ to_json = \@Chart chart ->
                 Pie inner -> Pie.to_str inner
         |> Str.joinWith ",\n"
 
-    layout_str = Layout.from_attrs chart.layout_attrs
+    layout_str =
+        when chart.layout is
+            None -> ""
+            Some inner -> Layout.to_str inner
 
-    "{\"data\":[$(traces_str)],$(layout_str)}"
+    "{\"data\":[$(traces_str)],\"layout\":$(layout_str)}"
 
 to_html : Chart x y -> Str where x implements Inspect, y implements Inspect
 to_html = \@Chart inner ->
 
-    title = Layout.get_title inner.layout_attrs |> Result.withDefault "My Chart"
+    title =
+        default_title = "My Chart"
+        when inner.layout is
+            None -> default_title
+            Some layout -> Layout.get_title layout |> Result.withDefault default_title
 
     template
     |> Str.replaceFirst "{{CHART_JSON}}" (to_json (@Chart inner))
@@ -77,6 +84,6 @@ add_pie_chart : Chart x y, Pie.Trace x y -> Chart x y
 add_pie_chart = \@Chart inner, trace ->
     @Chart { inner & traces: List.append inner.traces (Pie trace) }
 
-with_layout : Chart x y, List Layout.Attr -> Chart x y
-with_layout = \@Chart inner, layout_attrs ->
-    @Chart { inner & layout_attrs }
+with_layout : Chart x y, Layout.Layout -> Chart x y
+with_layout = \@Chart inner, layout ->
+    @Chart { inner & layout: Some layout }
