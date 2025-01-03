@@ -9,6 +9,7 @@ examples/donut
 examples/equation-sine
 examples/equation-cosine
 examples/scatter
+examples/line
 
 *.html
 *.tar.gz
