@@ -6,6 +6,7 @@ examples/bar-chart
 examples/horizontal-bar-chart
 examples/pie
 examples/donut
+examples/equation-sine
 
 *.html
 *.tar.gz

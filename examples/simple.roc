@@ -27,27 +27,29 @@ main! = \_ ->
         Font.size? 18,
     ]
 
-    data : List (Str, F64)
+    data : List { x : Str, y : F64 }
     data = [
-        ("Apples", 2.1),
-        ("Oranges", 3),
-        ("Bananas", 4),
+        { x: "Apples", y: 2.1 },
+        { x: "Oranges", y: 3 },
+        { x: "Bananas", y: 4 },
     ]
 
+    scatter : Scatter.Trace Str F64
     scatter =
-        Scatter.new data
-        |> Scatter.with_name "Fruit"
-        |> Scatter.with_mode? "lines+markers"
-        |> Scatter.with_marker [
-            Marker.size 15.0,
-            Marker.symbol? "diamond",
-            Marker.color (rgba 124 56 245 255),
-        ]
-        |> Scatter.with_line [
-            Line.width 2.0,
-            Line.color (rgba 124 56 245 150),
-            Line.dash? "dash",
-        ]
+        Scatter.new? {
+            data,
+            mode: "lines+markers",
+            marker: [
+                Marker.size 15.0,
+                Marker.symbol? "diamond",
+                Marker.color (rgba 124 56 245 255),
+            ],
+            line: [
+                Line.width 2.0,
+                Line.color (rgba 124 56 245 150),
+                Line.dash? "dash",
+            ],
+        }
 
     chart =
         Chart.empty

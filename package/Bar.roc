@@ -75,10 +75,10 @@ to_str = \@Trace data ->
     {
         "x": [$(x_str)],
         "y": [$(y_str)],
-        "type": "bar",
-        $(marker_str),
+        $(marker_str)
         $(orientation_str)
         "name": \"$(data.name)\",
-        "width": $(Num.toStr data.bar_width)
+        "width": $(Num.toStr data.bar_width),
+        "type": "bar"
     }
     """

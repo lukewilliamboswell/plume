@@ -51,18 +51,24 @@ main! = \_ ->
         Chart.empty
         |> Chart.add_scatter_chart
             (
-                Scatter.new [("Apples", 2.1), ("Oranges", 3), ("Bananas", 4)]
-                |> Scatter.with_name "Fruit"
-                |> Scatter.with_mode? "lines+markers"
-                |> Scatter.with_marker [
-                    Marker.size 15.0,
-                    Marker.symbol? "diamond",
-                ]
-                |> Scatter.with_line [
-                    Line.width 2.0,
-                    Line.color firebrick,
-                    Line.dash? "dash",
-                ]
+                Scatter.new? {
+                    data: [
+                        { x: "Apples", y: 2.1 },
+                        { x: "Oranges", y: 3 },
+                        { x: "Bananas", y: 4 },
+                    ],
+                    mode: "lines+markers",
+                    marker: [
+                        Marker.size 15.0,
+                        Marker.symbol? "diamond",
+                    ],
+                    line: [
+                        Line.width 2.0,
+                        Line.color firebrick,
+                        Line.dash? "dash",
+                    ],
+                }
+
             )
         |> Chart.add_bar_chart
             (
