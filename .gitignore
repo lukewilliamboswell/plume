@@ -2,6 +2,7 @@ examples/hello
 examples/sankey
 examples/budget
 examples/simple
+examples/bar-chart
 
 *.html
 *.tar.gz
