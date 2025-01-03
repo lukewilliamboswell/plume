@@ -14,38 +14,32 @@ import plume.Layout
 import plume.Font
 import plume.Axis
 import plume.Title
-import plume.Color exposing [Color]
+import plume.Color
 
 main! = \_ ->
 
-    fuscia : Color
     fuscia = Color.hex? "#ff00ff"
-
-    purple : Color
     purple = Color.rgba 124 56 245 150
-
-    firebrick : Color
     firebrick = Color.named? "FireBrick"
 
-    title_font : Title.Attr
-    title_font = Title.font [
-        Font.family "Courier New, monospace",
-        Font.size? 24,
-        Font.textcase Upper,
-        Font.style Normal,
-        Font.color fuscia,
-    ]
+    title_font = Font.new? {
+        family: "Courier New, monospace",
+        size: 24,
+        textcase: Upper,
+        style: Normal,
+        color: fuscia,
+    }
 
-    axis_font = Title.font [
-        Font.family "Ringbearer",
-        Font.size? 18,
-        Font.color fuscia,
-    ]
+    axis_font = Font.new? {
+        family: "Ringbearer",
+        size: 18,
+        color: fuscia,
+    }
 
-    default_font = [
-        Font.family "'Comic Sans MS', 'Chalkboard SE', 'Comic Neue', sans-serif;",
-        Font.style Italic,
-    ]
+    global_font = Font.new? {
+        family: "'Comic Sans MS', 'Chalkboard SE', 'Comic Neue', sans-serif;",
+        style: Italic,
+    }
 
     chart : Chart Str F64
     chart =
@@ -85,22 +79,22 @@ main! = \_ ->
             (
                 Layout.new {
                     show_legend: Bool.true,
-                    global_font: default_font,
-                    title: [
-                        Title.text "snack verse FRUIT",
-                        title_font,
-                    ],
+                    global_font,
+                    title: Title.new {
+                        text: "snack verse FRUIT",
+                        font: title_font,
+                    },
                     x_axis: Axis.new {
-                        title: [
-                            Title.text "Fruit",
-                            axis_font,
-                        ],
+                        title: Title.new {
+                            text: "Fruit",
+                            font: axis_font,
+                        },
                     },
                     y_axis: Axis.new {
-                        title: [
-                            Title.text "Snacks",
-                            axis_font,
-                        ],
+                        title: Title.new {
+                            text: "Snacks",
+                            font: axis_font,
+                        },
                     },
                 }
             )

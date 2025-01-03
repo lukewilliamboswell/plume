@@ -13,7 +13,7 @@ Axis := [
     None,
     Some {
         type : Type,
-        title : List Title.Attr,
+        title : Title.Title,
         range : Str,
         color : Color.Color,
     },
@@ -31,13 +31,13 @@ Type : [
 
 new :
     {
-        title ? List Title.Attr,
+        title ? Title.Title,
         type ? Type,
         range ? Str,
         color ? Color.Color,
     }
     -> Axis
-new = \{ type ? None, title ? [], range ? "", color ? Color.rgb 68 68 68 } ->
+new = \{ type ? None, title ? Title.default, range ? "", color ? Color.rgb 68 68 68 } ->
     @Axis (Some { type, title, range, color })
 
 default : Axis
@@ -48,7 +48,7 @@ to_str = \@Axis outer ->
     when outer is
         None -> ""
         Some inner ->
-            title_str = Title.from_attrs inner.title
+            title_str = Title.to_str inner.title
 
             # TODO check this is valid
             range_str = if Str.isEmpty inner.range then "" else "\"range\":$(inner.range)"

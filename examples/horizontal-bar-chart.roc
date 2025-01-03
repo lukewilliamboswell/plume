@@ -42,9 +42,9 @@ main! = \_ ->
         |> Chart.with_layout
             (
                 Layout.new {
-                    title: [
-                        Title.text "Roc Programmers by Country",
-                    ],
+                    title: Title.new {
+                        text: "Roc Programmers by Country",
+                    },
                 }
             )
 

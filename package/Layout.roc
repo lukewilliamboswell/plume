@@ -10,8 +10,8 @@ import Font
 import Axis
 
 Layout := {
-    global_font : List Font.Attr,
-    title : List Title.Attr,
+    global_font : Font.Font,
+    title : Title.Title,
     x_axis : Axis.Axis,
     y_axis : Axis.Axis,
     show_legend : Bool,
@@ -20,14 +20,14 @@ Layout := {
 
 new :
     {
-        global_font ? List Font.Attr,
-        title ? List Title.Attr,
+        global_font ? Font.Font,
+        title ? Title.Title,
         x_axis ? Axis.Axis,
         y_axis ? Axis.Axis,
         show_legend ? Bool,
     }
     -> Layout
-new = \{ global_font ? [], title ? [], x_axis ? Axis.default, y_axis ? Axis.default, show_legend ? Bool.false } ->
+new = \{ global_font ? Font.default, title ? Title.default, x_axis ? Axis.default, y_axis ? Axis.default, show_legend ? Bool.false } ->
     @Layout {
         global_font,
         title,
@@ -43,7 +43,7 @@ get_title = \@Layout { title } ->
 to_str : Layout -> Str
 to_str = \@Layout inner ->
 
-    global_font_str = Font.from_attrs inner.global_font
+    global_font_str = Font.to_str inner.global_font
 
     x_axis_str =
         str = Axis.to_str inner.x_axis
@@ -59,7 +59,7 @@ to_str = \@Layout inner ->
         else
             "\"yaxis\":$(str)"
 
-    title_str = Title.from_attrs inner.title
+    title_str = Title.to_str inner.title
 
     show_legend_str =
         if inner.show_legend then

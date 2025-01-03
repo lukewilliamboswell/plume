@@ -1,105 +1,114 @@
 module [
-    Attr,
-    from_attrs,
-    family,
-    size,
-    color,
-    shadow,
-    style,
-    textcase,
-    variant,
+    Font,
+    default,
+    new,
+    to_str,
 ]
 
 # https://plotly.com/javascript/reference/layout/
 
 import Color
 
-Attr := [
-    Family Str,
-    Size F32,
-    Color Color.Color,
-    Shadow [None, Auto],
-    Style [Normal, Italic],
-    TextCase [Normal, Upper, Lower],
-    Variant [Normal, SmallCaps, PetiteCaps, Unicase, AllSmallCaps, AllPetiteCaps],
+Style : [Normal, Italic]
+TextCase : [Normal, Upper, Lower]
+Variant : [Normal, SmallCaps, PetiteCaps, Unicase, AllSmallCaps, AllPetiteCaps]
+
+Font := [
+    None,
+    Some {
+        family : Str,
+        size : F32,
+        color : Color.Color,
+        shadow : [None, Auto],
+        style : Style,
+        textcase : TextCase,
+        variant : Variant,
+    },
 ]
     implements [Inspect]
 
-## HTML font family - the typeface that will be applied by the web browser
-family : Str -> Attr
-family = \s -> @Attr (Family s)
+default : Font
+default = @Font None
 
-## Font size
-size : F32 -> Result Attr [InvalidSize Str]
-size = \f32 ->
+new :
+    {
+        family ? Str,
+        size ? F32,
+        color ? Color.Color,
+        shadow ? [None, Auto],
+        style ? Style,
+        textcase ? TextCase,
+        variant ? Variant,
+    }
+    -> Result Font _
+new = \{ family ? "", size ? 12.0, color ? Color.rgb 0 0 0, shadow ? None, style ? Normal, textcase ? Normal, variant ? Normal } ->
+    Ok
+        (
+            @Font
+                (
+                    Some {
+                        family,
+                        size: parse_size? size,
+                        color,
+                        shadow,
+                        style,
+                        textcase,
+                        variant,
+                    }
+                )
+        )
+
+parse_size : F32 -> Result F32 [InvalidSize Str]
+parse_size = \f32 ->
     if f32 >= 1.0 then
-        Ok (@Attr (Size f32))
+        Ok f32
     else
         Err (InvalidSize "Font size must be equal to or greater than 1.0")
 
-color : Color.Color -> Attr
-color = \c -> @Attr (Color c)
+to_str : Font -> Str
+to_str = \@Font maybe_font ->
+    when maybe_font is
+        None -> ""
+        Some inner ->
+            fields_str =
+                [
+                    "\"family\":\"$(inner.family)\"",
+                    "\"size\":$(Num.toStr inner.size)",
+                    "\"color\":\"$(Color.to_str inner.color)\"",
+                    "\"shadow\":\"$(shadow_to_str inner.shadow)\"",
+                    "\"style\":\"$(style_to_str inner.style)\"",
+                    "\"textcase\":\"$(textcase_to_str inner.textcase)\"",
+                    "\"variant\":\"$(variant_to_str inner.variant)\"",
+                ]
+                |> Str.joinWith ","
 
-## Sets the shape and color of the shadow behind text.
-## `Auto` places minimal shadow and applies contrast text font color.
-## See https://developer.mozilla.org/en-US/docs/Web/CSS/text-shadow for additional options.
-## Default `None`
-shadow : [None, Auto] -> Attr
-shadow = \s -> @Attr (Shadow s)
+            "\"font\":{$(fields_str)}"
 
-## Sets whether a font should be styled with a normal or italic face from its family.
-## Default `Normal`
-style : [Normal, Italic] -> Attr
-style = \s -> @Attr (Style s)
+shadow_to_str : [None, Auto] -> Str
+shadow_to_str = \shadow ->
+    when shadow is
+        None -> "none"
+        Auto -> "auto"
 
-## Sets capitalization of text. It can be used to make text appear in all-uppercase or all-lowercase.
-## Default `Normal`
-textcase : [Normal, Upper, Lower] -> Attr
-textcase = \s -> @Attr (TextCase s)
+style_to_str : Style -> Str
+style_to_str = \style ->
+    when style is
+        Normal -> "normal"
+        Italic -> "italic"
 
-## Sets the variant of the font.
-## Default `Normal`
-variant : [Normal, SmallCaps, PetiteCaps, Unicase, AllSmallCaps, AllPetiteCaps] -> Attr
-variant = \s -> @Attr (Variant s)
+textcase_to_str : TextCase -> Str
+textcase_to_str = \textcase ->
+    when textcase is
+        Normal -> "normal"
+        Upper -> "upper"
+        Lower -> "lower"
 
-# internal use
-from_attrs : List Attr -> Str
-from_attrs = \attrs ->
-    if List.isEmpty attrs then
-        ""
-    else
-        fields_str =
-            attrs
-            |> List.map \@Attr inner ->
-                when inner is
-                    Family s -> "\"family\":\"$(s)\""
-                    Size s -> "\"size\":$(Num.toStr s)"
-                    Color c -> "\"color\":\"$(Color.to_str c)\""
-                    Shadow s ->
-                        when s is
-                            None -> "\"shadow\":\"none\""
-                            Auto -> "\"shadow\":\"auto\""
-
-                    Style s ->
-                        when s is
-                            Normal -> "\"style\":\"normal\""
-                            Italic -> "\"style\":\"italic\""
-
-                    TextCase s ->
-                        when s is
-                            Normal -> "\"textcase\":\"normal\""
-                            Upper -> "\"textcase\":\"upper\""
-                            Lower -> "\"textcase\":\"lower\""
-
-                    Variant s ->
-                        when s is
-                            Normal -> "\"variant\":\"normal\""
-                            SmallCaps -> "\"variant\":\"small-caps\""
-                            PetiteCaps -> "\"variant\":\"petite-caps\""
-                            Unicase -> "\"variant\":\"unicase\""
-                            AllSmallCaps -> "\"variant\":\"all-small-caps\""
-                            AllPetiteCaps -> "\"variant\":\"all-petite-caps\""
-
-            |> Str.joinWith ","
-
-        "\"font\":{$(fields_str)}"
+variant_to_str : Variant -> Str
+variant_to_str = \variant ->
+    when variant is
+        Normal -> "normal"
+        SmallCaps -> "small-caps"
+        PetiteCaps -> "petite-caps"
+        Unicase -> "unicase"
+        AllSmallCaps -> "all-small-caps"
+        AllPetiteCaps -> "all-petite-caps"

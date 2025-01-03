@@ -31,19 +31,9 @@ main! = \_ ->
         |> Chart.with_layout
             (
                 Layout.new {
-                    title: [
-                        Title.text "House Price vs Size",
-                    ],
-                    x_axis: Axis.new {
-                        title: [
-                            Title.text "Square Meters",
-                        ],
-                    },
-                    y_axis: Axis.new {
-                        title: [
-                            Title.text "Price in Millions ($USD)",
-                        ],
-                    },
+                    title: Title.new { text: "House Price vs Size" },
+                    x_axis: Axis.new { title: Title.new { text: "Square Meters" } },
+                    y_axis: Axis.new { title: Title.new { text: "Price in Millions ($USD)" } },
                 }
             )
 

@@ -1,45 +1,44 @@
 module [
-    Attr,
-    from_attrs,
-    text,
+    Title,
+    new,
+    default,
+    to_str,
     get_text,
-    font,
 ]
 
 import Font
 
-Attr := [
-    Text Str,
-    Font (List Font.Attr),
+Title := [
+    None,
+    Some {
+        text : Str,
+        font : Font.Font,
+    },
 ]
     implements [Inspect]
 
-text : Str -> Attr
-text = \s -> @Attr (Text s)
+new : { text : Str, font ? Font.Font } -> Title
+new = \{ text, font ? Font.default } ->
+    @Title (Some { text, font })
 
-font : List Font.Attr -> Attr
-font = \font_attrs -> @Attr (Font font_attrs)
+default : Title
+default = @Title None
 
-get_text : List Attr -> Result Str [NotFound]
-get_text = \attrs ->
-    List.keepOks attrs \@Attr attr ->
-        when attr is
-            Text str -> Ok str
-            _ -> Err NotFound
-    |> List.first
-    |> Result.mapErr \ListWasEmpty -> NotFound
+get_text : Title -> Result Str [NotFound]
+get_text = \@Title inner ->
+    when inner is
+        None -> Err NotFound
+        Some { text } -> Ok text
 
-from_attrs : List Attr -> Str
-from_attrs = \title_attrs ->
-    if List.isEmpty title_attrs then
-        ""
-    else
-        fields_str =
-            title_attrs
-            |> List.map \@Attr inner ->
-                when inner is
-                    Text s -> "\"text\":\"$(s)\""
-                    Font font_attrs -> Font.from_attrs font_attrs
+to_str : Title -> Str
+to_str = \@Title inner ->
+    when inner is
+        None -> ""
+        Some { text, font } ->
+            [
+                Font.to_str font,
+                "\"text\":\"$(text)\"",
+            ]
+            |> List.dropIf Str.isEmpty
             |> Str.joinWith ","
-
-        "\"title\":{$(fields_str)}"
+            |> \str -> "\"title\":{$(str)}"

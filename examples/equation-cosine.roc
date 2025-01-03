@@ -28,14 +28,7 @@ main! = \_ ->
     chart =
         Chart.empty
         |> Chart.add_scatter_chart scatter
-        |> Chart.with_layout
-            (
-                Layout.new {
-                    title: [
-                        Title.text "y = Math.cos(x)",
-                    ],
-                }
-            )
+        |> Chart.with_layout (Layout.new { title: Title.new { text: "y = Math.cos(x)" } })
 
     File.write_utf8!? (Chart.to_html chart) "out.html"
 
