@@ -12,8 +12,6 @@ import plume.Layout
 import plume.Title
 import plume.Color
 
-## Original example inspired by the [w3 schools Plotly.js tutorial](https://www.w3schools.com/js/js_graphics_plotly.asp)
-## Thank you https://www.w3schools.com
 main! = \_ ->
 
     light_red = Color.rgba 255 0 0 153
@@ -43,7 +41,7 @@ main! = \_ ->
         |> Chart.add_bar_chart bar
         |> Chart.with_layout [
             Layout.title [
-                Title.text "World Wide Wine Production",
+                Title.text "Roc Programmers by Country",
             ],
         ]
 

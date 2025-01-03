@@ -10,8 +10,6 @@ import plume.Pie
 import plume.Layout
 import plume.Title
 
-## Original example inspired by the [w3 schools Plotly.js tutorial](https://www.w3schools.com/js/js_graphics_plotly.asp)
-## Thank you https://www.w3schools.com
 main! = \_ ->
 
     donut : Pie.Trace Str F64
@@ -32,7 +30,7 @@ main! = \_ ->
         |> Chart.add_pie_chart donut
         |> Chart.with_layout [
             Layout.title [
-                Title.text "World Wide Wine Production",
+                Title.text "Roc Programmers by Country",
             ],
         ]
 
