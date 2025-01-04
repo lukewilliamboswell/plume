@@ -1,13 +1,7 @@
 package [
     Bar,
     Chart,
-    Color,
-    Font,
     Layout,
-    Line,
-    Marker,
-    Pie,
-    Sankey,
+    #Marker,
     Scatter,
-    Title,
 ] {}
