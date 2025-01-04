@@ -3,14 +3,14 @@ app [main!] {
     plume: "../package/main.roc",
 }
 
-import cli.File
 import plume.Chart exposing [Chart]
 
-main! = \_ ->
+main! = \_ -> Ok {}
 
+expect
     chart : Chart Str F64
     chart = Chart.empty
 
-    File.write_utf8!? (Chart.to_html chart) "out.html"
+    dbg (Chart.to_html chart)
 
-    Ok {}
+    1 == 2
