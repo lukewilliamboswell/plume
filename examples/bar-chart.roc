@@ -3,14 +3,15 @@ app [main!] {
     plume: "../package/main.roc",
 }
 
-import plume.Chart exposing [Chart]
+import plume.Scatter
 
 main! = \_ -> Ok {}
 
 expect
-    chart : Chart Str F64
-    chart = Chart.empty
 
-    dbg (Chart.to_html chart)
+    _ =
+        when Scatter.new { data : []} is
+            Ok asdf -> Scatter.to_str asdf
+            Err _ -> crash ""
 
     1 == 2

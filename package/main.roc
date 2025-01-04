@@ -1,6 +1,1 @@
-package [
-    Bar,
-    Chart,
-    Layout,
-    Scatter,
-] {}
+package [] {}
