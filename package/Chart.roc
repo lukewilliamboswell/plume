@@ -27,17 +27,13 @@ empty = @Chart {
 to_json : Chart x y -> Str where x implements Inspect, y implements Inspect
 to_json = \@Chart chart ->
 
+    # cant remove why, it's unsued??
     traces_str =
         chart.traces
         |> List.map \trace ->
             when trace is
                 Scatter inner -> Scatter.to_str inner
         |> Str.joinWith ",\n"
-
-    layout_str =
-        when chart.layout is
-            None -> ""
-            Some inner -> Layout.to_str inner
 
     ""
 

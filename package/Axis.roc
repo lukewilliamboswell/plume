@@ -1,24 +1,14 @@
 module [
     Axis,
     new,
-    #default,
     to_str,
 ]
 
-Axis := [
-    None,
-    Some {
-        type : Str,
-        range : Str,
-    },
-]
+Axis := Str
 
-new :{type ? Str,range ? Str,} -> Axis
-new = \{ type ? "", range ? ""} ->
-    @Axis (Some { type,  range })
-
-#default : Axis/
-#default = @Axis None
+new :{} -> Axis
+new = \{} ->
+    @Axis ""
 
 to_str : Axis -> Str
 to_str = \_ -> ""
