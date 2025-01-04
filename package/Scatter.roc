@@ -36,24 +36,16 @@ new = \{ data, orientation ? Vertical, name ? ""} ->
 to_str : Trace x y -> Str where x implements Inspect, y implements Inspect
 to_str = \@Trace inner ->
 
-    # NOT USED ... BUT WE CAN"T REMOVE??
+    # NOT USED ... BUT WE CAN"T REMOVE, OR BUG GOES AWAY??
     data2 = List.walk inner.data ([], []) \(xs, ys), { x, y } -> (List.append xs x, List.append ys y)
 
-    x_str = ""
-    y_str = ""
-
+    # NOT USED ... BUT WE CAN"T REMOVE, OR BUG GOES AWAY??
     orientation_str = if inner.orientation == Vertical then "\"orientation\":\"v\"" else "\"orientation\":\"h\""
 
+    # NOT USED ... BUT WE CAN"T REMOVE, OR BUG GOES AWAY??
     name_str = if Str.isEmpty inner.name then "" else "\"name\":\"$(inner.name)\""
 
+    # NOT USED ... BUT WE CAN"T REMOVE, OR BUG GOES AWAY??
     marker_str = Marker.to_str inner.marker
 
-    [
-        "\"x\":[$(x_str)]",
-        "\"y\":[$(y_str)]",
-        marker_str,
-        "$(orientation_str)",
-        "$(name_str)",
-        "\"type\":\"scatter\"",
-    ]
-    |> Str.joinWith ","
+    ""
