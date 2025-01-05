@@ -18,7 +18,7 @@ import Pie
 
 Chart x y := {
     traces : List (Trace x y),
-    layout : [None, Some Layout.Layout],
+    layout : [None, Some (Layout.Layout x y)],
 }
     implements [Inspect]
 
@@ -84,6 +84,6 @@ add_pie_chart : Chart x y, Pie.Trace x y -> Chart x y
 add_pie_chart = \@Chart inner, trace ->
     @Chart { inner & traces: List.append inner.traces (Pie trace) }
 
-with_layout : Chart x y, Layout.Layout -> Chart x y
+with_layout : Chart x y, Layout.Layout x y -> Chart x y
 with_layout = \@Chart inner, layout ->
     @Chart { inner & layout: Some layout }

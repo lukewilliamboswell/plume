@@ -32,8 +32,14 @@ main! = \_ ->
             (
                 Layout.new {
                     title: Title.new { text: "House Price vs Size" },
-                    x_axis: Axis.new { title: Title.new { text: "Square Meters" } },
-                    y_axis: Axis.new { title: Title.new { text: "Price in Millions ($USD)" } },
+                    x_axis: Axis.new {
+                        title: Title.new { text: "Square Meters" },
+                        range: Set { min: 40, max: 160 },
+                    },
+                    y_axis: Axis.new {
+                        title: Title.new { text: "Price in Millions ($USD)" },
+                        range: Set { min: 5, max: 16 },
+                    },
                 }
             )
 
