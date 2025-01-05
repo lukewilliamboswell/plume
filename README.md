@@ -49,11 +49,17 @@ main! = \_ ->
         size: 18,
     }
 
-    data : List { x : Str, y : F64 }
+    marker = Marker.new? {
+        size: 15.0,
+        symbol: "diamond",
+        color: rgba 124 56 245 255,
+    }
+
+    data : List { x : Str, y : F64, marker : _ }
     data = [
-        { x: "Apples", y: 2.1 },
-        { x: "Oranges", y: 3 },
-        { x: "Bananas", y: 4 },
+        { x: "Apples", y: 2.1, marker },
+        { x: "Oranges", y: 3, marker },
+        { x: "Bananas", y: 4, marker },
     ]
 
     scatter : Scatter.Trace Str F64
@@ -61,16 +67,11 @@ main! = \_ ->
         Scatter.new? {
             data,
             mode: "lines+markers",
-            marker: [
-                Marker.size 15.0,
-                Marker.symbol? "diamond",
-                Marker.color (rgba 124 56 245 255),
-            ],
-            line: [
-                Line.width 2.0,
-                Line.color (rgba 124 56 245 150),
-                Line.dash? "dash",
-            ],
+            line: Line.new {
+                width: 2.0,
+                color: rgba 124 56 245 150,
+                dash: Dash,
+            },
         }
 
     chart =
@@ -87,7 +88,6 @@ main! = \_ ->
     File.write_utf8!? (Chart.to_html chart) "out.html"
 
     Cmd.exec! "open" ["out.html"]
-
 ```
 
 ## Examples
