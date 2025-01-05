@@ -21,7 +21,7 @@ $ roc simple.roc
 ```roc
 app [main!] {
     cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.18.0/0APbwVN1_p1mJ96tXjaoiUCr8NBGamr8G8Ac_DrXR-o.tar.br",
-    plume: "<<<REPLACE WITH RELEACE URL>>>",
+    plume: "<<<REPLACE WITH PACKAGE URL>>>",
 }
 
 import cli.File
@@ -55,17 +55,14 @@ main! = \_ ->
         color: rgba 124 56 245 255,
     }
 
-    data : List { x : Str, y : F64, marker : _ }
-    data = [
-        { x: "Apples", y: 2.1, marker },
-        { x: "Oranges", y: 3, marker },
-        { x: "Bananas", y: 4, marker },
-    ]
-
     scatter : Scatter.Trace Str F64
     scatter =
         Scatter.new? {
-            data,
+            data: [
+                { x: "Apples", y: 2.1, marker },
+                { x: "Oranges", y: 3, marker },
+                { x: "Bananas", y: 4, marker },
+            ],
             mode: "lines+markers",
             line: Line.new {
                 width: 2.0,
