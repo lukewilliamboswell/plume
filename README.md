@@ -142,3 +142,9 @@ main! = \_ ->
 [Source Code](examples/sankey.roc)
 
 ![Screenshot of the sankey chart example](examples/demo-images/sankey.png)
+
+### Scatter
+
+[Source Code](examples/scatter.roc)
+
+![Screenshot of the scatter chart example](examples/demo-images/scatter.png)
