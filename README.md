@@ -14,7 +14,7 @@ $ roc simple.roc
 
 ### Screenshot
 
-![Screenshot of the simple app](examples/simple.png)
+![Screenshot of the simple app](examples/demo-images/simple.png)
 
 ### `simple.roc`
 
@@ -89,3 +89,59 @@ main! = \_ ->
     Cmd.exec! "open" ["out.html"]
 
 ```
+
+## Examples
+
+### Bar
+
+[Source Code](examples/bar-chart.roc)
+
+![Screenshot of the bar chart example](examples/demo-images/bar-chart.png)
+
+### Bubble
+
+[Source Code](examples/bubble.roc)
+
+![Screenshot of the bubble chart example](examples/demo-images/bubble.png)
+
+### Donut
+
+[Source Code](examples/donut.roc)
+
+![Screenshot of the donut chart example](examples/demo-images/donut.png)
+
+### Equation Cosine
+
+[Source Code](examples/equation-cosine.roc)
+
+![Screenshot of the equation cosine chart example](examples/demo-images/equation-cosine.png)
+
+### Equation Sine
+
+[Source Code](examples/equation-sine.roc)
+
+![Screenshot of the equation sine chart example](examples/demo-images/equation-sine.png)
+
+### Horizontal Bar
+
+[Source Code](examples/horizontal-bar-chart.roc)
+
+![Screenshot of the horizontal bar chart example](examples/demo-images/horizontal-bar-chart.png)
+
+### Line
+
+[Source Code](examples/line.roc)
+
+![Screenshot of the line chart example](examples/demo-images/line.png)
+
+### Pie
+
+[Source Code](examples/pie.roc)
+
+![Screenshot of the pie chart example](examples/demo-images/pie.png)
+
+### Sankey
+
+[Source Code](examples/sankey.roc)
+
+![Screenshot of the sankey chart example](examples/demo-images/sankey.png)

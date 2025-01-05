@@ -16,20 +16,18 @@ main! = \_ ->
 
     blue = Color.rgb 0 0 255
 
-    data : List (Str, F64)
-    data = [
-        ("Italy", 55),
-        ("France", 49),
-        ("Spain", 44),
-        ("USA", 24),
-        ("Australia", 15),
-    ]
+    marker = Marker.new? { color: blue }
 
     bar : Bar.Trace Str F64
     bar =
         Bar.new? {
-            data,
-            marker: Marker.new? { color: blue },
+            data: [
+                { x: "Italy", y: 55, marker },
+                { x: "France", y: 49, marker },
+                { x: "Spain", y: 44, marker },
+                { x: "USA", y: 24, marker },
+                { x: "Australia", y: 15, marker },
+            ],
         }
 
     chart : Chart Str F64

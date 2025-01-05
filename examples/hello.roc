@@ -44,6 +44,7 @@ main! = \_ ->
     marker = Marker.new? {
         size: 15.0,
         symbol: "diamond",
+        color: purple,
     }
 
     chart : Chart Str F64
@@ -69,7 +70,7 @@ main! = \_ ->
         |> Chart.add_bar_chart
             (
                 Bar.new? {
-                    data: [("Tuna", 0.3), ("Muesli Bar", 2.5), ("Carrot", 5.5)],
+                    data: [{ x: "Tuna", y: 0.3, marker }, { x: "Muesli Bar", y: 2.5, marker }, { x: "Carrot", y: 5.5, marker }],
                     bar_width: 0.9,
                 }
             )

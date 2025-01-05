@@ -18,7 +18,7 @@ main! = \_ ->
     scatter_shapes =
         Scatter.new? {
             data: [
-                { x: 1, y: 15, marker: Marker.new? { size: 20, symbol: "circle"} },
+                { x: 1, y: 15, marker: Marker.new? { size: 20, symbol: "circle" } },
                 { x: 2, y: 30, marker: Marker.new? { size: 20, symbol: "square" } },
                 { x: 3, y: 45, marker: Marker.new? { size: 20, symbol: "diamond" } },
                 { x: 4, y: 60, marker: Marker.new? { size: 20, symbol: "cross" } },
