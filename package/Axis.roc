@@ -9,12 +9,21 @@ module [
 import Title
 import Color
 
-Axis := [
+## For raw see https://plotly.com/javascript/reference/layout/xaxis/#layout-xaxis-range
+Range value : [
+    Auto,
+    Fixed,
+    Reversed,
+    Set { min : value, max : value },
+    Raw Str,
+]
+
+Axis value := [
     None,
     Some {
         type : Type,
         title : Title.Title,
-        range : Str,
+        range : Range value,
         color : Color.Color,
     },
 ]
@@ -33,25 +42,30 @@ new :
     {
         title ? Title.Title,
         type ? Type,
-        range ? Str,
+        range ? Range value,
         color ? Color.Color,
     }
-    -> Axis
-new = \{ type ? None, title ? Title.default, range ? "", color ? Color.rgb 68 68 68 } ->
+    -> Axis value
+new = \{ type ? None, range ? Auto, title ? Title.default, color ? Color.rgb 68 68 68 } ->
     @Axis (Some { type, title, range, color })
 
-default : Axis
-default = @Axis None
+default : {} -> Axis value
+default = \{} -> @Axis None
 
-to_str : Axis -> Str
+to_str : Axis value -> Str where value implements Inspect
 to_str = \@Axis outer ->
     when outer is
         None -> ""
         Some inner ->
             title_str = Title.to_str inner.title
 
-            # TODO check this is valid
-            range_str = if Str.isEmpty inner.range then "" else "\"range\":$(inner.range)"
+            range_str =
+                when inner.range is
+                    Auto -> "\"autorange\":true"
+                    Fixed -> "\"fixedrange\":true"
+                    Reversed -> "\"autorange\":\"reversed\""
+                    Set { min, max } -> "\"range\":[$(Inspect.toStr min), $(Inspect.toStr max)]"
+                    Raw raw -> "\"range\":$(raw)"
 
             type_str = if inner.type == None then "" else "\"type\": \"$(axis_type_to_str inner.type)\""
 

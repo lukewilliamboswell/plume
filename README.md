@@ -14,7 +14,7 @@ $ roc simple.roc
 
 ### Screenshot
 
-![Screenshot of the simple app](examples/simple.png)
+![Screenshot of the simple app](examples/demo-images/simple.png)
 
 ### `simple.roc`
 
@@ -49,11 +49,17 @@ main! = \_ ->
         size: 18,
     }
 
-    data : List { x : Str, y : F64 }
+    marker = Marker.new? {
+        size: 15.0,
+        symbol: "diamond",
+        color: rgba 124 56 245 255,
+    }
+
+    data : List { x : Str, y : F64, marker : _ }
     data = [
-        { x: "Apples", y: 2.1 },
-        { x: "Oranges", y: 3 },
-        { x: "Bananas", y: 4 },
+        { x: "Apples", y: 2.1, marker },
+        { x: "Oranges", y: 3, marker },
+        { x: "Bananas", y: 4, marker },
     ]
 
     scatter : Scatter.Trace Str F64
@@ -61,16 +67,11 @@ main! = \_ ->
         Scatter.new? {
             data,
             mode: "lines+markers",
-            marker: [
-                Marker.size 15.0,
-                Marker.symbol? "diamond",
-                Marker.color (rgba 124 56 245 255),
-            ],
-            line: [
-                Line.width 2.0,
-                Line.color (rgba 124 56 245 150),
-                Line.dash? "dash",
-            ],
+            line: Line.new {
+                width: 2.0,
+                color: rgba 124 56 245 150,
+                dash: Dash,
+            },
         }
 
     chart =
@@ -87,5 +88,60 @@ main! = \_ ->
     File.write_utf8!? (Chart.to_html chart) "out.html"
 
     Cmd.exec! "open" ["out.html"]
-
 ```
+
+## Examples
+
+### Bar
+
+[Source Code](examples/bar-chart.roc)
+
+![Screenshot of the bar chart example](examples/demo-images/bar-chart.png)
+
+### Bubble
+
+[Source Code](examples/bubble.roc)
+
+![Screenshot of the bubble chart example](examples/demo-images/bubble.png)
+
+### Donut
+
+[Source Code](examples/donut.roc)
+
+![Screenshot of the donut chart example](examples/demo-images/donut.png)
+
+### Equation Cosine
+
+[Source Code](examples/equation-cosine.roc)
+
+![Screenshot of the equation cosine chart example](examples/demo-images/equation-cosine.png)
+
+### Equation Sine
+
+[Source Code](examples/equation-sine.roc)
+
+![Screenshot of the equation sine chart example](examples/demo-images/equation-sine.png)
+
+### Horizontal Bar
+
+[Source Code](examples/horizontal-bar-chart.roc)
+
+![Screenshot of the horizontal bar chart example](examples/demo-images/horizontal-bar-chart.png)
+
+### Line
+
+[Source Code](examples/line.roc)
+
+![Screenshot of the line chart example](examples/demo-images/line.png)
+
+### Pie
+
+[Source Code](examples/pie.roc)
+
+![Screenshot of the pie chart example](examples/demo-images/pie.png)
+
+### Sankey
+
+[Source Code](examples/sankey.roc)
+
+![Screenshot of the sankey chart example](examples/demo-images/sankey.png)

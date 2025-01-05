@@ -1,47 +1,49 @@
 module [
-    Attr,
-    width,
-    color,
-    dash,
-    from_attrs,
+    Line,
+    Type,
+    new,
+    dash_to_str,
+    to_str,
 ]
 
 import Color
 
-Attr := [
-    Width F32,
-    Color Color.Color,
-    Dash Str,
-]
+Type : [Solid, Dot, Dash, LongDash, DashDot, LongDashDot]
+
+dash_to_str : Type -> Str
+dash_to_str = \dash ->
+    when dash is
+        Solid -> "solid"
+        Dot -> "dot"
+        Dash -> "dash"
+        LongDash -> "longdash"
+        DashDot -> "dashdot"
+        LongDashDot -> "longdashdot"
+
+Line := {
+    width : F32,
+    color : Color.Color,
+    dash : Type,
+}
     implements [Inspect]
 
-width : F32 -> Attr
-width = \f32 -> @Attr (Width f32)
+new :
+    {
+        width ? F32,
+        color ? Color.Color,
+        dash ? Type,
+    }
+    -> Line
+new = \{ width ? 2.0, color ? Color.rgb 31 119 180, dash ? Solid } ->
+    @Line { width, color, dash }
 
-color : Color.Color -> Attr
-color = \c -> @Attr (Color c)
-
-dash : Str -> Result Attr [InvalidDash Str]
-dash = \str ->
-    valid = Set.fromList ["solid", "dot", "dash", "longdash", "dashdot", "longdashdot"]
-
-    if Set.contains valid str then
-        Ok (@Attr (Dash str))
-    else
-        Err (InvalidDash "Invalid dash style $(str), expected one of: $(Inspect.toStr valid)")
-
-from_attrs : List Attr -> Str
-from_attrs = \attrs ->
-    if List.isEmpty attrs then
-        ""
-    else
-        fields_str =
-            attrs
-            |> List.map \@Attr inner ->
-                when inner is
-                    Width s -> "\"width\":$(Num.toStr s)"
-                    Dash s -> "\"dash\":\"$(s)\""
-                    Color c -> "\"color\":\"$(Color.to_str c)\""
-            |> Str.joinWith ","
-
-        "\"line\":{$(fields_str)}"
+to_str : Line -> Str
+to_str = \@Line inner ->
+    [
+        "\"width\":$(Num.toStr inner.width)",
+        "\"color\":\"$(Color.to_str inner.color)\"",
+        "\"dash\":\"$(dash_to_str inner.dash)\"",
+    ]
+    |> List.dropIf Str.isEmpty
+    |> Str.joinWith ","
+    |> \str -> "\"line\":{$(str)}"

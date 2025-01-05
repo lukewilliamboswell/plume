@@ -10,6 +10,7 @@ examples/equation-sine
 examples/equation-cosine
 examples/scatter
 examples/line
+examples/bubble
 
 *.html
 *.tar.gz

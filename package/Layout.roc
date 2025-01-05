@@ -9,11 +9,11 @@ import Title
 import Font
 import Axis
 
-Layout := {
+Layout x y := {
     global_font : Font.Font,
     title : Title.Title,
-    x_axis : Axis.Axis,
-    y_axis : Axis.Axis,
+    x_axis : Axis.Axis x,
+    y_axis : Axis.Axis y,
     show_legend : Bool,
 }
     implements [Inspect]
@@ -22,12 +22,12 @@ new :
     {
         global_font ? Font.Font,
         title ? Title.Title,
-        x_axis ? Axis.Axis,
-        y_axis ? Axis.Axis,
+        x_axis ? Axis.Axis x,
+        y_axis ? Axis.Axis y,
         show_legend ? Bool,
     }
-    -> Layout
-new = \{ global_font ? Font.default, title ? Title.default, x_axis ? Axis.default, y_axis ? Axis.default, show_legend ? Bool.false } ->
+    -> Layout x y
+new = \{ global_font ? Font.default, title ? Title.default, x_axis ? Axis.default {}, y_axis ? Axis.default {}, show_legend ? Bool.false } ->
     @Layout {
         global_font,
         title,
@@ -36,11 +36,11 @@ new = \{ global_font ? Font.default, title ? Title.default, x_axis ? Axis.defaul
         show_legend,
     }
 
-get_title : Layout -> Result Str [NotFound]
+get_title : Layout x y -> Result Str [NotFound]
 get_title = \@Layout { title } ->
     Title.get_text title
 
-to_str : Layout -> Str
+to_str : Layout x y -> Str where x implements Inspect, y implements Inspect
 to_str = \@Layout inner ->
 
     global_font_str = Font.to_str inner.global_font

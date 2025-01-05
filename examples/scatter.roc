@@ -10,17 +10,39 @@ import plume.Scatter
 import plume.Layout
 import plume.Title
 import plume.Axis
+import plume.Marker
+import plume.Color
 
 main! = \_ ->
 
-    data : List { x : F64, y : F64 }
-    data =
-        [{ x: 50, y: 7 }, { x: 60, y: 8 }, { x: 70, y: 8 }, { x: 80, y: 9 }, { x: 90, y: 9 }, { x: 100, y: 9 }, { x: 110, y: 10 }, { x: 120, y: 11 }, { x: 130, y: 14 }, { x: 140, y: 14 }, { x: 150, y: 15 }]
+    up = Marker.new? {
+        size: 20,
+        color: Color.named? "Green",
+        symbol: "triangle-up",
+    }
+
+    down = Marker.new? {
+        size: 20,
+        color: Color.named? "Red",
+        symbol: "triangle-down",
+    }
 
     scatter : Scatter.Trace F64 F64
     scatter =
         Scatter.new? {
-            data,
+            data: [
+                { x: 50, y: 7, marker: up },
+                { x: 60, y: 8, marker: up },
+                { x: 70, y: 8, marker: up },
+                { x: 80, y: 9, marker: up },
+                { x: 90, y: 9, marker: up },
+                { x: 100, y: 9, marker: up },
+                { x: 110, y: 10, marker: down },
+                { x: 120, y: 11, marker: down },
+                { x: 130, y: 14, marker: down },
+                { x: 140, y: 14, marker: down },
+                { x: 150, y: 15, marker: down },
+            ],
             mode: "markers",
         }
 
@@ -32,8 +54,14 @@ main! = \_ ->
             (
                 Layout.new {
                     title: Title.new { text: "House Price vs Size" },
-                    x_axis: Axis.new { title: Title.new { text: "Square Meters" } },
-                    y_axis: Axis.new { title: Title.new { text: "Price in Millions ($USD)" } },
+                    x_axis: Axis.new {
+                        title: Title.new { text: "Square Meters" },
+                        range: Set { min: 40, max: 160 },
+                    },
+                    y_axis: Axis.new {
+                        title: Title.new { text: "Price in Millions ($USD)" },
+                        range: Set { min: 5, max: 16 },
+                    },
                 }
             )
 

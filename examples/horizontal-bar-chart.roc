@@ -16,23 +16,19 @@ main! = \_ ->
 
     light_red = Color.rgba 255 0 0 153
 
-    data : List (F64, Str)
-    data = [
-        (55, "Italy"),
-        (49, "France"),
-        (44, "Spain"),
-        (24, "USA"),
-        (15, "Australia"),
-    ]
+    marker = Marker.new? { color: light_red }
 
     bar : Bar.Trace F64 Str
     bar =
         Bar.new? {
-            data,
-            orientation: Horizontal,
-            marker: [
-                Marker.color light_red,
+            data: [
+                { x: 55, y: "Italy", marker },
+                { x: 49, y: "France", marker },
+                { x: 44, y: "Spain", marker },
+                { x: 24, y: "USA", marker },
+                { x: 15, y: "Australia", marker },
             ],
+            orientation: Horizontal,
         }
 
     chart : Chart F64 Str
