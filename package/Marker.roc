@@ -1,28 +1,37 @@
 module [
-    Attr,
-    size,
-    color,
-    symbol,
-    from_attrs,
+    Marker,
+    new,
+    to_str,
 ]
 
 import Color
 
-Attr := [
-    Size F32,
-    Color Color.Color,
-    Symbol Str,
-]
+Marker := {
+    size : F32,
+    color : Color.Color,
+    symbol : Str,
+}
     implements [Inspect]
 
-size : F32 -> Attr
-size = \f32 -> @Attr (Size f32)
+new :
+    {
+        color ? Color.Color,
+        size ? F32,
+        symbol ? Str,
+    }
+    -> Result Marker _
+new = \{ color ? Color.rgb 31 119 180, size ? 6.0, symbol ? "0" } ->
+    Ok
+        (
+            @Marker {
+                size,
+                color,
+                symbol: parse_symbol? symbol,
+            }
+        )
 
-color : Color.Color -> Attr
-color = \c -> @Attr (Color c)
-
-symbol : Str -> Result Attr [InvalidSymbol]
-symbol = \s ->
+parse_symbol : Str -> Result Str [InvalidSymbol]
+parse_symbol = \s ->
 
     valid_symbols = Set.fromList [
         "0",
@@ -514,22 +523,17 @@ symbol = \s ->
     ]
 
     if Set.contains valid_symbols s then
-        Ok (@Attr (Symbol s))
+        Ok s
     else
         Err InvalidSymbol
 
-from_attrs : List Attr -> Str
-from_attrs = \attrs ->
-    if List.isEmpty attrs then
-        ""
-    else
-        fields_str =
-            attrs
-            |> List.map \@Attr inner ->
-                when inner is
-                    Size s -> "\"size\":$(Num.toStr s)"
-                    Color c -> "\"color\":\"$(Color.to_str c)\""
-                    Symbol s -> "\"symbol\":\"$(s)\""
-            |> Str.joinWith ","
-
-        "\"marker\":{$(fields_str)}"
+to_str : Marker -> Str
+to_str = \@Marker inner ->
+    [
+        "\"size\":$(Num.toStr inner.size)",
+        "\"color\":\"$(Color.to_str inner.color)\"",
+        "\"symbol\":\"$(inner.symbol)\"",
+    ]
+    |> List.dropIf Str.isEmpty
+    |> Str.joinWith ","
+    |> \str -> "\"marker\":{$(str)}"
