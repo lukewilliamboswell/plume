@@ -12,7 +12,7 @@ Trace x y := {
     data : List { x : x, y : y, marker : Marker.Marker },
     orientation : [Vertical, Horizontal],
     name : Str,
-    line_attrs : List Line.Attr,
+    line : Line.Line,
     mode : Str,
 }
     implements [Inspect]
@@ -22,18 +22,18 @@ new :
         data : List { x : x, y : y, marker : Marker.Marker },
         orientation ? [Vertical, Horizontal],
         name ? Str,
-        line ? List Line.Attr,
+        line ? Line.Line,
         mode ? Str,
     }
     -> Result (Trace x y) _
-new = \{ data, orientation ? Vertical, name ? "", line ? [], mode ? "lines" } ->
+new = \{ data, orientation ? Vertical, name ? "", line ? Line.new {}, mode ? "lines" } ->
     Ok
         (
             @Trace {
                 data,
                 orientation,
                 name,
-                line_attrs: line,
+                line,
                 mode: check_valid_mode? mode,
             }
         )
@@ -82,7 +82,7 @@ to_str = \@Trace inner ->
 
     orientation_str = if inner.orientation == Vertical then "\"orientation\":\"v\"" else "\"orientation\":\"h\""
 
-    line_str = Line.from_attrs inner.line_attrs
+    line_str = Line.to_str inner.line
 
     mode_str = "\"mode\":\"$(inner.mode)\""
 

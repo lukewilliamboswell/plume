@@ -46,11 +46,11 @@ main! = \_ ->
         Scatter.new? {
             data,
             mode: "lines+markers",
-            line: [
-                Line.width 2.0,
-                Line.color (rgba 124 56 245 150),
-                Line.dash? "dash",
-            ],
+            line: Line.new {
+                width: 2.0,
+                color: rgba 124 56 245 150,
+                dash: Dash,
+            },
         }
 
     chart =

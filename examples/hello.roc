@@ -59,11 +59,11 @@ main! = \_ ->
                         { x: "Bananas", y: 4, marker },
                     ],
                     mode: "lines+markers",
-                    line: [
-                        Line.width 2.0,
-                        Line.color firebrick,
-                        Line.dash? "dash",
-                    ],
+                    line: Line.new {
+                        width: 2.0,
+                        color: firebrick,
+                        dash: Dash,
+                    },
                 }
 
             )
