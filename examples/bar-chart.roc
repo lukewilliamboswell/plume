@@ -29,9 +29,7 @@ main! = \_ ->
     bar =
         Bar.new? {
             data,
-            marker: [
-                Marker.color blue,
-            ],
+            marker: Marker.new? { color: blue },
         }
 
     chart : Chart Str F64

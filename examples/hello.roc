@@ -41,6 +41,11 @@ main! = \_ ->
         style: Italic,
     }
 
+    marker = Marker.new? {
+        size: 15.0,
+        symbol: "diamond",
+    }
+
     chart : Chart Str F64
     chart =
         Chart.empty
@@ -48,15 +53,11 @@ main! = \_ ->
             (
                 Scatter.new? {
                     data: [
-                        { x: "Apples", y: 2.1 },
-                        { x: "Oranges", y: 3 },
-                        { x: "Bananas", y: 4 },
+                        { x: "Apples", y: 2.1, marker },
+                        { x: "Oranges", y: 3, marker },
+                        { x: "Bananas", y: 4, marker },
                     ],
                     mode: "lines+markers",
-                    marker: [
-                        Marker.size 15.0,
-                        Marker.symbol? "diamond",
-                    ],
                     line: [
                         Line.width 2.0,
                         Line.color firebrick,
@@ -70,9 +71,6 @@ main! = \_ ->
                 Bar.new? {
                     data: [("Tuna", 0.3), ("Muesli Bar", 2.5), ("Carrot", 5.5)],
                     bar_width: 0.9,
-                    marker: [
-                        Marker.color purple,
-                    ],
                 }
             )
         |> Chart.with_layout

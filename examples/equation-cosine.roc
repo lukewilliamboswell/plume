@@ -9,13 +9,16 @@ import plume.Chart exposing [Chart]
 import plume.Scatter
 import plume.Layout
 import plume.Title
+import plume.Marker
 
 main! = \_ ->
 
-    data : List { x : F64, y : F64 }
+    marker = Marker.new? {}
+
+    data : List { x : F64, y : F64, marker : _ }
     data =
         List.range { start: At 0, end: Before 10, step: 0.2 }
-        |> List.map \x -> { x, y: Num.sin x }
+        |> List.map \x -> { x, y: Num.sin x, marker }
 
     scatter : Scatter.Trace F64 F64
     scatter =

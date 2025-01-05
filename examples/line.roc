@@ -10,12 +10,15 @@ import plume.Scatter
 import plume.Layout
 import plume.Title
 import plume.Axis
+import plume.Marker
 
 main! = \_ ->
 
-    data : List { x : F64, y : F64 }
+    marker = Marker.new? {}
+
+    data : List { x : F64, y : F64, marker : _ }
     data =
-        [{ x: 50, y: 7 }, { x: 60, y: 8 }, { x: 70, y: 8 }, { x: 80, y: 9 }, { x: 90, y: 9 }, { x: 100, y: 9 }, { x: 110, y: 10 }, { x: 120, y: 11 }, { x: 130, y: 14 }, { x: 140, y: 14 }, { x: 150, y: 15 }]
+        [{ x: 50, y: 7, marker }, { x: 60, y: 8, marker }, { x: 70, y: 8, marker }, { x: 80, y: 9, marker }, { x: 90, y: 9, marker }, { x: 100, y: 9, marker }, { x: 110, y: 10, marker }, { x: 120, y: 11, marker }, { x: 130, y: 14, marker }, { x: 140, y: 14, marker }, { x: 150, y: 15, marker }]
 
     scatter : Scatter.Trace F64 F64
     scatter =

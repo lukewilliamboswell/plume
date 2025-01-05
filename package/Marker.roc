@@ -2,6 +2,9 @@ module [
     Marker,
     new,
     to_str,
+    get_color,
+    get_size,
+    get_symbol,
 ]
 
 import Color
@@ -20,7 +23,7 @@ new :
         symbol ? Str,
     }
     -> Result Marker _
-new = \{ color ? Color.rgb 31 119 180, size ? 6.0, symbol ? "0" } ->
+new = \{ color ? Color.rgb 31 119 180, size ? 6, symbol ? "0" } ->
     Ok
         (
             @Marker {
@@ -29,6 +32,15 @@ new = \{ color ? Color.rgb 31 119 180, size ? 6.0, symbol ? "0" } ->
                 symbol: parse_symbol? symbol,
             }
         )
+
+get_color : Marker -> Color.Color
+get_color = \@Marker inner -> inner.color
+
+get_size : Marker -> F32
+get_size = \@Marker inner -> inner.size
+
+get_symbol : Marker -> Str
+get_symbol = \@Marker inner -> inner.symbol
 
 parse_symbol : Str -> Result Str [InvalidSymbol]
 parse_symbol = \s ->
