@@ -70,7 +70,11 @@ main! = \_ ->
         |> Chart.add_bar_chart
             (
                 Bar.new? {
-                    data: [{ x: "Tuna", y: 0.3, marker }, { x: "Muesli Bar", y: 2.5, marker }, { x: "Carrot", y: 5.5, marker }],
+                    data: [
+                        { x: "Tuna", y: 0.3, marker },
+                        { x: "Muesli Bar", y: 2.5, marker },
+                        { x: "Carrot", y: 5.5, marker },
+                    ],
                     bar_width: 0.9,
                 }
             )
@@ -97,10 +101,6 @@ main! = \_ ->
                     },
                 }
             )
-
-    # we can inspect a Chart using `dbg` to
-    # help with debugging
-    dbg chart
 
     File.write_utf8!? (Chart.to_html chart) "out.html"
 

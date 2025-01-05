@@ -27,14 +27,22 @@ main! = \_ ->
         symbol: "triangle-down",
     }
 
-    data : List { x : F64, y : F64, marker : _ }
-    data =
-        [{ x: 50, y: 7, marker: up }, { x: 60, y: 8, marker: up }, { x: 70, y: 8, marker: up }, { x: 80, y: 9, marker: up }, { x: 90, y: 9, marker: up }, { x: 100, y: 9, marker: up }, { x: 110, y: 10, marker: down }, { x: 120, y: 11, marker: down }, { x: 130, y: 14, marker: down }, { x: 140, y: 14, marker: down }, { x: 150, y: 15, marker: down }]
-
     scatter : Scatter.Trace F64 F64
     scatter =
         Scatter.new? {
-            data,
+            data: [
+                { x: 50, y: 7, marker: up },
+                { x: 60, y: 8, marker: up },
+                { x: 70, y: 8, marker: up },
+                { x: 80, y: 9, marker: up },
+                { x: 90, y: 9, marker: up },
+                { x: 100, y: 9, marker: up },
+                { x: 110, y: 10, marker: down },
+                { x: 120, y: 11, marker: down },
+                { x: 130, y: 14, marker: down },
+                { x: 140, y: 14, marker: down },
+                { x: 150, y: 15, marker: down },
+            ],
             mode: "markers",
         }
 
