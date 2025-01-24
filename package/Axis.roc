@@ -21,11 +21,11 @@ Range value : [
 Axis value := [
     None,
     Some {
-        type : Type,
-        title : Title.Title,
-        range : Range value,
-        color : Color.Color,
-    },
+            type : Type,
+            title : Title.Title,
+            range : Range value,
+            color : Color.Color,
+        },
 ]
 
 Type : [
@@ -40,36 +40,36 @@ Type : [
 
 new :
     {
-        title ? Title.Title,
-        type ? Type,
-        range ? Range value,
-        color ? Color.Color,
+        title ?? Title.Title,
+        type ?? Type,
+        range ?? Range value,
+        color ?? Color.Color,
     }
     -> Axis value
-new = \{ type ? None, range ? Auto, title ? Title.default, color ? Color.rgb 68 68 68 } ->
-    @Axis (Some { type, title, range, color })
+new = |{ type ?? None, range ?? Auto, title ?? Title.default, color ?? Color.rgb(68, 68, 68) }|
+    @Axis(Some({ type, title, range, color }))
 
 default : {} -> Axis value
-default = \{} -> @Axis None
+default = |{}| @Axis(None)
 
 to_str : Axis value -> Str where value implements Inspect
-to_str = \@Axis outer ->
+to_str = |@Axis(outer)|
     when outer is
         None -> ""
-        Some inner ->
-            title_str = Title.to_str inner.title
+        Some(inner) ->
+            title_str = Title.to_str(inner.title)
 
             range_str =
                 when inner.range is
                     Auto -> "\"autorange\":true"
                     Fixed -> "\"fixedrange\":true"
                     Reversed -> "\"autorange\":\"reversed\""
-                    Set { min, max } -> "\"range\":[$(Inspect.toStr min), $(Inspect.toStr max)]"
-                    Raw raw -> "\"range\":$(raw)"
+                    Set({ min, max }) -> "\"range\":[${Inspect.to_str(min)}, ${Inspect.to_str(max)}]"
+                    Raw(raw) -> "\"range\":${raw}"
 
-            type_str = if inner.type == None then "" else "\"type\": \"$(axis_type_to_str inner.type)\""
+            type_str = if inner.type == None then "" else "\"type\": \"${axis_type_to_str(inner.type)}\""
 
-            color_str = "\"color\":\"$(Color.to_str inner.color)\""
+            color_str = "\"color\":\"${Color.to_str(inner.color)}\""
 
             [
                 range_str,
@@ -77,12 +77,12 @@ to_str = \@Axis outer ->
                 title_str,
                 color_str,
             ]
-            |> List.dropIf Str.isEmpty
-            |> Str.joinWith ","
-            |> \str -> "{$(str)}"
+            |> List.drop_if(Str.is_empty)
+            |> Str.join_with(",")
+            |> |str| "{${str}}"
 
 axis_type_to_str : Type -> Str
-axis_type_to_str = \axis_type ->
+axis_type_to_str = |axis_type|
     when axis_type is
         None -> ""
         Auto -> "auto"
