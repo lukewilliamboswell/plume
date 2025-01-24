@@ -1,0 +1,507 @@
+# LLM Prompt for Documentation
+
+## Documentation
+
+### Bar
+
+#### Trace
+
+**Type Annotation**
+
+#### new
+
+**Type Annotation**
+
+```roc
+
+    {
+        data : List
+            {
+                x : x,
+                y : y,
+                marker : Marker.Marker
+            },
+        orientation ?
+            [
+                Vertical,
+                Horizontal
+            ],
+        name ? Str,
+        bar_width ? F32
+    }
+    -> Result (Trace x y)
+```
+
+#### with_name
+
+**Type Annotation**
+
+```roc
+Trace x y, Str -> Trace x y
+```
+
+#### with_bar_width
+
+**Type Annotation**
+
+```roc
+Trace x y, F32 -> Result (Trace x y) [OutOfRange Str]
+```
+
+#### to_str
+
+**Type Annotation**
+
+```roc
+Trace x y -> Str
+    where x implements Inspect, y implements Inspect
+```
+
+### Chart
+
+#### Chart
+
+**Type Annotation**
+
+#### empty
+
+**Type Annotation**
+
+```roc
+{} -> Chart x y
+```
+
+#### to_html
+
+**Type Annotation**
+
+```roc
+Chart x y -> Str
+    where x implements Inspect, y implements Inspect
+```
+
+#### add_bar_chart
+
+**Type Annotation**
+
+```roc
+Chart x y, Bar.Trace x y -> Chart x y
+```
+
+#### add_scatter_chart
+
+**Type Annotation**
+
+```roc
+Chart x y, Scatter.Trace x y -> Chart x y
+```
+
+#### add_sankey_chart
+
+**Type Annotation**
+
+```roc
+Chart x y, Sankey.Trace x y -> Chart x y
+```
+
+#### add_pie_chart
+
+**Type Annotation**
+
+```roc
+Chart x y, Pie.Trace x y -> Chart x y
+```
+
+#### with_layout
+
+**Type Annotation**
+
+```roc
+Chart x y, Layout.Layout x y -> Chart x y
+```
+
+### Color
+
+#### Color
+
+**Type Annotation**
+
+#### rgb
+
+**Type Annotation**
+
+```roc
+
+    U8,
+    U8,
+    U8
+    -> Color
+```
+
+#### rgba
+
+**Type Annotation**
+
+```roc
+
+    U8,
+    U8,
+    U8,
+    U8
+    -> Color
+```
+
+#### hex
+
+**Type Annotation**
+
+```roc
+Str -> Result Color [InvalidHex Str]
+```
+
+#### to_str
+
+**Type Annotation**
+
+```roc
+Color -> Str
+```
+
+#### named
+
+**Type Annotation**
+
+```roc
+Str -> Result Color [UnknownColor Str]
+```
+
+### Font
+
+#### Font
+
+**Type Annotation**
+
+#### default
+
+**Type Annotation**
+
+```roc
+Font
+```
+
+#### new
+
+**Type Annotation**
+
+```roc
+
+    {
+        family ? Str,
+        size ? F32,
+        color ? Color.Color,
+        shadow ?
+            [
+                None,
+                Auto
+            ],
+        style ? Style,
+        textcase ? TextCase,
+        variant ? Variant
+    }
+    -> Result Font
+```
+
+#### to_str
+
+**Type Annotation**
+
+```roc
+Font -> Str
+```
+
+### Layout
+
+#### Layout
+
+**Type Annotation**
+
+#### new
+
+**Type Annotation**
+
+```roc
+
+    {
+        global_font ? Font.Font,
+        title ? Title.Title,
+        x_axis ? Axis.Axis x,
+        y_axis ? Axis.Axis y,
+        show_legend ? Bool
+    }
+    -> Layout x y
+```
+
+#### get_title
+
+**Type Annotation**
+
+```roc
+Layout x y -> Result Str [NotFound]
+```
+
+#### to_str
+
+**Type Annotation**
+
+```roc
+Layout x y -> Str
+    where x implements Inspect, y implements Inspect
+```
+
+### Line
+
+#### Type
+
+**Type Annotation**
+
+```roc
+
+    [
+        Solid,
+        Dot,
+        Dash,
+        LongDash,
+        DashDot,
+        LongDashDot
+    ]
+```
+
+#### dash_to_str
+
+**Type Annotation**
+
+```roc
+Type -> Str
+```
+
+#### Line
+
+**Type Annotation**
+
+#### new
+
+**Type Annotation**
+
+```roc
+
+    {
+        width ? F32,
+        color ? Color.Color,
+        dash ? Type
+    }
+    -> Line
+```
+
+#### to_str
+
+**Type Annotation**
+
+```roc
+Line -> Str
+```
+
+### Marker
+
+#### Marker
+
+**Type Annotation**
+
+#### new
+
+**Type Annotation**
+
+```roc
+
+    {
+        color ? Color.Color,
+        size ? F32,
+        symbol ? Str
+    }
+    -> Result Marker
+```
+
+#### get_color
+
+**Type Annotation**
+
+```roc
+Marker -> Color.Color
+```
+
+#### get_size
+
+**Type Annotation**
+
+```roc
+Marker -> F32
+```
+
+#### get_symbol
+
+**Type Annotation**
+
+```roc
+Marker -> Str
+```
+
+#### to_str
+
+**Type Annotation**
+
+```roc
+Marker -> Str
+```
+
+### Pie
+
+#### Trace
+
+**Type Annotation**
+
+#### new
+
+**Type Annotation**
+
+```roc
+
+    {
+        data : List
+            {
+                label : label,
+                value : value
+            },
+        hole ? F32,
+        name ? Str
+    }
+    -> Result (Trace label value)
+```
+
+#### to_str
+
+**Type Annotation**
+
+```roc
+Trace label value -> Str
+    where label implements Inspect, value implements Inspect
+```
+
+### Sankey
+
+#### Trace
+
+**Type Annotation**
+
+#### new
+
+**Type Annotation**
+
+```roc
+
+    {
+        nodes : List (Node node),
+        links : List (Link node value)
+    }
+    -> Trace node value
+```
+
+#### to_str
+
+**Type Annotation**
+
+```roc
+Trace node value -> Str
+    where node implements Inspect, value implements Inspect
+```
+
+### Scatter
+
+#### Trace
+
+**Type Annotation**
+
+#### new
+
+**Type Annotation**
+
+```roc
+
+    {
+        data : List
+            {
+                x : x,
+                y : y,
+                marker : Marker.Marker
+            },
+        orientation ?
+            [
+                Vertical,
+                Horizontal
+            ],
+        name ? Str,
+        line ? Line.Line,
+        mode ? Str
+    }
+    -> Result (Trace x y)
+```
+
+#### to_str
+
+**Type Annotation**
+
+```roc
+Trace x y -> Str
+    where x implements Inspect, y implements Inspect
+```
+
+### Title
+
+#### Title
+
+**Type Annotation**
+
+#### new
+
+**Type Annotation**
+
+```roc
+
+    {
+        text : Str,
+        font ? Font.Font
+    }
+    -> Title
+```
+
+#### default
+
+**Type Annotation**
+
+```roc
+Title
+```
+
+#### get_text
+
+**Type Annotation**
+
+```roc
+Title -> Result Str [NotFound]
+```
+
+#### to_str
+
+**Type Annotation**
+
+```roc
+Title -> Str
+```
