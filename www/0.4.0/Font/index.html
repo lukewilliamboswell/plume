@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Font - Documentation</title>
+    <!-- <meta name="description" content="TODO populate this based on the module's description"> -->
+    <meta name="viewport" content="width=device-width" />
+    <base href="/plume/0.4.0/" />
+    <script type="text/javascript" src="search.js" defer></script>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="icon" href="/favicon.svg" />
+    <!-- Safari ignores rel="icon" and only respects rel="mask-icon". It will render the SVG with
+    fill="#000" unless this `color` attribute here is hardcoded (not a CSS `var()`) to override it.
+  -->
+    <link rel="mask-icon" href="/favicon.svg" color="#7d59dd" />
+    <link rel="prefetch" href="Bar"/>
+    <link rel="prefetch" href="Chart"/>
+    <link rel="prefetch" href="Color"/>
+    <link rel="prefetch" href="Font"/>
+    <link rel="prefetch" href="Layout"/>
+    <link rel="prefetch" href="Line"/>
+    <link rel="prefetch" href="Marker"/>
+    <link rel="prefetch" href="Pie"/>
+    <link rel="prefetch" href="Sankey"/>
+    <link rel="prefetch" href="Scatter"/>
+    <link rel="prefetch" href="Title"/>
+</head>
+
+<body>
+    <nav id="sidebar-nav">
+        <div class="pkg-and-logo">
+            <a class="logo" href="/" aria-labelledby="logo-link">
+                <svg viewBox="0 -6 51 58" fill="none" xmlns="http://www.w3.org/2000/svg" aria-labelledby="logo-link"
+                    role="img">
+                    <title id="logo-link">Return to Roc packages</title>
+                    <polygon role="presentation"
+                        points="0,0 23.8834,3.21052 37.2438,19.0101 45.9665,16.6324 50.5,22 45,22 44.0315,26.3689 26.4673,39.3424 27.4527,45.2132 17.655,53 23.6751,22.7086" />
+                </svg>
+            </a>
+            <h1 class="pkg-full-name" ><a href="/plume/0.4.0/" >Documentation</a></h1>
+            <button class="menu-toggle" aria-label="Toggle sidebar">
+                <svg viewBox="0 0 72 72" id="emoji" xmlns="http://www.w3.org/2000/svg" fill="currentcolor">
+                    <g id="SVGRepo_iconCarrier">
+                        <g id="color"></g>
+                        <g id="hair"></g>
+                        <g id="skin"></g>
+                        <g id="skin-shadow"></g>
+                        <g id="line">
+                            <line x1="16" x2="56" y1="26" y2="26" fill="none" stroke="currentColor"
+                                stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2">
+                            </line>
+                            <line x1="16" x2="56" y1="36" y2="36" fill="none" stroke="currentColor"
+                                stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2">
+                            </line>
+                            <line x1="16" x2="56" y1="46" y2="46" fill="none" stroke="currentColor"
+                                stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2">
+                            </line>
+                        </g>
+                    </g>
+                </svg>
+            </button>
+        </div>
+        <div class="module-links-container">
+            <div class="module-links">
+                <div class="sidebar-entry" ><a class="sidebar-module-link" href="Bar" data-module-name="Bar" ><span >Bar</span><button class="entry-toggle" >▶</button></a><div class="sidebar-sub-entries" ><a href="Bar#Trace" >Trace</a><a href="Bar#new" >new</a><a href="Bar#with_name" >with_name</a><a href="Bar#with_bar_width" >with_bar_width</a><a href="Bar#to_str" >to_str</a></div></div><div class="sidebar-entry" ><a class="sidebar-module-link" href="Chart" data-module-name="Chart" ><span >Chart</span><button class="entry-toggle" >▶</button></a><div class="sidebar-sub-entries" ><a href="Chart#Chart" >Chart</a><a href="Chart#empty" >empty</a><a href="Chart#to_html" >to_html</a><a href="Chart#add_bar_chart" >add_bar_chart</a><a href="Chart#add_scatter_chart" >add_scatter_chart</a><a href="Chart#add_sankey_chart" >add_sankey_chart</a><a href="Chart#add_pie_chart" >add_pie_chart</a><a href="Chart#with_layout" >with_layout</a></div></div><div class="sidebar-entry" ><a class="sidebar-module-link" href="Color" data-module-name="Color" ><span >Color</span><button class="entry-toggle" >▶</button></a><div class="sidebar-sub-entries" ><a href="Color#Color" >Color</a><a href="Color#rgb" >rgb</a><a href="Color#rgba" >rgba</a><a href="Color#hex" >hex</a><a href="Color#to_str" >to_str</a><a href="Color#named" >named</a></div></div><div class="sidebar-entry" ><a class="sidebar-module-link" href="Font" data-module-name="Font" ><span >Font</span><button class="entry-toggle" >▶</button></a><div class="sidebar-sub-entries" ><a href="Font#Font" >Font</a><a href="Font#default" >default</a><a href="Font#new" >new</a><a href="Font#to_str" >to_str</a></div></div><div class="sidebar-entry" ><a class="sidebar-module-link" href="Layout" data-module-name="Layout" ><span >Layout</span><button class="entry-toggle" >▶</button></a><div class="sidebar-sub-entries" ><a href="Layout#Layout" >Layout</a><a href="Layout#new" >new</a><a href="Layout#get_title" >get_title</a><a href="Layout#to_str" >to_str</a></div></div><div class="sidebar-entry" ><a class="sidebar-module-link" href="Line" data-module-name="Line" ><span >Line</span><button class="entry-toggle" >▶</button></a><div class="sidebar-sub-entries" ><a href="Line#Type" >Type</a><a href="Line#dash_to_str" >dash_to_str</a><a href="Line#Line" >Line</a><a href="Line#new" >new</a><a href="Line#to_str" >to_str</a></div></div><div class="sidebar-entry" ><a class="sidebar-module-link" href="Marker" data-module-name="Marker" ><span >Marker</span><button class="entry-toggle" >▶</button></a><div class="sidebar-sub-entries" ><a href="Marker#Marker" >Marker</a><a href="Marker#new" >new</a><a href="Marker#get_color" >get_color</a><a href="Marker#get_size" >get_size</a><a href="Marker#get_symbol" >get_symbol</a><a href="Marker#to_str" >to_str</a></div></div><div class="sidebar-entry" ><a class="sidebar-module-link" href="Pie" data-module-name="Pie" ><span >Pie</span><button class="entry-toggle" >▶</button></a><div class="sidebar-sub-entries" ><a href="Pie#Trace" >Trace</a><a href="Pie#new" >new</a><a href="Pie#to_str" >to_str</a></div></div><div class="sidebar-entry" ><a class="sidebar-module-link" href="Sankey" data-module-name="Sankey" ><span >Sankey</span><button class="entry-toggle" >▶</button></a><div class="sidebar-sub-entries" ><a href="Sankey#Trace" >Trace</a><a href="Sankey#new" >new</a><a href="Sankey#to_str" >to_str</a></div></div><div class="sidebar-entry" ><a class="sidebar-module-link" href="Scatter" data-module-name="Scatter" ><span >Scatter</span><button class="entry-toggle" >▶</button></a><div class="sidebar-sub-entries" ><a href="Scatter#Trace" >Trace</a><a href="Scatter#new" >new</a><a href="Scatter#to_str" >to_str</a></div></div><div class="sidebar-entry" ><a class="sidebar-module-link" href="Title" data-module-name="Title" ><span >Title</span><button class="entry-toggle" >▶</button></a><div class="sidebar-sub-entries" ><a href="Title#Title" >Title</a><a href="Title#new" >new</a><a href="Title#default" >default</a><a href="Title#get_text" >get_text</a><a href="Title#to_str" >to_str</a></div></div>
+            </div>
+        </div>
+    </nav>
+    <main>
+        <form id="module-search-form">
+            <button class="menu-toggle" aria-label="Toggle sidebar">
+                <svg viewBox="0 0 72 72" id="emoji" xmlns="http://www.w3.org/2000/svg" fill="currentcolor">
+                    <g id="SVGRepo_iconCarrier">
+                        <g id="color"></g>
+                        <g id="hair"></g>
+                        <g id="skin"></g>
+                        <g id="skin-shadow"></g>
+                        <g id="line">
+                            <line x1="16" x2="56" y1="26" y2="26" fill="none" stroke="currentColor"
+                                stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2">
+                            </line>
+                            <line x1="16" x2="56" y1="36" y2="36" fill="none" stroke="currentColor"
+                                stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2">
+                            </line>
+                            <line x1="16" x2="56" y1="46" y2="46" fill="none" stroke="currentColor"
+                                stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2">
+                            </line>
+                        </g>
+                    </g>
+                </svg>
+            </button>
+            <input id="module-search" aria-labelledby="search-label" type="text"
+                placeholder="Search Documentation" role="combobox" aria-autocomplete="list"
+                aria-expanded="false" aria-controls="search-type-ahead" />
+            <label for="module-search" id="search-label">(press
+                <span id="search-shortcut-key" aria-hidden="true">s</span>)</label>
+            <!-- Magnifying Glass icon -->
+            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" class="search-icon"
+                xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 512 512"
+                xml:space="preserve">
+                <g>
+                    <path d="M449.803,62.197C408.443,20.807,353.85-0.037,299.646-0.006C245.428-0.037,190.85,20.807,149.49,62.197
+		C108.1,103.557,87.24,158.15,87.303,212.338c-0.047,37.859,10.359,75.766,30.547,109.359L15.021,424.525
+		c-20.016,20.016-20.016,52.453,0,72.469c20,20.016,52.453,20.016,72.453,0L190.318,394.15
+		c33.578,20.203,71.5,30.594,109.328,30.547c54.203,0.047,108.797-20.797,150.156-62.188
+		c41.375-41.359,62.234-95.938,62.188-150.172C512.053,158.15,491.178,103.557,449.803,62.197z M391.818,304.541
+		c-25.547,25.531-58.672,38.125-92.172,38.188c-33.5-0.063-66.609-12.656-92.188-38.188c-25.531-25.578-38.125-58.688-38.188-92.203
+		c0.063-33.484,12.656-66.609,38.188-92.172c25.578-25.531,58.688-38.125,92.188-38.188c33.5,0.063,66.625,12.656,92.188,38.188
+		c25.531,25.563,38.125,58.688,38.188,92.172C429.959,245.854,417.365,278.963,391.818,304.541z"></path>
+                </g>
+            </svg>
+            <ul id="search-type-ahead" role="listbox" aria-label="Search Results" class="hidden">
+                <li role="option" ><a href="Bar#Trace" class="type-ahead-link" ><span class="type-ahead-module-name" >Bar</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >Trace</span></a></li><li role="option" ><a href="Bar#new" class="type-ahead-link" ><span class="type-ahead-module-name" >Bar</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >new</span><span class="type-ahead-signature" > :
+    {
+        data : List
+            {
+                x : x,
+                y : y,
+                marker : Marker.Marker
+            },
+        orientation ?
+            [
+                Vertical,
+                Horizontal
+            ],
+        name ? Str,
+        bar_width ? F32
+    }
+    -> Result (Trace x y) </span></a></li><li role="option" ><a href="Bar#with_name" class="type-ahead-link" ><span class="type-ahead-module-name" >Bar</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >with_name</span><span class="type-ahead-signature" > : Trace x y, Str -> Trace x y</span></a></li><li role="option" ><a href="Bar#with_bar_width" class="type-ahead-link" ><span class="type-ahead-module-name" >Bar</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >with_bar_width</span><span class="type-ahead-signature" > : Trace x y, F32 -> Result (Trace x y) [OutOfRange Str]</span></a></li><li role="option" ><a href="Bar#to_str" class="type-ahead-link" ><span class="type-ahead-module-name" >Bar</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >to_str</span><span class="type-ahead-signature" > : Trace x y -> Str
+    where x implements Inspect, y implements Inspect</span></a></li><li role="option" ><a href="Chart#Chart" class="type-ahead-link" ><span class="type-ahead-module-name" >Chart</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >Chart</span></a></li><li role="option" ><a href="Chart#empty" class="type-ahead-link" ><span class="type-ahead-module-name" >Chart</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >empty</span><span class="type-ahead-signature" > : {} -> Chart x y</span></a></li><li role="option" ><a href="Chart#to_html" class="type-ahead-link" ><span class="type-ahead-module-name" >Chart</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >to_html</span><span class="type-ahead-signature" > : Chart x y -> Str
+    where x implements Inspect, y implements Inspect</span></a></li><li role="option" ><a href="Chart#add_bar_chart" class="type-ahead-link" ><span class="type-ahead-module-name" >Chart</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >add_bar_chart</span><span class="type-ahead-signature" > : Chart x y, Bar.Trace x y -> Chart x y</span></a></li><li role="option" ><a href="Chart#add_scatter_chart" class="type-ahead-link" ><span class="type-ahead-module-name" >Chart</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >add_scatter_chart</span><span class="type-ahead-signature" > : Chart x y, Scatter.Trace x y -> Chart x y</span></a></li><li role="option" ><a href="Chart#add_sankey_chart" class="type-ahead-link" ><span class="type-ahead-module-name" >Chart</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >add_sankey_chart</span><span class="type-ahead-signature" > : Chart x y, Sankey.Trace x y -> Chart x y</span></a></li><li role="option" ><a href="Chart#add_pie_chart" class="type-ahead-link" ><span class="type-ahead-module-name" >Chart</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >add_pie_chart</span><span class="type-ahead-signature" > : Chart x y, Pie.Trace x y -> Chart x y</span></a></li><li role="option" ><a href="Chart#with_layout" class="type-ahead-link" ><span class="type-ahead-module-name" >Chart</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >with_layout</span><span class="type-ahead-signature" > : Chart x y, Layout.Layout x y -> Chart x y</span></a></li><li role="option" ><a href="Color#Color" class="type-ahead-link" ><span class="type-ahead-module-name" >Color</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >Color</span></a></li><li role="option" ><a href="Color#rgb" class="type-ahead-link" ><span class="type-ahead-module-name" >Color</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >rgb</span><span class="type-ahead-signature" > :
+    U8,
+    U8,
+    U8
+    -> Color</span></a></li><li role="option" ><a href="Color#rgba" class="type-ahead-link" ><span class="type-ahead-module-name" >Color</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >rgba</span><span class="type-ahead-signature" > :
+    U8,
+    U8,
+    U8,
+    U8
+    -> Color</span></a></li><li role="option" ><a href="Color#hex" class="type-ahead-link" ><span class="type-ahead-module-name" >Color</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >hex</span><span class="type-ahead-signature" > : Str -> Result Color [InvalidHex Str]</span></a></li><li role="option" ><a href="Color#to_str" class="type-ahead-link" ><span class="type-ahead-module-name" >Color</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >to_str</span><span class="type-ahead-signature" > : Color -> Str</span></a></li><li role="option" ><a href="Color#named" class="type-ahead-link" ><span class="type-ahead-module-name" >Color</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >named</span><span class="type-ahead-signature" > : Str -> Result Color [UnknownColor Str]</span></a></li><li role="option" ><a href="Font#Font" class="type-ahead-link" ><span class="type-ahead-module-name" >Font</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >Font</span></a></li><li role="option" ><a href="Font#default" class="type-ahead-link" ><span class="type-ahead-module-name" >Font</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >default</span><span class="type-ahead-signature" > : Font</span></a></li><li role="option" ><a href="Font#new" class="type-ahead-link" ><span class="type-ahead-module-name" >Font</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >new</span><span class="type-ahead-signature" > :
+    {
+        family ? Str,
+        size ? F32,
+        color ? Color.Color,
+        shadow ?
+            [
+                None,
+                Auto
+            ],
+        style ? Style,
+        textcase ? TextCase,
+        variant ? Variant
+    }
+    -> Result Font </span></a></li><li role="option" ><a href="Font#to_str" class="type-ahead-link" ><span class="type-ahead-module-name" >Font</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >to_str</span><span class="type-ahead-signature" > : Font -> Str</span></a></li><li role="option" ><a href="Layout#Layout" class="type-ahead-link" ><span class="type-ahead-module-name" >Layout</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >Layout</span></a></li><li role="option" ><a href="Layout#new" class="type-ahead-link" ><span class="type-ahead-module-name" >Layout</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >new</span><span class="type-ahead-signature" > :
+    {
+        global_font ? Font.Font,
+        title ? Title.Title,
+        x_axis ? Axis.Axis x,
+        y_axis ? Axis.Axis y,
+        show_legend ? Bool
+    }
+    -> Layout x y</span></a></li><li role="option" ><a href="Layout#get_title" class="type-ahead-link" ><span class="type-ahead-module-name" >Layout</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >get_title</span><span class="type-ahead-signature" > : Layout x y -> Result Str [NotFound]</span></a></li><li role="option" ><a href="Layout#to_str" class="type-ahead-link" ><span class="type-ahead-module-name" >Layout</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >to_str</span><span class="type-ahead-signature" > : Layout x y -> Str
+    where x implements Inspect, y implements Inspect</span></a></li><li role="option" ><a href="Line#Type" class="type-ahead-link" ><span class="type-ahead-module-name" >Line</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >Type</span><span class="type-ahead-signature" > :
+    [
+        Solid,
+        Dot,
+        Dash,
+        LongDash,
+        DashDot,
+        LongDashDot
+    ]</span></a></li><li role="option" ><a href="Line#dash_to_str" class="type-ahead-link" ><span class="type-ahead-module-name" >Line</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >dash_to_str</span><span class="type-ahead-signature" > : Type -> Str</span></a></li><li role="option" ><a href="Line#Line" class="type-ahead-link" ><span class="type-ahead-module-name" >Line</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >Line</span></a></li><li role="option" ><a href="Line#new" class="type-ahead-link" ><span class="type-ahead-module-name" >Line</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >new</span><span class="type-ahead-signature" > :
+    {
+        width ? F32,
+        color ? Color.Color,
+        dash ? Type
+    }
+    -> Line</span></a></li><li role="option" ><a href="Line#to_str" class="type-ahead-link" ><span class="type-ahead-module-name" >Line</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >to_str</span><span class="type-ahead-signature" > : Line -> Str</span></a></li><li role="option" ><a href="Marker#Marker" class="type-ahead-link" ><span class="type-ahead-module-name" >Marker</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >Marker</span></a></li><li role="option" ><a href="Marker#new" class="type-ahead-link" ><span class="type-ahead-module-name" >Marker</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >new</span><span class="type-ahead-signature" > :
+    {
+        color ? Color.Color,
+        size ? F32,
+        symbol ? Str
+    }
+    -> Result Marker </span></a></li><li role="option" ><a href="Marker#get_color" class="type-ahead-link" ><span class="type-ahead-module-name" >Marker</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >get_color</span><span class="type-ahead-signature" > : Marker -> Color.Color</span></a></li><li role="option" ><a href="Marker#get_size" class="type-ahead-link" ><span class="type-ahead-module-name" >Marker</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >get_size</span><span class="type-ahead-signature" > : Marker -> F32</span></a></li><li role="option" ><a href="Marker#get_symbol" class="type-ahead-link" ><span class="type-ahead-module-name" >Marker</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >get_symbol</span><span class="type-ahead-signature" > : Marker -> Str</span></a></li><li role="option" ><a href="Marker#to_str" class="type-ahead-link" ><span class="type-ahead-module-name" >Marker</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >to_str</span><span class="type-ahead-signature" > : Marker -> Str</span></a></li><li role="option" ><a href="Pie#Trace" class="type-ahead-link" ><span class="type-ahead-module-name" >Pie</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >Trace</span></a></li><li role="option" ><a href="Pie#new" class="type-ahead-link" ><span class="type-ahead-module-name" >Pie</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >new</span><span class="type-ahead-signature" > :
+    {
+        data : List
+            {
+                label : label,
+                value : value
+            },
+        hole ? F32,
+        name ? Str
+    }
+    -> Result (Trace label value) </span></a></li><li role="option" ><a href="Pie#to_str" class="type-ahead-link" ><span class="type-ahead-module-name" >Pie</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >to_str</span><span class="type-ahead-signature" > : Trace label value -> Str
+    where label implements Inspect, value implements Inspect</span></a></li><li role="option" ><a href="Sankey#Trace" class="type-ahead-link" ><span class="type-ahead-module-name" >Sankey</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >Trace</span></a></li><li role="option" ><a href="Sankey#new" class="type-ahead-link" ><span class="type-ahead-module-name" >Sankey</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >new</span><span class="type-ahead-signature" > :
+    {
+        nodes : List (Node node),
+        links : List (Link node value)
+    }
+    -> Trace node value</span></a></li><li role="option" ><a href="Sankey#to_str" class="type-ahead-link" ><span class="type-ahead-module-name" >Sankey</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >to_str</span><span class="type-ahead-signature" > : Trace node value -> Str
+    where node implements Inspect, value implements Inspect</span></a></li><li role="option" ><a href="Scatter#Trace" class="type-ahead-link" ><span class="type-ahead-module-name" >Scatter</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >Trace</span></a></li><li role="option" ><a href="Scatter#new" class="type-ahead-link" ><span class="type-ahead-module-name" >Scatter</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >new</span><span class="type-ahead-signature" > :
+    {
+        data : List
+            {
+                x : x,
+                y : y,
+                marker : Marker.Marker
+            },
+        orientation ?
+            [
+                Vertical,
+                Horizontal
+            ],
+        name ? Str,
+        line ? Line.Line,
+        mode ? Str
+    }
+    -> Result (Trace x y) </span></a></li><li role="option" ><a href="Scatter#to_str" class="type-ahead-link" ><span class="type-ahead-module-name" >Scatter</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >to_str</span><span class="type-ahead-signature" > : Trace x y -> Str
+    where x implements Inspect, y implements Inspect</span></a></li><li role="option" ><a href="Title#Title" class="type-ahead-link" ><span class="type-ahead-module-name" >Title</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >Title</span></a></li><li role="option" ><a href="Title#new" class="type-ahead-link" ><span class="type-ahead-module-name" >Title</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >new</span><span class="type-ahead-signature" > :
+    {
+        text : Str,
+        font ? Font.Font
+    }
+    -> Title</span></a></li><li role="option" ><a href="Title#default" class="type-ahead-link" ><span class="type-ahead-module-name" >Title</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >default</span><span class="type-ahead-signature" > : Title</span></a></li><li role="option" ><a href="Title#get_text" class="type-ahead-link" ><span class="type-ahead-module-name" >Title</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >get_text</span><span class="type-ahead-signature" > : Title -> Result Str [NotFound]</span></a></li><li role="option" ><a href="Title#to_str" class="type-ahead-link" ><span class="type-ahead-module-name" >Title</span><span class="type-ahead-module-dot" >.</span><span class="type-ahead-def-name" >to_str</span><span class="type-ahead-signature" > : Title -> Str</span></a></li>
+            </ul>
+        </form>
+        <h2 class="module-name" ><a href="/" >Font</a></h2><section><h3 id="Font" class="entry-name" ><a href="Font#Font" ><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512" fill="currentColor"><!--!
+	Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License -
+	https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
+	Copyright 2023 Fonticons, Inc. -->
+	<path
+		d="M562.8 267.7c56.5-56.5 56.5-148 0-204.5c-50-50-128.8-56.5-186.3-15.4l-1.6 1.1c-14.4 10.3-17.7 30.3-7.4 44.6s30.3 17.7 44.6 7.4l1.6-1.1c32.1-22.9 76-19.3 103.8 8.6c31.5 31.5 31.5 82.5 0 114L405.3 334.8c-31.5 31.5-82.5 31.5-114 0c-27.9-27.9-31.5-71.8-8.6-103.8l1.1-1.6c10.3-14.4 6.9-34.4-7.4-44.6s-34.4-6.9-44.6 7.4l-1.1 1.6C189.5 251.2 196 330 246 380c56.5 56.5 148 56.5 204.5 0L562.8 267.7zM43.2 244.3c-56.5 56.5-56.5 148 0 204.5c50 50 128.8 56.5 186.3 15.4l1.6-1.1c14.4-10.3 17.7-30.3 7.4-44.6s-30.3-17.7-44.6-7.4l-1.6 1.1c-32.1 22.9-76 19.3-103.8-8.6C57 372 57 321 88.5 289.5L200.7 177.2c31.5-31.5 82.5-31.5 114 0c27.9 27.9 31.5 71.8 8.6 103.9l-1.1 1.6c-10.3 14.4-6.9 34.4 7.4 44.6s34.4 6.9 44.6-7.4l1.1-1.6C416.5 260.8 410 182 360 132c-56.5-56.5-148-56.5-204.5 0L43.2 244.3z" />
+</svg></a><code><span class="upperident">Font</span></code></h3></section><section><h3 id="default" class="entry-name" ><a href="Font#default" ><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512" fill="currentColor"><!--!
+	Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License -
+	https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
+	Copyright 2023 Fonticons, Inc. -->
+	<path
+		d="M562.8 267.7c56.5-56.5 56.5-148 0-204.5c-50-50-128.8-56.5-186.3-15.4l-1.6 1.1c-14.4 10.3-17.7 30.3-7.4 44.6s30.3 17.7 44.6 7.4l1.6-1.1c32.1-22.9 76-19.3 103.8 8.6c31.5 31.5 31.5 82.5 0 114L405.3 334.8c-31.5 31.5-82.5 31.5-114 0c-27.9-27.9-31.5-71.8-8.6-103.8l1.1-1.6c10.3-14.4 6.9-34.4-7.4-44.6s-34.4-6.9-44.6 7.4l-1.1 1.6C189.5 251.2 196 330 246 380c56.5 56.5 148 56.5 204.5 0L562.8 267.7zM43.2 244.3c-56.5 56.5-56.5 148 0 204.5c50 50 128.8 56.5 186.3 15.4l1.6-1.1c14.4-10.3 17.7-30.3 7.4-44.6s-30.3-17.7-44.6-7.4l-1.6 1.1c-32.1 22.9-76 19.3-103.8-8.6C57 372 57 321 88.5 289.5L200.7 177.2c31.5-31.5 82.5-31.5 114 0c27.9 27.9 31.5 71.8 8.6 103.9l-1.1 1.6c-10.3 14.4-6.9 34.4 7.4 44.6s34.4 6.9 44.6-7.4l1.1-1.6C416.5 260.8 410 182 360 132c-56.5-56.5-148-56.5-204.5 0L43.2 244.3z" />
+</svg></a><code><span class="lowerident">default</span><span class="kw"> :</span><span class="upperident"> Font</span></code></h3></section><section><h3 id="new" class="entry-name" ><a href="Font#new" ><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512" fill="currentColor"><!--!
+	Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License -
+	https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
+	Copyright 2023 Fonticons, Inc. -->
+	<path
+		d="M562.8 267.7c56.5-56.5 56.5-148 0-204.5c-50-50-128.8-56.5-186.3-15.4l-1.6 1.1c-14.4 10.3-17.7 30.3-7.4 44.6s30.3 17.7 44.6 7.4l1.6-1.1c32.1-22.9 76-19.3 103.8 8.6c31.5 31.5 31.5 82.5 0 114L405.3 334.8c-31.5 31.5-82.5 31.5-114 0c-27.9-27.9-31.5-71.8-8.6-103.8l1.1-1.6c10.3-14.4 6.9-34.4-7.4-44.6s-34.4-6.9-44.6 7.4l-1.1 1.6C189.5 251.2 196 330 246 380c56.5 56.5 148 56.5 204.5 0L562.8 267.7zM43.2 244.3c-56.5 56.5-56.5 148 0 204.5c50 50 128.8 56.5 186.3 15.4l1.6-1.1c14.4-10.3 17.7-30.3 7.4-44.6s-30.3-17.7-44.6-7.4l-1.6 1.1c-32.1 22.9-76 19.3-103.8-8.6C57 372 57 321 88.5 289.5L200.7 177.2c31.5-31.5 82.5-31.5 114 0c27.9 27.9 31.5 71.8 8.6 103.9l-1.1 1.6c-10.3 14.4-6.9 34.4 7.4 44.6s34.4 6.9 44.6-7.4l1.1-1.6C416.5 260.8 410 182 360 132c-56.5-56.5-148-56.5-204.5 0L43.2 244.3z" />
+</svg></a><code><span class="lowerident">new</span><span class="kw"> :</span><span class="delimeter">
+    {</span><span class="lowerident">
+        family</span><span class="kw"> ?</span><span class="upperident"> Str</span><span class="delimeter">,</span><span class="lowerident">
+        size</span><span class="kw"> ?</span><span class="upperident"> F32</span><span class="delimeter">,</span><span class="lowerident">
+        color</span><span class="kw"> ?</span><span class="upperident"> Color</span><span class="delimeter">.</span><span class="upperident">Color</span><span class="delimeter">,</span><span class="lowerident">
+        shadow</span><span class="kw"> ?</span><span class="delimeter">
+            [</span><span class="upperident">
+                None</span><span class="delimeter">,</span><span class="upperident">
+                Auto</span><span class="delimeter">
+            ]</span><span class="delimeter">,</span><span class="lowerident">
+        style</span><span class="kw"> ?</span><span class="upperident"> Style</span><span class="delimeter">,</span><span class="lowerident">
+        textcase</span><span class="kw"> ?</span><span class="upperident"> TextCase</span><span class="delimeter">,</span><span class="lowerident">
+        variant</span><span class="kw"> ?</span><span class="upperident"> Variant</span><span class="delimeter">
+    }</span><span class="kw">
+    -&gt;</span><span class="upperident"> Result</span><span class="upperident"> Font</span></code></h3></section><section><h3 id="to_str" class="entry-name" ><a href="Font#to_str" ><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512" fill="currentColor"><!--!
+	Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License -
+	https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
+	Copyright 2023 Fonticons, Inc. -->
+	<path
+		d="M562.8 267.7c56.5-56.5 56.5-148 0-204.5c-50-50-128.8-56.5-186.3-15.4l-1.6 1.1c-14.4 10.3-17.7 30.3-7.4 44.6s30.3 17.7 44.6 7.4l1.6-1.1c32.1-22.9 76-19.3 103.8 8.6c31.5 31.5 31.5 82.5 0 114L405.3 334.8c-31.5 31.5-82.5 31.5-114 0c-27.9-27.9-31.5-71.8-8.6-103.8l1.1-1.6c10.3-14.4 6.9-34.4-7.4-44.6s-34.4-6.9-44.6 7.4l-1.1 1.6C189.5 251.2 196 330 246 380c56.5 56.5 148 56.5 204.5 0L562.8 267.7zM43.2 244.3c-56.5 56.5-56.5 148 0 204.5c50 50 128.8 56.5 186.3 15.4l1.6-1.1c14.4-10.3 17.7-30.3 7.4-44.6s-30.3-17.7-44.6-7.4l-1.6 1.1c-32.1 22.9-76 19.3-103.8-8.6C57 372 57 321 88.5 289.5L200.7 177.2c31.5-31.5 82.5-31.5 114 0c27.9 27.9 31.5 71.8 8.6 103.9l-1.1 1.6c-10.3 14.4-6.9 34.4 7.4 44.6s34.4 6.9 44.6-7.4l1.1-1.6C416.5 260.8 410 182 360 132c-56.5-56.5-148-56.5-204.5 0L43.2 244.3z" />
+</svg></a><code><span class="lowerident">to</span><span class="lowerident">_</span><span class="lowerident">str</span><span class="kw"> :</span><span class="upperident"> Font</span><span class="kw"> -&gt;</span><span class="upperident"> Str</span></code></h3></section>
+        <footer>
+            <p>Made by people who like to make nice things.</p>
+        </footer>
+    </main>
+</body>
+
+</html>

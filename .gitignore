@@ -12,10 +12,11 @@ examples/scatter
 examples/line
 examples/bubble
 
-*.html
 *.tar.gz
 *.tar.br
 
 .DS_Store
 
 generated-docs/
+
+out.html
