@@ -1,45 +1,36 @@
+# Compare programmer counts with vertical bars.
+# Run from the repository root: roc examples/bar-chart.roc > chart.html
 app [main!] {
-    cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.19.0/bi5zubJ-_Hva9vxxPq4kNx4WHX6oFs8OP6Ad0tCYlrY.tar.br",
-    plume: "../package/main.roc",
+	cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.26.0/GddgvsGjiNXrHFW6au5i5dUDbTs8FinQdrgE2Gqmw53t.tar.zst",
+	plume: "../package/main.roc",
 }
 
-import cli.File
-import cli.Cmd
-import plume.Chart exposing [Chart]
-import plume.Bar
-import plume.Marker
+import cli.OsStr
+import cli.Stdout
+import plume.Chart
 import plume.Layout
 import plume.Title
+import plume.Bar
 import plume.Color
 
-main! = |_|
-
-    blue = Color.rgb(0, 0, 255)
-
-    marker = Marker.new({ color: blue })?
-
-    bar : Bar.Trace Str F64
-    bar =
-        Bar.new(
-            {
-                data: [
-                    { x: "Italy", y: 55, marker },
-                    { x: "France", y: 49, marker },
-                    { x: "Spain", y: 44, marker },
-                    { x: "USA", y: 24, marker },
-                    { x: "Australia", y: 15, marker },
-                ],
-            },
-        )?
-
-    chart : Chart Str F64
-    chart =
-        Chart.empty({})
-        |> Chart.add_bar_chart(bar)
-        |> Chart.with_layout(Layout.new({ title: Title.new({ text: "Roc Programmers by Country" }) }))
-
-    File.write_utf8!(Chart.to_html(chart), "out.html")?
-
-    Cmd.exec!("open", ["out.html"])?
-
-    Ok({})
+main! : List(OsStr) => Try({}, _)
+main! = |_args| {
+	# The color is shared by every observation in this series.
+	color = Color.rgba({ red: 40, green: 90, blue: 210, alpha: 210 })
+	bars = Bar.new({
+		data: [
+			{ x: "Italy", y: 55, color },
+			{ x: "France", y: 49, color },
+			{ x: "Spain", y: 44, color },
+			{ x: "USA", y: 24, color },
+			{ x: "Australia", y: 15, color },
+		],
+		orientation: Vertical,
+	})?
+	chart = Chart.new({
+		traces: [Bar(bars)],
+		layout: Layout.new({ title: Title.new({ text: "Roc Programmers by Country" }) }),
+	})
+	Stdout.line!(chart.to_html())?
+	Ok({})
+}

@@ -1,63 +1,86 @@
-module [
-    Trace,
-    new,
-    to_str,
-]
+import InternalJson
 
-Trace label value := {
-    data : List { label : label, value : value },
-    hole : F32,
-    name : Str,
+## A validated Plotly pie or donut trace.
+Pie :: InternalJson.{
+	is_eq : _
+	Slice := { label : Str, value : F64 }
+	Props := { data : List(Slice), hole : F64 ?? 0, name : Str ?? "" }
+
+	## Construct a pie with nonnegative finite values and a hole in [0, 1].
+	new : Props -> Try(Pie, [InvalidHole(F64), InvalidPieValue(F64), Infinity, NaN, NegativeInfinity])
+	new = |props| {
+		hole = InternalJson.encode(props.hole)?
+		if (props.hole < 0 or props.hole > 1) return Err(InvalidHole(props.hole))
+		labels = props.data.map(|slice| InternalJson.string(slice.label))
+		values = props.data.map_try(
+			|slice| {
+				encoded = InternalJson.encode(slice.value)?
+				if (slice.value < 0) Err(InvalidPieValue(slice.value)) else Ok(encoded)
+			},
+		)?
+		Ok(
+			Pie.(
+				InternalJson.object([
+					{ name: "type", value: InternalJson.string("pie") },
+					{ name: "labels", value: InternalJson.array(labels) },
+					{ name: "values", value: InternalJson.array(values) },
+					{ name: "hole", value: hole },
+					{ name: "name", value: InternalJson.string(props.name) },
+				]),
+			),
+		)
+	}
+
+	## The safe JSON object used when composing a chart.
+	to_json_value : Pie -> InternalJson
+	to_json_value = |Pie.(json)| json
+
+	## Serialize the trace as JSON.
+	to_json : Pie -> Str
+	to_json = |pie| pie.to_json_value().to_json()
 }
-    implements [Inspect]
 
-new :
-    {
-        data : List { label : label, value : value },
-        hole ?? F32,
-        name ?? Str,
-    }
-    -> Result (Trace label value) _
-new = |{ data, name ?? "", hole ?? 0.0 }|
-    Ok(
-        @Trace(
-            {
-                data,
-                name,
-                hole: check_valid_hole_size(hole)?,
-            },
-        ),
-    )
+## Pie labels and values preserve their order and escaping.
+expect {
+	pie = Pie.new({ data: [{ label: "a\"", value: 0 }, { label: "b", value: 2.5 }], hole: 1, name: "pie\n" })?
+	decoded : { labels : List(Str), values : List(F64), hole : F64, name : Str }
+	decoded = Json.parse(pie.to_json())?
+	decoded == { labels: ["a\"", "b"], values: [0, 2.5], hole: 1, name: "pie\n" }
+}
 
-check_valid_hole_size = |hole_size|
-    if hole_size > 1.0 then
-        Err(OutOfRange("Hole size must be between 0.0 to 1.0, got ${Num.to_str(hole_size)}"))
-    else if hole_size < 0.0 then
-        Err(OutOfRange("Hole size must be between 0.0 to 1.0, got ${Num.to_str(hole_size)}"))
-    else
-        Ok(hole_size)
+## Pie holes outside the closed unit interval fail construction.
+expect Pie.new({ data: [{ label: "a", value: 1 }], hole: 1.1 }) == Err(InvalidHole(1.1))
 
-to_str : Trace label value -> Str where label implements Inspect, value implements Inspect
-to_str = |@Trace(inner)|
+## Negative pie values return a structured error.
+expect Pie.new({ data: [{ label: "a", value: -1 }] }) == Err(InvalidPieValue(-1))
 
-    help = |data, (labels, values)|
-        when data is
-            [] -> (Str.join_with(labels, ", "), Str.join_with(values, ", "))
-            [{ label, value }, .. as rest] ->
-                label_str = Inspect.to_str(label)
-                value_str = Inspect.to_str(value)
-                help(rest, (List.append(labels, label_str), List.append(values, value_str)))
+## Pie values reject NaN.
+expect Pie.new({ data: [{ label: "a", value: F64.nan }] }) == Err(NaN)
 
-    (labels_str, values_str) = help(inner.data, ([], []))
+## Pie JSON is a complete object with aligned label and value arrays.
+expect {
+	pie = Pie.new({ data: [{ label: "slice", value: 2 }] })?
+	pie.to_json() ==
+		\\{"type":"pie","labels":["slice"],"values":[2],"hole":0,"name":""}
+}
 
-    hole_str = if inner.hole >= 0.0 then "\"hole\": ${Num.to_str(inner.hole)}," else ""
+## The lower hole boundary is accepted and negative holes are rejected.
+expect Pie.new({ data: [{ label: "a", value: 0 }], hole: -0.1 }) == Err(InvalidHole(-0.1))
 
-    """
-    {
-        "labels": [${labels_str}],
-        "values": [${values_str}],
-        "type": "pie",
-        ${hole_str}
-        "name": \"${inner.name}\"
-    }
-    """
+## Pie hole settings reject every non-finite value.
+expect {
+	actual = [F64.nan, F64.infinity, -F64.infinity].map(|hole| Pie.new({ data: [{ label: "a", value: 0 }], hole }).is_err())
+	actual == [True, True, True]
+}
+
+## Empty typed pies produce valid empty arrays.
+expect {
+	slices : List(Pie.Slice)
+	slices = []
+	pie = Pie.new({ data: slices })?
+	pie.to_json() ==
+		\\{"type":"pie","labels":[],"values":[],"hole":0,"name":""}
+}
+
+## Empty pies need no generic label annotation.
+expect Pie.new({ data: [] })?.to_json().contains("\"labels\":[]")

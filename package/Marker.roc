@@ -1,554 +1,769 @@
-module [
-    Marker,
-    new,
-    to_str,
-    get_color,
-    get_size,
-    get_symbol,
-]
-
 import Color
+import InternalJson
 
-Marker := {
-    size : F32,
-    color : Color.Color,
-    symbol : Str,
+## Per-point size, color and validated Plotly marker symbol.
+Marker :: { size : F64, color : Color, symbol : Symbol }.{
+
+	## Plotly's finite set of named marker symbols. Use tags in props,
+	## and [Marker.Symbol.from_str] when reading a name from external data.
+	Symbol := [
+		Circle,
+		CircleOpen,
+		CircleDot,
+		CircleOpenDot,
+		Square,
+		SquareOpen,
+		SquareDot,
+		SquareOpenDot,
+		Diamond,
+		DiamondOpen,
+		DiamondDot,
+		DiamondOpenDot,
+		Cross,
+		CrossOpen,
+		CrossDot,
+		CrossOpenDot,
+		X,
+		XOpen,
+		XDot,
+		XOpenDot,
+		TriangleUp,
+		TriangleUpOpen,
+		TriangleUpDot,
+		TriangleUpOpenDot,
+		TriangleDown,
+		TriangleDownOpen,
+		TriangleDownDot,
+		TriangleDownOpenDot,
+		TriangleLeft,
+		TriangleLeftOpen,
+		TriangleLeftDot,
+		TriangleLeftOpenDot,
+		TriangleRight,
+		TriangleRightOpen,
+		TriangleRightDot,
+		TriangleRightOpenDot,
+		TriangleNe,
+		TriangleNeOpen,
+		TriangleNeDot,
+		TriangleNeOpenDot,
+		TriangleSe,
+		TriangleSeOpen,
+		TriangleSeDot,
+		TriangleSeOpenDot,
+		TriangleSw,
+		TriangleSwOpen,
+		TriangleSwDot,
+		TriangleSwOpenDot,
+		TriangleNw,
+		TriangleNwOpen,
+		TriangleNwDot,
+		TriangleNwOpenDot,
+		Pentagon,
+		PentagonOpen,
+		PentagonDot,
+		PentagonOpenDot,
+		Hexagon,
+		HexagonOpen,
+		HexagonDot,
+		HexagonOpenDot,
+		Hexagon2,
+		Hexagon2Open,
+		Hexagon2Dot,
+		Hexagon2OpenDot,
+		Octagon,
+		OctagonOpen,
+		OctagonDot,
+		OctagonOpenDot,
+		Star,
+		StarOpen,
+		StarDot,
+		StarOpenDot,
+		Hexagram,
+		HexagramOpen,
+		HexagramDot,
+		HexagramOpenDot,
+		StarTriangleUp,
+		StarTriangleUpOpen,
+		StarTriangleUpDot,
+		StarTriangleUpOpenDot,
+		StarTriangleDown,
+		StarTriangleDownOpen,
+		StarTriangleDownDot,
+		StarTriangleDownOpenDot,
+		StarSquare,
+		StarSquareOpen,
+		StarSquareDot,
+		StarSquareOpenDot,
+		StarDiamond,
+		StarDiamondOpen,
+		StarDiamondDot,
+		StarDiamondOpenDot,
+		DiamondTall,
+		DiamondTallOpen,
+		DiamondTallDot,
+		DiamondTallOpenDot,
+		DiamondWide,
+		DiamondWideOpen,
+		DiamondWideDot,
+		DiamondWideOpenDot,
+		Hourglass,
+		HourglassOpen,
+		Bowtie,
+		BowtieOpen,
+		CircleCross,
+		CircleCrossOpen,
+		CircleX,
+		CircleXOpen,
+		SquareCross,
+		SquareCrossOpen,
+		SquareX,
+		SquareXOpen,
+		DiamondCross,
+		DiamondCrossOpen,
+		DiamondX,
+		DiamondXOpen,
+		CrossThin,
+		CrossThinOpen,
+		XThin,
+		XThinOpen,
+		Asterisk,
+		AsteriskOpen,
+		Hash,
+		HashOpen,
+		HashDot,
+		HashOpenDot,
+		YUp,
+		YUpOpen,
+		YDown,
+		YDownOpen,
+		YLeft,
+		YLeftOpen,
+		YRight,
+		YRightOpen,
+		LineEw,
+		LineEwOpen,
+		LineNs,
+		LineNsOpen,
+		LineNe,
+		LineNeOpen,
+		LineNw,
+		LineNwOpen,
+		ArrowUp,
+		ArrowUpOpen,
+		ArrowDown,
+		ArrowDownOpen,
+		ArrowLeft,
+		ArrowLeftOpen,
+		ArrowRight,
+		ArrowRightOpen,
+		ArrowBarUp,
+		ArrowBarUpOpen,
+		ArrowBarDown,
+		ArrowBarDownOpen,
+		ArrowBarLeft,
+		ArrowBarLeftOpen,
+		ArrowBarRight,
+		ArrowBarRightOpen,
+		Arrow,
+		ArrowOpen,
+		ArrowWide,
+		ArrowWideOpen,
+	].{
+		is_eq : _
+		to_hash : _
+
+		## Parse a canonical Plotly name. Numeric aliases are intentionally
+		## omitted from this API; tags make the selected symbol explicit.
+		from_str : Str -> Try(Symbol, [InvalidSymbol(Str)])
+		from_str = |text| match text {
+			"circle" => Ok(Circle)
+			"circle-open" => Ok(CircleOpen)
+			"circle-dot" => Ok(CircleDot)
+			"circle-open-dot" => Ok(CircleOpenDot)
+			"square" => Ok(Square)
+			"square-open" => Ok(SquareOpen)
+			"square-dot" => Ok(SquareDot)
+			"square-open-dot" => Ok(SquareOpenDot)
+			"diamond" => Ok(Diamond)
+			"diamond-open" => Ok(DiamondOpen)
+			"diamond-dot" => Ok(DiamondDot)
+			"diamond-open-dot" => Ok(DiamondOpenDot)
+			"cross" => Ok(Cross)
+			"cross-open" => Ok(CrossOpen)
+			"cross-dot" => Ok(CrossDot)
+			"cross-open-dot" => Ok(CrossOpenDot)
+			"x" => Ok(X)
+			"x-open" => Ok(XOpen)
+			"x-dot" => Ok(XDot)
+			"x-open-dot" => Ok(XOpenDot)
+			"triangle-up" => Ok(TriangleUp)
+			"triangle-up-open" => Ok(TriangleUpOpen)
+			"triangle-up-dot" => Ok(TriangleUpDot)
+			"triangle-up-open-dot" => Ok(TriangleUpOpenDot)
+			"triangle-down" => Ok(TriangleDown)
+			"triangle-down-open" => Ok(TriangleDownOpen)
+			"triangle-down-dot" => Ok(TriangleDownDot)
+			"triangle-down-open-dot" => Ok(TriangleDownOpenDot)
+			"triangle-left" => Ok(TriangleLeft)
+			"triangle-left-open" => Ok(TriangleLeftOpen)
+			"triangle-left-dot" => Ok(TriangleLeftDot)
+			"triangle-left-open-dot" => Ok(TriangleLeftOpenDot)
+			"triangle-right" => Ok(TriangleRight)
+			"triangle-right-open" => Ok(TriangleRightOpen)
+			"triangle-right-dot" => Ok(TriangleRightDot)
+			"triangle-right-open-dot" => Ok(TriangleRightOpenDot)
+			"triangle-ne" => Ok(TriangleNe)
+			"triangle-ne-open" => Ok(TriangleNeOpen)
+			"triangle-ne-dot" => Ok(TriangleNeDot)
+			"triangle-ne-open-dot" => Ok(TriangleNeOpenDot)
+			"triangle-se" => Ok(TriangleSe)
+			"triangle-se-open" => Ok(TriangleSeOpen)
+			"triangle-se-dot" => Ok(TriangleSeDot)
+			"triangle-se-open-dot" => Ok(TriangleSeOpenDot)
+			"triangle-sw" => Ok(TriangleSw)
+			"triangle-sw-open" => Ok(TriangleSwOpen)
+			"triangle-sw-dot" => Ok(TriangleSwDot)
+			"triangle-sw-open-dot" => Ok(TriangleSwOpenDot)
+			"triangle-nw" => Ok(TriangleNw)
+			"triangle-nw-open" => Ok(TriangleNwOpen)
+			"triangle-nw-dot" => Ok(TriangleNwDot)
+			"triangle-nw-open-dot" => Ok(TriangleNwOpenDot)
+			"pentagon" => Ok(Pentagon)
+			"pentagon-open" => Ok(PentagonOpen)
+			"pentagon-dot" => Ok(PentagonDot)
+			"pentagon-open-dot" => Ok(PentagonOpenDot)
+			"hexagon" => Ok(Hexagon)
+			"hexagon-open" => Ok(HexagonOpen)
+			"hexagon-dot" => Ok(HexagonDot)
+			"hexagon-open-dot" => Ok(HexagonOpenDot)
+			"hexagon2" => Ok(Hexagon2)
+			"hexagon2-open" => Ok(Hexagon2Open)
+			"hexagon2-dot" => Ok(Hexagon2Dot)
+			"hexagon2-open-dot" => Ok(Hexagon2OpenDot)
+			"octagon" => Ok(Octagon)
+			"octagon-open" => Ok(OctagonOpen)
+			"octagon-dot" => Ok(OctagonDot)
+			"octagon-open-dot" => Ok(OctagonOpenDot)
+			"star" => Ok(Star)
+			"star-open" => Ok(StarOpen)
+			"star-dot" => Ok(StarDot)
+			"star-open-dot" => Ok(StarOpenDot)
+			"hexagram" => Ok(Hexagram)
+			"hexagram-open" => Ok(HexagramOpen)
+			"hexagram-dot" => Ok(HexagramDot)
+			"hexagram-open-dot" => Ok(HexagramOpenDot)
+			"star-triangle-up" => Ok(StarTriangleUp)
+			"star-triangle-up-open" => Ok(StarTriangleUpOpen)
+			"star-triangle-up-dot" => Ok(StarTriangleUpDot)
+			"star-triangle-up-open-dot" => Ok(StarTriangleUpOpenDot)
+			"star-triangle-down" => Ok(StarTriangleDown)
+			"star-triangle-down-open" => Ok(StarTriangleDownOpen)
+			"star-triangle-down-dot" => Ok(StarTriangleDownDot)
+			"star-triangle-down-open-dot" => Ok(StarTriangleDownOpenDot)
+			"star-square" => Ok(StarSquare)
+			"star-square-open" => Ok(StarSquareOpen)
+			"star-square-dot" => Ok(StarSquareDot)
+			"star-square-open-dot" => Ok(StarSquareOpenDot)
+			"star-diamond" => Ok(StarDiamond)
+			"star-diamond-open" => Ok(StarDiamondOpen)
+			"star-diamond-dot" => Ok(StarDiamondDot)
+			"star-diamond-open-dot" => Ok(StarDiamondOpenDot)
+			"diamond-tall" => Ok(DiamondTall)
+			"diamond-tall-open" => Ok(DiamondTallOpen)
+			"diamond-tall-dot" => Ok(DiamondTallDot)
+			"diamond-tall-open-dot" => Ok(DiamondTallOpenDot)
+			"diamond-wide" => Ok(DiamondWide)
+			"diamond-wide-open" => Ok(DiamondWideOpen)
+			"diamond-wide-dot" => Ok(DiamondWideDot)
+			"diamond-wide-open-dot" => Ok(DiamondWideOpenDot)
+			"hourglass" => Ok(Hourglass)
+			"hourglass-open" => Ok(HourglassOpen)
+			"bowtie" => Ok(Bowtie)
+			"bowtie-open" => Ok(BowtieOpen)
+			"circle-cross" => Ok(CircleCross)
+			"circle-cross-open" => Ok(CircleCrossOpen)
+			"circle-x" => Ok(CircleX)
+			"circle-x-open" => Ok(CircleXOpen)
+			"square-cross" => Ok(SquareCross)
+			"square-cross-open" => Ok(SquareCrossOpen)
+			"square-x" => Ok(SquareX)
+			"square-x-open" => Ok(SquareXOpen)
+			"diamond-cross" => Ok(DiamondCross)
+			"diamond-cross-open" => Ok(DiamondCrossOpen)
+			"diamond-x" => Ok(DiamondX)
+			"diamond-x-open" => Ok(DiamondXOpen)
+			"cross-thin" => Ok(CrossThin)
+			"cross-thin-open" => Ok(CrossThinOpen)
+			"x-thin" => Ok(XThin)
+			"x-thin-open" => Ok(XThinOpen)
+			"asterisk" => Ok(Asterisk)
+			"asterisk-open" => Ok(AsteriskOpen)
+			"hash" => Ok(Hash)
+			"hash-open" => Ok(HashOpen)
+			"hash-dot" => Ok(HashDot)
+			"hash-open-dot" => Ok(HashOpenDot)
+			"y-up" => Ok(YUp)
+			"y-up-open" => Ok(YUpOpen)
+			"y-down" => Ok(YDown)
+			"y-down-open" => Ok(YDownOpen)
+			"y-left" => Ok(YLeft)
+			"y-left-open" => Ok(YLeftOpen)
+			"y-right" => Ok(YRight)
+			"y-right-open" => Ok(YRightOpen)
+			"line-ew" => Ok(LineEw)
+			"line-ew-open" => Ok(LineEwOpen)
+			"line-ns" => Ok(LineNs)
+			"line-ns-open" => Ok(LineNsOpen)
+			"line-ne" => Ok(LineNe)
+			"line-ne-open" => Ok(LineNeOpen)
+			"line-nw" => Ok(LineNw)
+			"line-nw-open" => Ok(LineNwOpen)
+			"arrow-up" => Ok(ArrowUp)
+			"arrow-up-open" => Ok(ArrowUpOpen)
+			"arrow-down" => Ok(ArrowDown)
+			"arrow-down-open" => Ok(ArrowDownOpen)
+			"arrow-left" => Ok(ArrowLeft)
+			"arrow-left-open" => Ok(ArrowLeftOpen)
+			"arrow-right" => Ok(ArrowRight)
+			"arrow-right-open" => Ok(ArrowRightOpen)
+			"arrow-bar-up" => Ok(ArrowBarUp)
+			"arrow-bar-up-open" => Ok(ArrowBarUpOpen)
+			"arrow-bar-down" => Ok(ArrowBarDown)
+			"arrow-bar-down-open" => Ok(ArrowBarDownOpen)
+			"arrow-bar-left" => Ok(ArrowBarLeft)
+			"arrow-bar-left-open" => Ok(ArrowBarLeftOpen)
+			"arrow-bar-right" => Ok(ArrowBarRight)
+			"arrow-bar-right-open" => Ok(ArrowBarRightOpen)
+			"arrow" => Ok(Arrow)
+			"arrow-open" => Ok(ArrowOpen)
+			"arrow-wide" => Ok(ArrowWide)
+			"arrow-wide-open" => Ok(ArrowWideOpen)
+			_ => Err(InvalidSymbol(text))
+		}
+
+		## The canonical Plotly name of this symbol.
+		to_str : Symbol -> Str
+		to_str = |symbol| match symbol {
+			Circle => "circle"
+			CircleOpen => "circle-open"
+			CircleDot => "circle-dot"
+			CircleOpenDot => "circle-open-dot"
+			Square => "square"
+			SquareOpen => "square-open"
+			SquareDot => "square-dot"
+			SquareOpenDot => "square-open-dot"
+			Diamond => "diamond"
+			DiamondOpen => "diamond-open"
+			DiamondDot => "diamond-dot"
+			DiamondOpenDot => "diamond-open-dot"
+			Cross => "cross"
+			CrossOpen => "cross-open"
+			CrossDot => "cross-dot"
+			CrossOpenDot => "cross-open-dot"
+			X => "x"
+			XOpen => "x-open"
+			XDot => "x-dot"
+			XOpenDot => "x-open-dot"
+			TriangleUp => "triangle-up"
+			TriangleUpOpen => "triangle-up-open"
+			TriangleUpDot => "triangle-up-dot"
+			TriangleUpOpenDot => "triangle-up-open-dot"
+			TriangleDown => "triangle-down"
+			TriangleDownOpen => "triangle-down-open"
+			TriangleDownDot => "triangle-down-dot"
+			TriangleDownOpenDot => "triangle-down-open-dot"
+			TriangleLeft => "triangle-left"
+			TriangleLeftOpen => "triangle-left-open"
+			TriangleLeftDot => "triangle-left-dot"
+			TriangleLeftOpenDot => "triangle-left-open-dot"
+			TriangleRight => "triangle-right"
+			TriangleRightOpen => "triangle-right-open"
+			TriangleRightDot => "triangle-right-dot"
+			TriangleRightOpenDot => "triangle-right-open-dot"
+			TriangleNe => "triangle-ne"
+			TriangleNeOpen => "triangle-ne-open"
+			TriangleNeDot => "triangle-ne-dot"
+			TriangleNeOpenDot => "triangle-ne-open-dot"
+			TriangleSe => "triangle-se"
+			TriangleSeOpen => "triangle-se-open"
+			TriangleSeDot => "triangle-se-dot"
+			TriangleSeOpenDot => "triangle-se-open-dot"
+			TriangleSw => "triangle-sw"
+			TriangleSwOpen => "triangle-sw-open"
+			TriangleSwDot => "triangle-sw-dot"
+			TriangleSwOpenDot => "triangle-sw-open-dot"
+			TriangleNw => "triangle-nw"
+			TriangleNwOpen => "triangle-nw-open"
+			TriangleNwDot => "triangle-nw-dot"
+			TriangleNwOpenDot => "triangle-nw-open-dot"
+			Pentagon => "pentagon"
+			PentagonOpen => "pentagon-open"
+			PentagonDot => "pentagon-dot"
+			PentagonOpenDot => "pentagon-open-dot"
+			Hexagon => "hexagon"
+			HexagonOpen => "hexagon-open"
+			HexagonDot => "hexagon-dot"
+			HexagonOpenDot => "hexagon-open-dot"
+			Hexagon2 => "hexagon2"
+			Hexagon2Open => "hexagon2-open"
+			Hexagon2Dot => "hexagon2-dot"
+			Hexagon2OpenDot => "hexagon2-open-dot"
+			Octagon => "octagon"
+			OctagonOpen => "octagon-open"
+			OctagonDot => "octagon-dot"
+			OctagonOpenDot => "octagon-open-dot"
+			Star => "star"
+			StarOpen => "star-open"
+			StarDot => "star-dot"
+			StarOpenDot => "star-open-dot"
+			Hexagram => "hexagram"
+			HexagramOpen => "hexagram-open"
+			HexagramDot => "hexagram-dot"
+			HexagramOpenDot => "hexagram-open-dot"
+			StarTriangleUp => "star-triangle-up"
+			StarTriangleUpOpen => "star-triangle-up-open"
+			StarTriangleUpDot => "star-triangle-up-dot"
+			StarTriangleUpOpenDot => "star-triangle-up-open-dot"
+			StarTriangleDown => "star-triangle-down"
+			StarTriangleDownOpen => "star-triangle-down-open"
+			StarTriangleDownDot => "star-triangle-down-dot"
+			StarTriangleDownOpenDot => "star-triangle-down-open-dot"
+			StarSquare => "star-square"
+			StarSquareOpen => "star-square-open"
+			StarSquareDot => "star-square-dot"
+			StarSquareOpenDot => "star-square-open-dot"
+			StarDiamond => "star-diamond"
+			StarDiamondOpen => "star-diamond-open"
+			StarDiamondDot => "star-diamond-dot"
+			StarDiamondOpenDot => "star-diamond-open-dot"
+			DiamondTall => "diamond-tall"
+			DiamondTallOpen => "diamond-tall-open"
+			DiamondTallDot => "diamond-tall-dot"
+			DiamondTallOpenDot => "diamond-tall-open-dot"
+			DiamondWide => "diamond-wide"
+			DiamondWideOpen => "diamond-wide-open"
+			DiamondWideDot => "diamond-wide-dot"
+			DiamondWideOpenDot => "diamond-wide-open-dot"
+			Hourglass => "hourglass"
+			HourglassOpen => "hourglass-open"
+			Bowtie => "bowtie"
+			BowtieOpen => "bowtie-open"
+			CircleCross => "circle-cross"
+			CircleCrossOpen => "circle-cross-open"
+			CircleX => "circle-x"
+			CircleXOpen => "circle-x-open"
+			SquareCross => "square-cross"
+			SquareCrossOpen => "square-cross-open"
+			SquareX => "square-x"
+			SquareXOpen => "square-x-open"
+			DiamondCross => "diamond-cross"
+			DiamondCrossOpen => "diamond-cross-open"
+			DiamondX => "diamond-x"
+			DiamondXOpen => "diamond-x-open"
+			CrossThin => "cross-thin"
+			CrossThinOpen => "cross-thin-open"
+			XThin => "x-thin"
+			XThinOpen => "x-thin-open"
+			Asterisk => "asterisk"
+			AsteriskOpen => "asterisk-open"
+			Hash => "hash"
+			HashOpen => "hash-open"
+			HashDot => "hash-dot"
+			HashOpenDot => "hash-open-dot"
+			YUp => "y-up"
+			YUpOpen => "y-up-open"
+			YDown => "y-down"
+			YDownOpen => "y-down-open"
+			YLeft => "y-left"
+			YLeftOpen => "y-left-open"
+			YRight => "y-right"
+			YRightOpen => "y-right-open"
+			LineEw => "line-ew"
+			LineEwOpen => "line-ew-open"
+			LineNs => "line-ns"
+			LineNsOpen => "line-ns-open"
+			LineNe => "line-ne"
+			LineNeOpen => "line-ne-open"
+			LineNw => "line-nw"
+			LineNwOpen => "line-nw-open"
+			ArrowUp => "arrow-up"
+			ArrowUpOpen => "arrow-up-open"
+			ArrowDown => "arrow-down"
+			ArrowDownOpen => "arrow-down-open"
+			ArrowLeft => "arrow-left"
+			ArrowLeftOpen => "arrow-left-open"
+			ArrowRight => "arrow-right"
+			ArrowRightOpen => "arrow-right-open"
+			ArrowBarUp => "arrow-bar-up"
+			ArrowBarUpOpen => "arrow-bar-up-open"
+			ArrowBarDown => "arrow-bar-down"
+			ArrowBarDownOpen => "arrow-bar-down-open"
+			ArrowBarLeft => "arrow-bar-left"
+			ArrowBarLeftOpen => "arrow-bar-left-open"
+			ArrowBarRight => "arrow-bar-right"
+			ArrowBarRightOpen => "arrow-bar-right-open"
+			Arrow => "arrow"
+			ArrowOpen => "arrow-open"
+			ArrowWide => "arrow-wide"
+			ArrowWideOpen => "arrow-wide-open"
+		}
+	}
+
+	Props := {
+		size : F64 ?? 6,
+		color : Color ?? Color.rgb({ red: 31, green: 119, blue: 180 }),
+		symbol : Symbol ?? Circle,
+	}
+
+	## The standard Plotly marker.
+	default : Marker
+	default = Marker.({ size: 6, color: Color.rgb({ red: 31, green: 119, blue: 180 }), symbol: Circle })
+
+	## Size must be finite and nonnegative, including zero for hidden points.
+	new : Props -> Try(Marker, [InvalidMarkerSize(F64)])
+	new = |props| {
+		if props.size.is_finite() and props.size >= 0 {
+			Ok(Marker.({ size: props.size, color: props.color, symbol: props.symbol }))
+		} else {
+			Err(InvalidMarkerSize(props.size))
+		}
+	}
+
+	get_size : Marker -> F64
+	get_size = |Marker.(fields)| fields.size
+	get_color : Marker -> Color
+	get_color = |Marker.(fields)| fields.color
+	get_symbol : Marker -> Str
+	get_symbol = |Marker.(fields)| fields.symbol.to_str()
+
+	## Encode an object for composition without accepting raw JSON.
+	to_json_value : Marker -> InternalJson
+	to_json_value = |Marker.(fields)| InternalJson.object([
+		{ name: "size", value: InternalJson.encode(fields.size) ?? crash "Marker.to_json_value: non-finite size passed constructor" },
+		{ name: "color", value: fields.color.to_json_value() },
+		{ name: "symbol", value: InternalJson.string(fields.symbol.to_str()) },
+	])
+
+	## Serialize this validated value as a complete JSON document.
+	to_json : Marker -> Str
+	to_json = |marker| marker.to_json_value().to_json()
 }
-    implements [Inspect]
 
-new :
-    {
-        color ?? Color.Color,
-        size ?? F32,
-        symbol ?? Str,
-    }
-    -> Result Marker _
-new = |{ color ?? Color.rgb(31, 119, 180), size ?? 6, symbol ?? "0" }|
-    Ok(
-        @Marker(
-            {
-                size,
-                color,
-                symbol: parse_symbol(symbol)?,
-            },
-        ),
-    )
+# Canonical names round-trip through the closed symbol type.
+## Circle variants parse by their canonical names.
+expect Marker.Symbol.from_str("circle-open-dot")?.to_str() == "circle-open-dot"
 
-get_color : Marker -> Color.Color
-get_color = |@Marker(inner)| inner.color
+## Arrow variants parse by their canonical names.
+expect Marker.Symbol.from_str("arrow-wide-open")?.to_str() == "arrow-wide-open"
 
-get_size : Marker -> F32
-get_size = |@Marker(inner)| inner.size
+## Numeric marker aliases are rejected.
+expect Marker.Symbol.from_str("154").is_err()
 
-get_symbol : Marker -> Str
-get_symbol = |@Marker(inner)| inner.symbol
+## Unknown marker names are rejected.
+expect Marker.Symbol.from_str("unknown").is_err()
 
-parse_symbol : Str -> Result Str [InvalidSymbol]
-parse_symbol = |s|
+## Default markers expose their default size and symbol.
+expect {
+	marker = Marker.new({})?
+	marker.get_size() == 6 and marker.get_symbol() == "circle"
+}
 
-    valid_symbols = Set.from_list(
-        [
-            "0",
-            "0",
-            "circle",
-            "100",
-            "100",
-            "circle-open",
-            "200",
-            "200",
-            "circle-dot",
-            "300",
-            "300",
-            "circle-open-dot",
-            "1",
-            "1",
-            "square",
-            "101",
-            "101",
-            "square-open",
-            "201",
-            "201",
-            "square-dot",
-            "301",
-            "301",
-            "square-open-dot",
-            "2",
-            "2",
-            "diamond",
-            "102",
-            "102",
-            "diamond-open",
-            "202",
-            "202",
-            "diamond-dot",
-            "302",
-            "302",
-            "diamond-open-dot",
-            "3",
-            "3",
-            "cross",
-            "103",
-            "103",
-            "cross-open",
-            "203",
-            "203",
-            "cross-dot",
-            "303",
-            "303",
-            "cross-open-dot",
-            "4",
-            "4",
-            "x",
-            "104",
-            "104",
-            "x-open",
-            "204",
-            "204",
-            "x-dot",
-            "304",
-            "304",
-            "x-open-dot",
-            "5",
-            "5",
-            "triangle-up",
-            "105",
-            "105",
-            "triangle-up-open",
-            "205",
-            "205",
-            "triangle-up-dot",
-            "305",
-            "305",
-            "triangle-up-open-dot",
-            "6",
-            "6",
-            "triangle-down",
-            "106",
-            "106",
-            "triangle-down-open",
-            "206",
-            "206",
-            "triangle-down-dot",
-            "306",
-            "306",
-            "triangle-down-open-dot",
-            "7",
-            "7",
-            "triangle-left",
-            "107",
-            "107",
-            "triangle-left-open",
-            "207",
-            "207",
-            "triangle-left-dot",
-            "307",
-            "307",
-            "triangle-left-open-dot",
-            "8",
-            "8",
-            "triangle-right",
-            "108",
-            "108",
-            "triangle-right-open",
-            "208",
-            "208",
-            "triangle-right-dot",
-            "308",
-            "308",
-            "triangle-right-open-dot",
-            "9",
-            "9",
-            "triangle-ne",
-            "109",
-            "109",
-            "triangle-ne-open",
-            "209",
-            "209",
-            "triangle-ne-dot",
-            "309",
-            "309",
-            "triangle-ne-open-dot",
-            "10",
-            "10",
-            "triangle-se",
-            "110",
-            "110",
-            "triangle-se-open",
-            "210",
-            "210",
-            "triangle-se-dot",
-            "310",
-            "310",
-            "triangle-se-open-dot",
-            "11",
-            "11",
-            "triangle-sw",
-            "111",
-            "111",
-            "triangle-sw-open",
-            "211",
-            "211",
-            "triangle-sw-dot",
-            "311",
-            "311",
-            "triangle-sw-open-dot",
-            "12",
-            "12",
-            "triangle-nw",
-            "112",
-            "112",
-            "triangle-nw-open",
-            "212",
-            "212",
-            "triangle-nw-dot",
-            "312",
-            "312",
-            "triangle-nw-open-dot",
-            "13",
-            "13",
-            "pentagon",
-            "113",
-            "113",
-            "pentagon-open",
-            "213",
-            "213",
-            "pentagon-dot",
-            "313",
-            "313",
-            "pentagon-open-dot",
-            "14",
-            "14",
-            "hexagon",
-            "114",
-            "114",
-            "hexagon-open",
-            "214",
-            "214",
-            "hexagon-dot",
-            "314",
-            "314",
-            "hexagon-open-dot",
-            "15",
-            "15",
-            "hexagon2",
-            "115",
-            "115",
-            "hexagon2-open",
-            "215",
-            "215",
-            "hexagon2-dot",
-            "315",
-            "315",
-            "hexagon2-open-dot",
-            "16",
-            "16",
-            "octagon",
-            "116",
-            "116",
-            "octagon-open",
-            "216",
-            "216",
-            "octagon-dot",
-            "316",
-            "316",
-            "octagon-open-dot",
-            "17",
-            "17",
-            "star",
-            "117",
-            "117",
-            "star-open",
-            "217",
-            "217",
-            "star-dot",
-            "317",
-            "317",
-            "star-open-dot",
-            "18",
-            "18",
-            "hexagram",
-            "118",
-            "118",
-            "hexagram-open",
-            "218",
-            "218",
-            "hexagram-dot",
-            "318",
-            "318",
-            "hexagram-open-dot",
-            "19",
-            "19",
-            "star-triangle-up",
-            "119",
-            "119",
-            "star-triangle-up-open",
-            "219",
-            "219",
-            "star-triangle-up-dot",
-            "319",
-            "319",
-            "star-triangle-up-open-dot",
-            "20",
-            "20",
-            "star-triangle-down",
-            "120",
-            "120",
-            "star-triangle-down-open",
-            "220",
-            "220",
-            "star-triangle-down-dot",
-            "320",
-            "320",
-            "star-triangle-down-open-dot",
-            "21",
-            "21",
-            "star-square",
-            "121",
-            "121",
-            "star-square-open",
-            "221",
-            "221",
-            "star-square-dot",
-            "321",
-            "321",
-            "star-square-open-dot",
-            "22",
-            "22",
-            "star-diamond",
-            "122",
-            "122",
-            "star-diamond-open",
-            "222",
-            "222",
-            "star-diamond-dot",
-            "322",
-            "322",
-            "star-diamond-open-dot",
-            "23",
-            "23",
-            "diamond-tall",
-            "123",
-            "123",
-            "diamond-tall-open",
-            "223",
-            "223",
-            "diamond-tall-dot",
-            "323",
-            "323",
-            "diamond-tall-open-dot",
-            "24",
-            "24",
-            "diamond-wide",
-            "124",
-            "124",
-            "diamond-wide-open",
-            "224",
-            "224",
-            "diamond-wide-dot",
-            "324",
-            "324",
-            "diamond-wide-open-dot",
-            "25",
-            "25",
-            "hourglass",
-            "125",
-            "125",
-            "hourglass-open",
-            "26",
-            "26",
-            "bowtie",
-            "126",
-            "126",
-            "bowtie-open",
-            "27",
-            "27",
-            "circle-cross",
-            "127",
-            "127",
-            "circle-cross-open",
-            "28",
-            "28",
-            "circle-x",
-            "128",
-            "128",
-            "circle-x-open",
-            "29",
-            "29",
-            "square-cross",
-            "129",
-            "129",
-            "square-cross-open",
-            "30",
-            "30",
-            "square-x",
-            "130",
-            "130",
-            "square-x-open",
-            "31",
-            "31",
-            "diamond-cross",
-            "131",
-            "131",
-            "diamond-cross-open",
-            "32",
-            "32",
-            "diamond-x",
-            "132",
-            "132",
-            "diamond-x-open",
-            "33",
-            "33",
-            "cross-thin",
-            "133",
-            "133",
-            "cross-thin-open",
-            "34",
-            "34",
-            "x-thin",
-            "134",
-            "134",
-            "x-thin-open",
-            "35",
-            "35",
-            "asterisk",
-            "135",
-            "135",
-            "asterisk-open",
-            "36",
-            "36",
-            "hash",
-            "136",
-            "136",
-            "hash-open",
-            "236",
-            "236",
-            "hash-dot",
-            "336",
-            "336",
-            "hash-open-dot",
-            "37",
-            "37",
-            "y-up",
-            "137",
-            "137",
-            "y-up-open",
-            "38",
-            "38",
-            "y-down",
-            "138",
-            "138",
-            "y-down-open",
-            "39",
-            "39",
-            "y-left",
-            "139",
-            "139",
-            "y-left-open",
-            "40",
-            "40",
-            "y-right",
-            "140",
-            "140",
-            "y-right-open",
-            "41",
-            "41",
-            "line-ew",
-            "141",
-            "141",
-            "line-ew-open",
-            "42",
-            "42",
-            "line-ns",
-            "142",
-            "142",
-            "line-ns-open",
-            "43",
-            "43",
-            "line-ne",
-            "143",
-            "143",
-            "line-ne-open",
-            "44",
-            "44",
-            "line-nw",
-            "144",
-            "144",
-            "line-nw-open",
-            "45",
-            "45",
-            "arrow-up",
-            "145",
-            "145",
-            "arrow-up-open",
-            "46",
-            "46",
-            "arrow-down",
-            "146",
-            "146",
-            "arrow-down-open",
-            "47",
-            "47",
-            "arrow-left",
-            "147",
-            "147",
-            "arrow-left-open",
-            "48",
-            "48",
-            "arrow-right",
-            "148",
-            "148",
-            "arrow-right-open",
-            "49",
-            "49",
-            "arrow-bar-up",
-            "149",
-            "149",
-            "arrow-bar-up-open",
-            "50",
-            "50",
-            "arrow-bar-down",
-            "150",
-            "150",
-            "arrow-bar-down-open",
-            "51",
-            "51",
-            "arrow-bar-left",
-            "151",
-            "151",
-            "arrow-bar-left-open",
-            "52",
-            "52",
-            "arrow-bar-right",
-            "152",
-            "152",
-            "arrow-bar-right-open",
-            "53",
-            "53",
-            "arrow",
-            "153",
-            "153",
-            "arrow-open",
-            "54",
-            "54",
-            "arrow-wide",
-            "154",
-            "154",
-            "arrow-wide-open",
-        ],
-    )
+## Zero-size markers accept an explicit closed symbol tag.
+expect Marker.new({ size: 0, symbol: CircleOpenDot }).is_ok()
 
-    if Set.contains(valid_symbols, s) then
-        Ok(s)
-    else
-        Err(InvalidSymbol)
+## Negative marker sizes are rejected.
+expect Marker.new({ size: -1 }).is_err()
 
-to_str : Marker -> Str
-to_str = |@Marker(inner)|
-    [
-        "\"size\":${Num.to_str(inner.size)}",
-        "\"color\":\"${Color.to_str(inner.color)}\"",
-        "\"symbol\":\"${inner.symbol}\"",
-    ]
-    |> List.drop_if(Str.is_empty)
-    |> Str.join_with(",")
-    |> |str| "\"marker\":{${str}}"
+## NaN marker sizes are rejected.
+expect Marker.new({ size: F64.nan }).is_err()
+
+## Infinite marker sizes are rejected.
+expect Marker.new({ size: F64.infinity }).is_err()
+
+## Every closed marker symbol round-trips through its canonical name.
+expect {
+	symbols : List(Marker.Symbol)
+	symbols = [
+		Circle,
+		CircleOpen,
+		CircleDot,
+		CircleOpenDot,
+		Square,
+		SquareOpen,
+		SquareDot,
+		SquareOpenDot,
+		Diamond,
+		DiamondOpen,
+		DiamondDot,
+		DiamondOpenDot,
+		Cross,
+		CrossOpen,
+		CrossDot,
+		CrossOpenDot,
+		X,
+		XOpen,
+		XDot,
+		XOpenDot,
+		TriangleUp,
+		TriangleUpOpen,
+		TriangleUpDot,
+		TriangleUpOpenDot,
+		TriangleDown,
+		TriangleDownOpen,
+		TriangleDownDot,
+		TriangleDownOpenDot,
+		TriangleLeft,
+		TriangleLeftOpen,
+		TriangleLeftDot,
+		TriangleLeftOpenDot,
+		TriangleRight,
+		TriangleRightOpen,
+		TriangleRightDot,
+		TriangleRightOpenDot,
+		TriangleNe,
+		TriangleNeOpen,
+		TriangleNeDot,
+		TriangleNeOpenDot,
+		TriangleSe,
+		TriangleSeOpen,
+		TriangleSeDot,
+		TriangleSeOpenDot,
+		TriangleSw,
+		TriangleSwOpen,
+		TriangleSwDot,
+		TriangleSwOpenDot,
+		TriangleNw,
+		TriangleNwOpen,
+		TriangleNwDot,
+		TriangleNwOpenDot,
+		Pentagon,
+		PentagonOpen,
+		PentagonDot,
+		PentagonOpenDot,
+		Hexagon,
+		HexagonOpen,
+		HexagonDot,
+		HexagonOpenDot,
+		Hexagon2,
+		Hexagon2Open,
+		Hexagon2Dot,
+		Hexagon2OpenDot,
+		Octagon,
+		OctagonOpen,
+		OctagonDot,
+		OctagonOpenDot,
+		Star,
+		StarOpen,
+		StarDot,
+		StarOpenDot,
+		Hexagram,
+		HexagramOpen,
+		HexagramDot,
+		HexagramOpenDot,
+		StarTriangleUp,
+		StarTriangleUpOpen,
+		StarTriangleUpDot,
+		StarTriangleUpOpenDot,
+		StarTriangleDown,
+		StarTriangleDownOpen,
+		StarTriangleDownDot,
+		StarTriangleDownOpenDot,
+		StarSquare,
+		StarSquareOpen,
+		StarSquareDot,
+		StarSquareOpenDot,
+		StarDiamond,
+		StarDiamondOpen,
+		StarDiamondDot,
+		StarDiamondOpenDot,
+		DiamondTall,
+		DiamondTallOpen,
+		DiamondTallDot,
+		DiamondTallOpenDot,
+		DiamondWide,
+		DiamondWideOpen,
+		DiamondWideDot,
+		DiamondWideOpenDot,
+		Hourglass,
+		HourglassOpen,
+		Bowtie,
+		BowtieOpen,
+		CircleCross,
+		CircleCrossOpen,
+		CircleX,
+		CircleXOpen,
+		SquareCross,
+		SquareCrossOpen,
+		SquareX,
+		SquareXOpen,
+		DiamondCross,
+		DiamondCrossOpen,
+		DiamondX,
+		DiamondXOpen,
+		CrossThin,
+		CrossThinOpen,
+		XThin,
+		XThinOpen,
+		Asterisk,
+		AsteriskOpen,
+		Hash,
+		HashOpen,
+		HashDot,
+		HashOpenDot,
+		YUp,
+		YUpOpen,
+		YDown,
+		YDownOpen,
+		YLeft,
+		YLeftOpen,
+		YRight,
+		YRightOpen,
+		LineEw,
+		LineEwOpen,
+		LineNs,
+		LineNsOpen,
+		LineNe,
+		LineNeOpen,
+		LineNw,
+		LineNwOpen,
+		ArrowUp,
+		ArrowUpOpen,
+		ArrowDown,
+		ArrowDownOpen,
+		ArrowLeft,
+		ArrowLeftOpen,
+		ArrowRight,
+		ArrowRightOpen,
+		ArrowBarUp,
+		ArrowBarUpOpen,
+		ArrowBarDown,
+		ArrowBarDownOpen,
+		ArrowBarLeft,
+		ArrowBarLeftOpen,
+		ArrowBarRight,
+		ArrowBarRightOpen,
+		Arrow,
+		ArrowOpen,
+		ArrowWide,
+		ArrowWideOpen,
+	]
+	var $passed = True
+	for symbol in symbols {
+		parsed = Marker.Symbol.from_str(symbol.to_str())?
+		$passed = $passed and parsed == symbol
+	}
+	$passed
+}
+
+## Negative infinity cannot enter a Marker.
+expect Marker.new({ size: -F64.infinity }).is_err()
+
+## A hidden zero-size point preserves its symbol, color and size.
+expect {
+	color = Color.hex("#aB00fF")?
+	marker = Marker.new({ size: 0, symbol: DiamondOpen, color })?
+	decoded : { size : F64, symbol : Str, color : Str }
+	decoded = Json.parse(marker.to_json())?
+	decoded == { size: 0, symbol: "diamond-open", color: "#aB00fF" } and marker.get_color() == color
+}

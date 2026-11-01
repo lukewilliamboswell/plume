@@ -1,49 +1,91 @@
-module [
-    Line,
-    Type,
-    new,
-    dash_to_str,
-    to_str,
-]
-
 import Color
+import InternalJson
 
-Type : [Solid, Dot, Dash, LongDash, DashDot, LongDashDot]
+## A finite, nonnegative line width and its CSS style.
+Line :: Props.{
+	Type : [Solid, Dot, Dash, LongDash, DashDot, LongDashDot]
+	Props := {
+		width : F64 ?? 2,
+		color : Color ?? Color.rgb({ red: 31, green: 119, blue: 180 }),
+		dash : Type ?? Solid,
+	}
 
-dash_to_str : Type -> Str
-dash_to_str = |dash|
-    when dash is
-        Solid -> "solid"
-        Dot -> "dot"
-        Dash -> "dash"
-        LongDash -> "longdash"
-        DashDot -> "dashdot"
-        LongDashDot -> "longdashdot"
+	default : Line
+	default = Line.({})
 
-Line := {
-    width : F32,
-    color : Color.Color,
-    dash : Type,
+	## Zero hides the line. Negative and non-finite widths are rejected.
+	new : Props -> Try(Line, [InvalidLineWidth(F64)])
+	new = |props| if (props.width.is_finite() and props.width >= 0) Ok(Line.(props)) else Err(InvalidLineWidth(props.width))
+
+	dash_to_str : Type -> Str
+	dash_to_str = |dash| match dash {
+		Solid => "solid"
+		Dot => "dot"
+		Dash => "dash"
+		LongDash => "longdash"
+		DashDot => "dashdot"
+		LongDashDot => "longdashdot"
+	}
+
+	## Encode an object for composition without accepting raw JSON.
+	to_json_value : Line -> InternalJson
+	to_json_value = |Line.(props)| InternalJson.object([
+		{ name: "width", value: InternalJson.encode(props.width) ?? crash "Line.to_json_value: non-finite width passed constructor" },
+		{ name: "color", value: props.color.to_json_value() },
+		{ name: "dash", value: InternalJson.string(dash_to_str(props.dash)) },
+	])
+
+	## Serialize this validated value as a complete JSON document.
+	to_json : Line -> Str
+	to_json = |line| line.to_json_value().to_json()
 }
-    implements [Inspect]
 
-new :
-    {
-        width ?? F32,
-        color ?? Color.Color,
-        dash ?? Type,
-    }
-    -> Line
-new = |{ width ?? 2.0, color ?? Color.rgb(31, 119, 180), dash ?? Solid }|
-    @Line({ width, color, dash })
+## Zero line width is accepted.
+expect Line.new({ width: 0 }).is_ok()
 
-to_str : Line -> Str
-to_str = |@Line(inner)|
-    [
-        "\"width\":${Num.to_str(inner.width)}",
-        "\"color\":\"${Color.to_str(inner.color)}\"",
-        "\"dash\":\"${dash_to_str(inner.dash)}\"",
-    ]
-    |> List.drop_if(Str.is_empty)
-    |> Str.join_with(",")
-    |> |str| "\"line\":{${str}}"
+## Negative line width is rejected.
+expect Line.new({ width: -1 }).is_err()
+
+## NaN line width is rejected.
+expect Line.new({ width: F64.nan }).is_err()
+
+## Negative infinite line width is rejected.
+expect Line.new({ width: -F64.infinity }).is_err()
+
+## Line width and dash settings survive JSON encoding.
+expect {
+	line = Line.new({ width: 3, dash: LongDashDot })?
+	parsed : { width : F64, dash : Str }
+	parsed = Json.parse(line.to_json())?
+	parsed == { width: 3, dash: "longdashdot" }
+}
+
+## Positive infinity cannot enter a Line.
+expect Line.new({ width: F64.infinity }).is_err()
+
+## A zero-width line remains exactly zero in JSON.
+expect {
+	line = Line.new({ width: 0 })?
+	decoded : { width : F64 }
+	decoded = Json.parse(line.to_json())?
+	decoded.width == 0
+}
+
+## All dash styles serialize to their canonical Plotly spellings.
+expect {
+	var $passed = True
+	for row in [
+		{ dash: Solid, name: "solid" },
+		{ dash: Dot, name: "dot" },
+		{ dash: Dash, name: "dash" },
+		{ dash: LongDash, name: "longdash" },
+		{ dash: DashDot, name: "dashdot" },
+		{ dash: LongDashDot, name: "longdashdot" },
+	] {
+		line = Line.new({ dash: row.dash })?
+		decoded : { dash : Str }
+		decoded = Json.parse(line.to_json())?
+		$passed = $passed and !(decoded.dash != row.name or Line.dash_to_str(row.dash) != row.name)
+	}
+	$passed
+}

@@ -1,110 +1,109 @@
-module [
-    Trace,
-    new,
-    to_str,
-]
-
+import InternalJson
 import Marker
 import Line
-import Color
+import Coordinate
 
-Trace x y := {
-    data : List { x : x, y : y, marker : Marker.Marker },
-    orientation : [Vertical, Horizontal],
-    name : Str,
-    line : Line.Line,
-    mode : Str,
+## A validated Plotly scatter, line, text, or bubble trace.
+Scatter :: InternalJson.{
+	is_eq : _
+	Point := { x : Coordinate, y : Coordinate, marker : Marker ?? Marker.default, text : Str ?? "" }
+	Mode : [Lines, Markers, Text, LinesMarkers, LinesText, MarkersText, LinesMarkersText, Hidden]
+	Props := {
+		data : List(Point),
+		name : Str ?? "",
+		line : Line ?? Line.default,
+		mode : Mode ?? Lines,
+	}
+
+	## Encode coordinates once and preserve point order.
+	new : Props -> Scatter
+	new = |props| {
+		xs = props.data.map(|point| point.x.to_json_value())
+		ys = props.data.map(|point| point.y.to_json_value())
+		colors = props.data.map(|point| InternalJson.string(point.marker.get_color().to_css()))
+		sizes = props.data.map(|point| InternalJson.encode(point.marker.get_size()) ?? crash "Scatter.new: opaque Marker accepted a non-finite size")
+		symbols = props.data.map(|point| InternalJson.string(point.marker.get_symbol()))
+		texts = props.data.map(|point| InternalJson.string(point.text))
+		marker = InternalJson.object([
+			{ name: "color", value: InternalJson.array(colors) },
+			{ name: "size", value: InternalJson.array(sizes) },
+			{ name: "symbol", value: InternalJson.array(symbols) },
+		])
+		mode = match props.mode {
+			Lines => "lines"
+			Markers => "markers"
+			Text => "text"
+			LinesMarkers => "lines+markers"
+			LinesText => "lines+text"
+			MarkersText => "markers+text"
+			LinesMarkersText => "lines+markers+text"
+			Hidden => "none"
+		}
+		Scatter.(
+			InternalJson.object([
+				{ name: "type", value: InternalJson.string("scatter") },
+				{ name: "x", value: InternalJson.array(xs) },
+				{ name: "y", value: InternalJson.array(ys) },
+				{ name: "marker", value: marker },
+				{ name: "text", value: InternalJson.array(texts) },
+				{ name: "name", value: InternalJson.string(props.name) },
+				{ name: "line", value: props.line.to_json_value() },
+				{ name: "mode", value: InternalJson.string(mode) },
+			]),
+		)
+	}
+
+	## The safe JSON object used when composing a chart.
+	to_json_value : Scatter -> InternalJson
+	to_json_value = |Scatter.(json)| json
+
+	## Serialize the trace as JSON.
+	to_json : Scatter -> Str
+	to_json = |scatter| scatter.to_json_value().to_json()
 }
-    implements [Inspect]
 
-new :
-    {
-        data : List { x : x, y : y, marker : Marker.Marker },
-        orientation ?? [Vertical, Horizontal],
-        name ?? Str,
-        line ?? Line.Line,
-        mode ?? Str,
-    }
-    -> Result (Trace x y) _
-new = |{ data, orientation ?? Vertical, name ?? "", line ?? Line.new({}), mode ?? "lines" }|
-    Ok(
-        @Trace(
-            {
-                data,
-                orientation,
-                name,
-                line,
-                mode: check_valid_mode(mode)?,
-            },
-        ),
-    )
+## Scatter text and names round trip through JSON escaping.
+expect {
+	scatter = Scatter.new({ data: [{ x: "a\"", y: 2, text: "line\n雪" }], mode: LinesMarkersText, name: "x\\y" })
+	decoded : { x : List(Str), text : List(Str), name : Str, mode : Str }
+	decoded = Json.parse(scatter.to_json())?
+	decoded == { x: ["a\""], text: ["line\n雪"], name: "x\\y", mode: "lines+markers+text" }
+}
 
-check_valid_mode = |mode|
-    valid_modes = Set.from_list(["lines", "markers", "text"])
-    if mode == "none" then
-        Ok(mode)
-    else if Str.split_on(mode, "+") |> List.all(|m| Set.contains(valid_modes, m)) then
-        Ok(mode)
-    else
-        Err(InvalidMode("Invalid mode: ${mode}, expected one of: ${Inspect.to_str(valid_modes)}"))
+## Runtime numeric coordinates are validated before entering a scatter point.
+expect {
+	coordinate = Coordinate.from_number(2.5)?
+	scatter = Scatter.new({ data: [{ x: 1, y: coordinate }] })
+	decoded : { y : List(F64) }
+	decoded = Json.parse(scatter.to_json())?
+	decoded.y == [2.5]
+}
 
-to_str : Trace x y -> Str where x implements Inspect, y implements Inspect
-to_str = |@Trace(inner)|
+## Scatter JSON includes exactly its point arrays and presentation settings.
+expect {
+	scatter = Scatter.new({ data: [{ x: "x", y: "y" }] })
+	scatter.to_json() ==
+		\\{"type":"scatter","x":["x"],"y":["y"],"marker":{"color":["rgb(31, 119, 180)"],"size":[6],"symbol":["circle"]},"text":[""],"name":"","line":{"width":2,"color":"rgb(31, 119, 180)","dash":"solid"},"mode":"lines"}
+}
 
-    data = List.walk(
-        inner.data,
-        { xs: [], ys: [], ms: [] },
-        |state, { x, y, marker }| {
-            xs: List.append(state.xs, x),
-            ys: List.append(state.ys, y),
-            ms: List.append(state.ms, marker),
-        },
-    )
+## Every scatter mode maps to one canonical Plotly flag list.
+expect {
+	actual = [Lines, Markers, Text, LinesMarkers, LinesText, MarkersText, LinesMarkersText, Hidden].map_try(
+		|mode| {
+			scatter = Scatter.new({ data: [{ x: 1, y: 2 }], mode })
+			decoded : { mode : Str }
+			decoded = Json.parse(scatter.to_json())?
+			Ok(decoded.mode)
+		},
+	)?
+	actual == ["lines", "markers", "text", "lines+markers", "lines+text", "markers+text", "lines+markers+text", "none"]
+}
 
-    x_str = data.xs |> List.map(Inspect.to_str) |> Str.join_with(",")
-    y_str = data.ys |> List.map(Inspect.to_str) |> Str.join_with(",")
-    color_str =
-        data.ms
-        |> List.map(
-            |marker|
-                marker
-                |> Marker.get_color
-                |> Color.to_str
-                |> |str| "\"${str}\"",
-        )
-        |> Str.join_with(",")
-        |> |str| "\"color\":[${str}]"
+## Empty scatter data needs no generic coordinate annotation.
+expect Scatter.new({ data: [] }).to_json().contains("\"x\":[]")
 
-    size_str =
-        data.ms
-        |> List.map(|marker| Marker.get_size(marker) |> Num.to_str)
-        |> Str.join_with(",")
-        |> |str| "\"size\":[${str}]"
-
-    symbol_str =
-        data.ms
-        |> List.map(|marker| Marker.get_symbol(marker) |> Inspect.to_str)
-        |> Str.join_with(",")
-        |> |str| "\"symbol\":[${str}]"
-
-    orientation_str = if inner.orientation == Vertical then "\"orientation\":\"v\"" else "\"orientation\":\"h\""
-
-    line_str = Line.to_str(inner.line)
-
-    mode_str = "\"mode\":\"${inner.mode}\""
-
-    name_str = if Str.is_empty(inner.name) then "" else "\"name\":\"${inner.name}\""
-
-    [
-        "\"x\":[${x_str}]",
-        "\"y\":[${y_str}]",
-        "\"marker\":{${color_str},${size_str},${symbol_str}}",
-        "${line_str}",
-        "${orientation_str}",
-        "${name_str}",
-        "${mode_str}",
-        "\"type\":\"scatter\"",
-    ]
-    |> List.drop_if(Str.is_empty)
-    |> Str.join_with(",")
-    |> |str| "{${str}}"
+## One point collection can hold numeric and text coordinates explicitly.
+expect {
+	scatter = Scatter.new({ data: [{ x: 1, y: "one" }, { x: "two", y: 2 }] })
+	scatter.to_json().contains("\"x\":[1,\"two\"]") and scatter.to_json().contains("\"y\":[\"one\",2]")
+}

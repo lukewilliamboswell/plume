@@ -1,59 +1,48 @@
+# Connect named flow nodes with weighted links.
+# Run from the repository root: roc examples/sankey.roc > chart.html
 app [main!] {
-    cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.19.0/bi5zubJ-_Hva9vxxPq4kNx4WHX6oFs8OP6Ad0tCYlrY.tar.br",
-    plume: "../package/main.roc",
+	cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.26.0/GddgvsGjiNXrHFW6au5i5dUDbTs8FinQdrgE2Gqmw53t.tar.zst",
+	plume: "../package/main.roc",
 }
 
-import cli.File
-import cli.Cmd
-import plume.Chart exposing [Chart]
-import plume.Font
+import cli.OsStr
+import cli.Stdout
+import plume.Chart
 import plume.Layout
 import plume.Title
-import plume.Color
 import plume.Sankey
+import plume.Font
+import plume.Color
 
-main! = |_|
-
-    fuscia = Color.hex("#ff00ff")?
-    purple = Color.rgba(124, 56, 245, 150)
-
-    global_font = Font.new(
-        {
-            family: "'Comic Sans MS', 'Chalkboard SE', 'Comic Neue', sans-serif;",
-            style: Italic,
-        },
-    )?
-
-    sankey_chart : Sankey.Trace U8 F64
-    sankey_chart =
-        Sankey.new(
-            {
-                nodes: [
-                    { label: 1, color: fuscia, hover: "<em>Node A</em><br>In: $12.50<br>Out: $32.00<br>" },
-                    { label: 2, color: fuscia, hover: "<em>Node B</em><br>In: $12.50<br>Out: $32.00<br>" },
-                    { label: 3, color: purple, hover: "<em>Node C</em><br>In: $12.50<br>Out: $32.00<br>" },
-                    { label: 4, color: purple, hover: "<em>Node D</em><br>In: $12.50<br>Out: $32.00<br>" },
-                    { label: 5, color: fuscia, hover: "<em>Node E</em><br>In: $12.50<br>Out: $32.00<br>" },
-                ],
-                links: [
-                    { source: 1, target: 3, value: 8.0, hover: "" },
-                    { source: 2, target: 4, value: 4.0, hover: "" },
-                    { source: 1, target: 4, value: 2.0, hover: "" },
-                    { source: 3, target: 5, value: 8.0, hover: "" },
-                    { source: 4, target: 5, value: 4.0, hover: "" },
-                    { source: 4, target: 5, value: 2.0, hover: "" },
-                ],
-            },
-        )
-
-    chart : Chart U8 F64
-    chart =
-        Chart.empty({})
-        |> Chart.add_sankey_chart(sankey_chart)
-        |> Chart.with_layout(Layout.new({ global_font, title: Title.new({ text: "Example Sankey Chart" }) }))
-
-    File.write_utf8!(Chart.to_html(chart), "out.html")?
-
-    Cmd.exec!("open", ["out.html"])?
-
-    Ok({})
+main! : List(OsStr) => Try({}, _)
+main! = |_args| {
+	pink = Color.hex("#ff00ff")?
+	purple = Color.rgba({ red: 124, green: 56, blue: 245, alpha: 150 })
+	# Stable IDs identify nodes independently from the labels shown to readers.
+	flows = Sankey.new({
+		nodes: [
+			{ id: "a", label: "Node A", color: pink, hover: Text("<em>Node A</em><br>Out: $10") },
+			{ id: "b", label: "Node B", color: pink },
+			{ id: "c", label: "Node C", color: purple },
+			{ id: "d", label: "Node D", color: purple },
+			{ id: "e", label: "Node E", color: pink },
+		],
+		links: [
+			{ source: "a", target: "c", value: 8 },
+			{ source: "b", target: "d", value: 4 },
+			{ source: "a", target: "d", value: 2 },
+			{ source: "c", target: "e", value: 8 },
+			{ source: "d", target: "e", value: 6 },
+		],
+		orientation: Horizontal,
+	})?
+	chart = Chart.new({
+		traces: [Sankey(flows)],
+		layout: Layout.new({
+			global_font: Font.new({ family: "sans-serif", style: Italic })?,
+			title: Title.new({ text: "Example Sankey Chart" }),
+		}),
+	})
+	Stdout.line!(chart.to_html())?
+	Ok({})
+}

@@ -1,0 +1,38 @@
+= plume 0.5.0
+
+Plume provides a props-based chart API, validated data and safe JSON and HTML
+output for the modern Roc compiler.
+
+Generated HTML uses Plotly 4.2.0 with a versioned CDN URL and verified script
+integrity.
+
+== Use this release
+
+Add the package to an application's dependencies:
+
+[source,roc]
+----
+plume: "{package-url}",
+----
+
+The examples archive contains complete applications for every supported chart
+type. They emit HTML to stdout, so redirect an example to a file and open it in
+a browser. The budget example reads its input as JSON and reports invalid
+input as a failure.
+
+== Changes
+
+Charts accept a list of typed traces and a layout through constructor props.
+Use `to_json` for Plotly data and `to_html` for a full document. Color channels
+are named records; scatter modes and marker symbols have typed options.
+Sankey links refer to unique node IDs independently of display labels.
+
+Coordinates use an opaque scalar type with checked literal conversions.
+Constructors reject invalid sizes, nonfinite numeric data, self-links and missing
+Sankey endpoints. Empty charts produce valid JSON. Text is escaped for its JSON or
+HTML context, including script terminators and template-like text. The cosine
+example now computes cosine.
+
+Tests cover encoding, decoded field mappings, invalid inputs, mixed trace
+types, HTML embedding and deterministic examples. The shared release workflow
+tests archived examples against the exact release bundle before publication.

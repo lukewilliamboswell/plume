@@ -1,0 +1,29 @@
+name: Release
+
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to publish; leave empty for a dry run
+        type: string
+        default: ''
+      nightly-tag:
+        description: Exact nightly for diagnostics; leave empty for latest
+        type: string
+        default: ''
+
+permissions: {}
+
+jobs:
+  Release:
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    uses: lukewilliamboswell/roc-automation/.github/workflows/release-package.yml@ae089dae16f63f11a754e49c48a9310445e084dd
+    with:
+      version: ${{ inputs.version || '' }}
+      nightly-tag: ${{ inputs.nightly-tag || '' }}
+      check-task: check
+      manual: true

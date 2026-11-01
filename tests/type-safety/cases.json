@@ -1,0 +1,216 @@
+{
+  "format": "plume-type-safety/1",
+  "cases": [
+    {
+      "id": "coordinate-wrapper",
+      "purpose": "Opaque coordinates cannot be wrapped around a non-finite backing value.",
+      "positive": "_coordinate = Coordinate.from_number(1)?",
+      "negative": "_coordinate = Coordinate.(Number(F64.nan))",
+      "diagnostics": [
+        "opaque",
+        "Coordinate"
+      ],
+      "module_names": [
+        "Coordinate"
+      ]
+    },
+    {
+      "id": "coordinate-tag",
+      "purpose": "A matching tag union is not an opaque Coordinate.",
+      "positive": "_coordinate : Coordinate\n_coordinate = Coordinate.from_number(1)?",
+      "negative": "_coordinate : Coordinate\n_coordinate = Number(F64.nan)",
+      "diagnostics": [
+        "type mismatch",
+        "Coordinate"
+      ],
+      "module_names": [
+        "Coordinate"
+      ]
+    },
+    {
+      "id": "font-wrapper",
+      "purpose": "Font validation cannot be bypassed with an opaque wrapper.",
+      "positive": "_font = Font.new({ size: 12 })?",
+      "negative": "_font = Font.(Explicit({ size: 0 }))",
+      "diagnostics": [
+        "opaque",
+        "Font"
+      ],
+      "module_names": [
+        "Font"
+      ]
+    },
+    {
+      "id": "line-wrapper",
+      "purpose": "Line validation cannot be bypassed with a negative backing width.",
+      "positive": "_line = Line.new({ width: 0 })?",
+      "negative": "_line = Line.({ width: -1 })",
+      "diagnostics": [
+        "opaque",
+        "Line"
+      ],
+      "module_names": [
+        "Line"
+      ]
+    },
+    {
+      "id": "marker-wrapper",
+      "purpose": "Marker validation cannot be bypassed with a negative backing size.",
+      "positive": "_marker = Marker.new({ size: 0, symbol: Diamond })?",
+      "negative": "_marker = Marker.({ size: -1, symbol: Diamond, color: Color.rgb({ red: 0, green: 0, blue: 0 }) })",
+      "diagnostics": [
+        "opaque",
+        "Marker"
+      ],
+      "module_names": [
+        "Marker",
+        "Color"
+      ]
+    },
+    {
+      "id": "color-wrapper",
+      "purpose": "Unvalidated CSS text cannot be wrapped as a Color.",
+      "positive": "_color = Color.hex(\"#123456\")?",
+      "negative": "_color = Color.(\"not a CSS color\")",
+      "diagnostics": [
+        "opaque",
+        "Color"
+      ],
+      "module_names": [
+        "Color"
+      ]
+    },
+    {
+      "id": "axis-wrapper",
+      "purpose": "Axis validation cannot be bypassed with a backing tag.",
+      "positive": "_axis = Axis.new({})?",
+      "negative": "_axis = Axis.(Automatic)",
+      "diagnostics": [
+        "opaque",
+        "Axis"
+      ],
+      "module_names": [
+        "Axis"
+      ]
+    },
+    {
+      "id": "record-coordinate",
+      "purpose": "A JSON-encodable record is not a Cartesian coordinate.",
+      "positive": "_scatter = Scatter.new({ data: [{ x: \"category\", y: 0 }] })",
+      "negative": "_scatter = Scatter.new({ data: [{ x: { value: 1 }, y: 0 }] })",
+      "diagnostics": [
+        "type mismatch",
+        "Coordinate"
+      ],
+      "module_names": [
+        "Scatter"
+      ]
+    },
+    {
+      "id": "list-coordinate",
+      "purpose": "A JSON-encodable list is not a Cartesian coordinate.",
+      "positive": "_bar = Bar.new({ data: [{ x: \"category\", y: 0 }] })?",
+      "negative": "_bar = Bar.new({ data: [{ x: [1, 2], y: 0 }] })?",
+      "diagnostics": [
+        "type mismatch",
+        "Coordinate"
+      ],
+      "module_names": [
+        "Bar"
+      ]
+    },
+    {
+      "id": "bool-coordinate",
+      "purpose": "A Bool is not a Cartesian coordinate.",
+      "positive": "_scatter = Scatter.new({ data: [{ x: \"category\", y: 0 }] })",
+      "negative": "_scatter = Scatter.new({ data: [{ x: Bool.True, y: 0 }] })",
+      "diagnostics": [
+        "type mismatch",
+        "Coordinate"
+      ],
+      "module_names": [
+        "Scatter"
+      ]
+    },
+    {
+      "id": "raw-float-coordinate",
+      "purpose": "Runtime floats must pass through Coordinate.from_number.",
+      "positive": "number = 1.F64\ncoordinate = Coordinate.from_number(number)?\n_bar = Bar.new({ data: [{ x: coordinate, y: 0 }] })?",
+      "negative": "number = 1.F64\n_bar = Bar.new({ data: [{ x: number, y: 0 }] })?",
+      "diagnostics": [
+        "type mismatch",
+        "Coordinate"
+      ],
+      "module_names": [
+        "Bar",
+        "Coordinate"
+      ]
+    },
+    {
+      "id": "nan-coordinate",
+      "purpose": "Raw NaN cannot enter a point without a validated Coordinate.",
+      "positive": "coordinate = Coordinate.from_number(1)?\n_scatter = Scatter.new({ data: [{ x: coordinate, y: 0 }] })",
+      "negative": "_scatter = Scatter.new({ data: [{ x: F64.nan, y: 0 }] })",
+      "diagnostics": [
+        "type mismatch",
+        "Coordinate"
+      ],
+      "module_names": [
+        "Scatter",
+        "Coordinate"
+      ]
+    },
+    {
+      "id": "unknown-marker-tag",
+      "purpose": "The marker symbol union rejects unknown tags.",
+      "positive": "_marker = Marker.new({ symbol: Diamond })?",
+      "negative": "_marker = Marker.new({ symbol: MadeUpSymbol })?",
+      "diagnostics": [
+        "type mismatch",
+        "Symbol"
+      ],
+      "module_names": [
+        "Marker"
+      ]
+    },
+    {
+      "id": "raw-marker-string",
+      "purpose": "Marker symbols are named tags rather than runtime strings.",
+      "positive": "_marker = Marker.new({ symbol: Marker.Symbol.from_str(\"diamond\")? })?",
+      "negative": "_marker = Marker.new({ symbol: \"diamond\" })?",
+      "diagnostics": [
+        "type mismatch",
+        "Marker.Symbol"
+      ],
+      "module_names": [
+        "Marker"
+      ]
+    },
+    {
+      "id": "unknown-bar-prop",
+      "purpose": "Bar props reject unknown configuration fields.",
+      "positive": "_bar = Bar.new({ data: [], width: 1 })?",
+      "negative": "_bar = Bar.new({ data: [], widht: 1 })?",
+      "diagnostics": [
+        "type mismatch",
+        "widht"
+      ],
+      "module_names": [
+        "Bar"
+      ]
+    },
+    {
+      "id": "nonstring-pie-label",
+      "purpose": "Pie labels are text rather than arbitrary JSON values.",
+      "positive": "_pie = Pie.new({ data: [{ label: \"slice\", value: 1 }] })?",
+      "negative": "_pie = Pie.new({ data: [{ label: { name: \"slice\" }, value: 1 }] })?",
+      "diagnostics": [
+        "type mismatch",
+        "Str"
+      ],
+      "module_names": [
+        "Pie"
+      ]
+    }
+  ]
+}
