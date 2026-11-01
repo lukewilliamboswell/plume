@@ -46,6 +46,8 @@ composes objects and arrays without accepting unchecked JSON fragments.
 the JSON for an HTML script element and escapes the document title. Values
 that resemble template placeholders remain literal data.
 
+include::api.adoc[]
+
 == Development and validation
 
 Use the Blueprint release declared in `Blueprint.roc` and the latest Roc

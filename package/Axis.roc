@@ -5,8 +5,27 @@ import InternalJson
 ## Plotly axis settings. Numeric and date bounds are explicit closed cases;
 ## arbitrary JSON fragments are never accepted as bounds.
 Axis :: [Automatic, Explicit(Props)].{
-	Type : [Auto, Linear, Log, Date, Category, MultiCategory]
+
+	## Choose how Plotly interprets coordinates on one axis.
+	## `Auto` lets Plotly infer the scale. `Linear` and `Log` use numeric
+	## coordinates; `Date` interprets date strings. `Category` uses category
+	## labels represented by text coordinates.
+	Type : [Auto, Linear, Log, Date, Category]
+
+	## Choose automatic range behavior or explicit bounds.
+	## `Auto` lets Plotly choose bounds. `Fixed` disables interactive range
+	## changes without selecting bounds. `Reversed` automatically orders
+	## bounds in reverse. `Bounds({ min, max })` supplies finite numeric
+	## endpoints, whose order may reverse the axis. For a `Log` axis these
+	## are base-10 exponents, so 0 to 2 shows values from 1 to 100.
+	## `DateBounds({ start, end })` supplies date strings interpreted by
+	## Plotly; Plume does not parse or validate their date syntax.
 	RangeSpec : [Auto, Fixed, Reversed, Bounds({ min : F64, max : F64 }), DateBounds({ start : Str, end : Str })]
+
+	## Override one axis's scale, range, title and color.
+	## `type: Auto` omits an explicit scale. `range: Auto` selects automatic
+	## bounds. `title` defaults to [Title.default], and `color` defaults to
+	## dark gray. Use [Axis.default] to leave the whole axis to Plotly.
 	Props := {
 		title : Title ?? Title.default,
 		type : Type ?? Auto,
@@ -14,12 +33,23 @@ Axis :: [Automatic, Explicit(Props)].{
 		color : Color ?? Color.rgb({ red: 68, green: 68, blue: 68 }),
 	}
 
+	## Leave the entire axis at Plotly defaults, encoding an empty object.
+	## Unlike [Axis.new] with default props, this adds no range or color
+	## overrides.
 	default : Axis
 	default = Automatic
 
-	## Numeric bounds must be finite. Their order may reverse the axis.
-	## Log bounds use Plotly's base-10 exponent convention. Date bounds are
-	## ISO date strings interpreted by Plotly.
+	## Validate numeric bounds and construct an axis override.
+	## Returns `InvalidAxisBounds({ min, max })` if either numeric endpoint
+	## is nonfinite. Either endpoint order is accepted. Date bounds remain
+	## strings for Plotly to interpret and are not parsed here.
+	##
+	## ```roc
+	## expect {
+	##     axis = Axis.new({ type: Log, range: Bounds({ min: 0, max: 2 }) })?
+	##     axis.to_json().contains("log")
+	## }
+	## ```
 	new : Props -> Try(Axis, [InvalidAxisBounds({ min : F64, max : F64 })])
 	new = |props| match props.range {
 		Bounds(bounds) =>
@@ -31,7 +61,9 @@ Axis :: [Automatic, Explicit(Props)].{
 		_ => Ok(Explicit(props))
 	}
 
-	## Encode an object for composition without accepting raw JSON.
+	## Internal composition hook used by Plume's renderers.
+	## Applications normally use [Axis.to_json] for complete JSON text;
+	## this returns the package's safe internal value without accepting raw JSON.
 	to_json_value : Axis -> InternalJson
 	to_json_value = |axis| match axis {
 		Automatic => InternalJson.object([])
@@ -63,7 +95,6 @@ Axis :: [Automatic, Explicit(Props)].{
 								Log => "log"
 								Date => "date"
 								Category => "category"
-								MultiCategory => "multicategory"
 							},
 						),
 					},
@@ -125,7 +156,6 @@ expect {
 		{ type: Log, name: "log" },
 		{ type: Date, name: "date" },
 		{ type: Category, name: "category" },
-		{ type: MultiCategory, name: "multicategory" },
 	] {
 		axis = Axis.new({ type: row.type })?
 		decoded : { type : Str }

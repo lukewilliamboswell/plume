@@ -5,6 +5,12 @@ import InternalJson
 
 ## A chart's layout is independent of its trace coordinate types.
 Layout :: Props.{
+
+	## Configure shared chart presentation.
+	## `global_font` supplies text styling for the chart; `title` supplies
+	## its visible title. `x_axis` and `y_axis` configure Cartesian axes.
+	## Their defaults inherit Plotly settings. `legend: Hidden` suppresses
+	## the legend by default; use `Shown` to display trace names.
 	Props := {
 		global_font : Font ?? Font.default,
 		title : Title ?? Title.default,
@@ -13,6 +19,9 @@ Layout :: Props.{
 		legend : [Shown, Hidden] ?? Hidden,
 	}
 
+	## Construct a layout from already validated settings.
+	## This function is infallible. Combine [Title.new], [Font.new] and
+	## [Axis.new] when the corresponding presentation needs an override.
 	new : Props -> Layout
 	new = |props| Layout.(props)
 
@@ -21,7 +30,9 @@ Layout :: Props.{
 	get_title : Layout -> Str
 	get_title = |Layout.(props)| props.title.get_text() ?? "My Chart"
 
-	## Encode an object for composition without accepting raw JSON.
+	## Internal composition hook used by Plume's renderers.
+	## Applications normally use [Layout.to_json] for complete JSON text;
+	## this returns the package's safe internal value without accepting raw JSON.
 	to_json_value : Layout -> InternalJson
 	to_json_value = |Layout.(props)| InternalJson.object([
 		{ name: "font", value: props.global_font.to_json_value() },

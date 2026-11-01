@@ -3,12 +3,50 @@ import Color
 
 ## A Sankey flow diagram whose endpoints are checked at construction.
 Sankey :: InternalJson.{
+
+	## Compare the encoded trace, including input order and all style settings.
 	is_eq : _
+
+	## One flow endpoint, with identity separate from its display text.
+	## `id` must be unique within the trace; links refer to this exact string.
+	## `label` is visible text and may be shared by multiple nodes. `color`
+	## defaults to Plotly blue. `hover: Default` preserves Plotly's hover
+	## information; `Text(text)` replaces it for this node. Hover text uses
+	## Plotly's supported markup rules.
 	Node := { id : Str, label : Str, color : Color ?? Color.rgb({ red: 31, green: 119, blue: 180 }), hover : [Default, Text(Str)] ?? Default }
+
+	## One directed flow between distinct node IDs.
+	## `source` and `target` must match existing [Sankey.Node] IDs. `value`
+	## is finite and nonnegative; zero is accepted. `hover: Default` keeps
+	## Plotly's hover information, while `Text(text)` supplies an override.
+	## Cycles through distinct nodes are supported; self-links are rejected.
 	Link := { source : Str, target : Str, value : F64, hover : [Default, Text(Str)] ?? Default }
+
+	## Configure a flow diagram.
+	## `nodes` defines stable output order; labels need not be unique.
+	## `links` resolves IDs against those nodes and retains input order.
+	## `orientation` defaults to `Horizontal` for left-to-right flow; use
+	## `Vertical` for top-to-bottom flow. `name` is the trace label. Both
+	## lists may be empty, but every supplied link needs valid endpoints.
 	Props := { nodes : List(Node), links : List(Link), orientation : [Vertical, Horizontal] ?? Horizontal, name : Str ?? "" }
 
-	## Node identities are distinct from display labels, which may repeat.
+	## Validate identities, endpoints and amounts before constructing a trace.
+	## Returns `DuplicateNode(id)` for repeated IDs, `MissingSource(id)` or
+	## `MissingTarget(id)` for absent endpoints, and `SelfLink(id)` when a
+	## link points back to the same node. Negative amounts return
+	## `InvalidLinkValue(value)`; nonfinite amounts return `NaN`, `Infinity`,
+	## or `NegativeInfinity`. Rendering a successfully constructed trace
+	## performs no further graph validation.
+	##
+	## ```roc
+	## expect {
+	##     flow = Sankey.new({
+	##         nodes: [{ id: "income", label: "Income" }, { id: "rent", label: "Rent" }],
+	##         links: [{ source: "income", target: "rent", value: 1200 }],
+	##     })?
+	##     flow.to_json().contains("Income")
+	## }
+	## ```
 	new : Props -> Try(Sankey, [DuplicateNode(Str), MissingSource(Str), MissingTarget(Str), SelfLink(Str), InvalidLinkValue(F64), Infinity, NaN, NegativeInfinity])
 	new = |props| {
 		var $indexes = Dict.empty()
@@ -73,7 +111,9 @@ Sankey :: InternalJson.{
 		)
 	}
 
-	## The safe JSON object used when composing a chart.
+	## Internal composition hook used by Plume's renderers.
+	## Applications normally use [Sankey.to_json] for complete JSON text;
+	## this returns the package's safe internal value without accepting raw JSON.
 	to_json_value : Sankey -> InternalJson
 	to_json_value = |Sankey.(json)| json
 

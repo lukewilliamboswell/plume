@@ -170,7 +170,11 @@ Marker :: { size : F64, color : Color, symbol : Symbol }.{
 		ArrowWide,
 		ArrowWideOpen,
 	].{
+
+		## Compare symbol tags, independently of their rendered appearance.
 		is_eq : _
+
+		## Hash the symbol tag consistently with [Marker.Symbol.is_eq].
 		to_hash : _
 
 		## Parse a canonical Plotly name. Numeric aliases are intentionally
@@ -510,17 +514,24 @@ Marker :: { size : F64, color : Color, symbol : Symbol }.{
 		}
 	}
 
+	## Style one scatter point.
+	## `size` is a finite, nonnegative marker diameter in pixels and defaults
+	## to six. Zero hides the marker. `color` defaults to Plotly blue.
+	## `symbol` uses a [Marker.Symbol] tag and defaults to `Circle`.
 	Props := {
 		size : F64 ?? 6,
 		color : Color ?? Color.rgb({ red: 31, green: 119, blue: 180 }),
 		symbol : Symbol ?? Circle,
 	}
 
-	## The standard Plotly marker.
+	## A six-pixel circle in Plotly blue, usable without validation.
 	default : Marker
 	default = Marker.({ size: 6, color: Color.rgb({ red: 31, green: 119, blue: 180 }), symbol: Circle })
 
-	## Size must be finite and nonnegative, including zero for hidden points.
+	## Validate the diameter and construct a per-point marker.
+	## A negative or nonfinite size returns `InvalidMarkerSize(size)`.
+	## For example, `Marker.new({ size: 12, symbol: Diamond })` creates a
+	## larger diamond with the default color.
 	new : Props -> Try(Marker, [InvalidMarkerSize(F64)])
 	new = |props| {
 		if props.size.is_finite() and props.size >= 0 {
@@ -530,14 +541,22 @@ Marker :: { size : F64, color : Color, symbol : Symbol }.{
 		}
 	}
 
+	## Read the validated marker diameter in pixels; zero denotes hidden.
 	get_size : Marker -> F64
 	get_size = |Marker.(fields)| fields.size
+
+	## Read the marker's fill color for reuse in another style.
 	get_color : Marker -> Color
 	get_color = |Marker.(fields)| fields.color
+
+	## Read the canonical Plotly symbol name, such as "diamond-open".
+	## Props accept typed symbol tags; this accessor returns display text.
 	get_symbol : Marker -> Str
 	get_symbol = |Marker.(fields)| fields.symbol.to_str()
 
-	## Encode an object for composition without accepting raw JSON.
+	## Internal composition hook used by Plume's renderers.
+	## Applications normally use [Marker.to_json] for complete JSON text;
+	## this returns the package's safe internal value without accepting raw JSON.
 	to_json_value : Marker -> InternalJson
 	to_json_value = |Marker.(fields)| InternalJson.object([
 		{ name: "size", value: InternalJson.encode(fields.size) ?? crash "Marker.to_json_value: non-finite size passed constructor" },

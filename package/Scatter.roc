@@ -5,9 +5,30 @@ import Coordinate
 
 ## A validated Plotly scatter, line, text, or bubble trace.
 Scatter :: InternalJson.{
+
+	## Compare the encoded trace, including input order and all style settings.
 	is_eq : _
+
+	## One point, its marker, and optional display text.
+	## `x` and `y` are text or finite numeric [Coordinate] values. `marker`
+	## defaults to [Marker.default]. `text` defaults to an empty label and
+	## is drawn when the selected [Scatter.Mode] includes text. Points are
+	## rendered in list order, which also determines connected line order.
 	Point := { x : Coordinate, y : Coordinate, marker : Marker ?? Marker.default, text : Str ?? "" }
+
+	## Select which parts of each point are drawn.
+	## `Lines`, `Markers`, and `Text` select one part. Combined tags such as
+	## `LinesMarkers` or `LinesMarkersText` select several. `Hidden` draws
+	## none of those parts; it encodes Plotly's `none` mode and does not
+	## remove the trace or its hover information.
 	Mode : [Lines, Markers, Text, LinesMarkers, LinesText, MarkersText, LinesMarkersText, Hidden]
+
+	## The complete scatter, line, bubble, or text series.
+	## - `data` preserves point order and may be empty.
+	## - `mode` defaults to `Lines`; use `Markers` for a scatter/bubble plot.
+	## - `line` defaults to [Line.default] and applies to connected segments.
+	## - `name` is the legend/hover label, and may be empty.
+	## Per-point text, color, size and symbol belong to [Scatter.Point].
 	Props := {
 		data : List(Point),
 		name : Str ?? "",
@@ -15,7 +36,17 @@ Scatter :: InternalJson.{
 		mode : Mode ?? Lines,
 	}
 
-	## Encode coordinates once and preserve point order.
+	## Construct a scatter trace from already validated points and styles.
+	## This function is infallible: runtime numbers must first pass through
+	## [Coordinate.from_number], and marker/line constructors validate sizes.
+	## Use `Scatter(trace)` to include the result in [Chart.Props].
+	##
+	## ```roc
+	## expect {
+	##     points = Scatter.new({ data: [{ x: 1, y: 2 }], mode: Markers })
+	##     points.to_json().contains("markers")
+	## }
+	## ```
 	new : Props -> Scatter
 	new = |props| {
 		xs = props.data.map(|point| point.x.to_json_value())
@@ -53,7 +84,9 @@ Scatter :: InternalJson.{
 		)
 	}
 
-	## The safe JSON object used when composing a chart.
+	## Internal composition hook used by Plume's renderers.
+	## Applications normally use [Scatter.to_json] for complete JSON text;
+	## this returns the package's safe internal value without accepting raw JSON.
 	to_json_value : Scatter -> InternalJson
 	to_json_value = |Scatter.(json)| json
 
