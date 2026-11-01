@@ -9,7 +9,7 @@ Sankey :: InternalJson.{
 	Props := { nodes : List(Node), links : List(Link), orientation : [Vertical, Horizontal] ?? Horizontal, name : Str ?? "" }
 
 	## Node identities are distinct from display labels, which may repeat.
-	new : Props -> Try(Sankey, [DuplicateNode(Str), MissingSource(Str), MissingTarget(Str), InvalidLinkValue(F64), Infinity, NaN, NegativeInfinity])
+	new : Props -> Try(Sankey, [DuplicateNode(Str), MissingSource(Str), MissingTarget(Str), SelfLink(Str), InvalidLinkValue(F64), Infinity, NaN, NegativeInfinity])
 	new = |props| {
 		var $indexes = Dict.empty()
 		initial_index : U64
@@ -38,7 +38,8 @@ Sankey :: InternalJson.{
 		values = props.links.map_try(
 			|link| {
 				encoded = InternalJson.encode(link.value)?
-				if (link.value < 0) Err(InvalidLinkValue(link.value)) else Ok(encoded)
+				if (link.value < 0) return Err(InvalidLinkValue(link.value))
+				if (link.source == link.target) Err(SelfLink(link.source)) else Ok(encoded)
 			},
 		)?
 		nodes = InternalJson.object(
@@ -127,6 +128,20 @@ expect {
 expect {
 	actual = [F64.nan, -F64.infinity].map(|value| Sankey.new({ nodes: [{ id: "a", label: "A" }], links: [{ source: "a", target: "a", value }] }).is_err())
 	actual == [True, True]
+}
+
+## Self-links cannot produce valid geometry in the pinned Plotly renderer.
+expect Sankey.new({ nodes: [{ id: "a", label: "A" }], links: [{ source: "a", target: "a", value: 1 }] }) == Err(SelfLink("a"))
+
+## Zero-valued self-links are rejected consistently.
+expect Sankey.new({ nodes: [{ id: "a", label: "A" }], links: [{ source: "a", target: "a", value: 0 }] }) == Err(SelfLink("a"))
+
+## Cycles through distinct nodes remain valid flow graphs.
+expect {
+	sankey = Sankey.new({ nodes: [{ id: "a", label: "A" }, { id: "b", label: "B" }], links: [{ source: "a", target: "b", value: 1 }, { source: "b", target: "a", value: 1 }] })?
+	decoded : { link : { source : List(U64), target : List(U64) } }
+	decoded = Json.parse(sankey.to_json())?
+	decoded == { link: { source: [0, 1], target: [1, 0] } }
 }
 
 hover_fields : List([Default, Text(Str)]) -> List({ name : Str, value : InternalJson })
