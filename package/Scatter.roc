@@ -9,7 +9,6 @@ Scatter :: InternalJson.{
 	Mode : [Lines, Markers, Text, LinesMarkers, LinesText, MarkersText, LinesMarkersText, Hidden]
 	Props(x, y) := {
 		data : List(Point(x, y)),
-		orientation : [Vertical, Horizontal] ?? Vertical,
 		name : Str ?? "",
 		line : Line ?? Line.default,
 		mode : Mode ?? Lines,
@@ -29,10 +28,6 @@ Scatter :: InternalJson.{
 			{ name: "size", value: InternalJson.array(sizes) },
 			{ name: "symbol", value: InternalJson.array(symbols) },
 		])
-		orientation = match props.orientation {
-			Vertical => "v"
-			Horizontal => "h"
-		}
 		mode = match props.mode {
 			Lines => "lines"
 			Markers => "markers"
@@ -51,7 +46,6 @@ Scatter :: InternalJson.{
 					{ name: "y", value: InternalJson.array(ys) },
 					{ name: "marker", value: marker },
 					{ name: "text", value: InternalJson.array(texts) },
-					{ name: "orientation", value: InternalJson.string(orientation) },
 					{ name: "name", value: InternalJson.string(props.name) },
 					{ name: "line", value: props.line.to_json_value() },
 					{ name: "mode", value: InternalJson.string(mode) },
@@ -84,7 +78,7 @@ expect Scatter.new({ data: [{ x: 1, y: F64.infinity }] }) == Err(Infinity)
 expect {
 	scatter = Scatter.new({ data: [{ x: "x", y: "y" }] })?
 	scatter.to_json() ==
-		\\{"type":"scatter","x":["x"],"y":["y"],"marker":{"color":["rgb(31, 119, 180)"],"size":[6],"symbol":["circle"]},"text":[""],"orientation":"v","name":"","line":{"width":2,"color":"rgb(31, 119, 180)","dash":"solid"},"mode":"lines"}
+		\\{"type":"scatter","x":["x"],"y":["y"],"marker":{"color":["rgb(31, 119, 180)"],"size":[6],"symbol":["circle"]},"text":[""],"name":"","line":{"width":2,"color":"rgb(31, 119, 180)","dash":"solid"},"mode":"lines"}
 }
 
 ## Every scatter mode maps to one canonical Plotly flag list.
