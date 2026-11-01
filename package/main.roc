@@ -4,6 +4,7 @@ package
 		Bar,
 		Chart,
 		Color,
+		Coordinate,
 		Font,
 		Layout,
 		Line,

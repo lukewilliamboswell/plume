@@ -3,15 +3,15 @@ import InternalJson
 ## A validated Plotly pie or donut trace.
 Pie :: InternalJson.{
 	is_eq : _
-	Slice(label) := { label : label, value : F64 }
-	Props(label) := { data : List(Slice(label)), hole : F64 ?? 0, name : Str ?? "" }
+	Slice := { label : Str, value : F64 }
+	Props := { data : List(Slice), hole : F64 ?? 0, name : Str ?? "" }
 
 	## Construct a pie with nonnegative finite values and a hole in [0, 1].
-	new : Props(label) -> Try(Pie, [InvalidHole(F64), InvalidPieValue(F64), Infinity, NaN, NegativeInfinity, ..err]) where [label.Json.Encodable([InvalidHole(F64), InvalidPieValue(F64), Infinity, NaN, NegativeInfinity, ..err])]
+	new : Props -> Try(Pie, [InvalidHole(F64), InvalidPieValue(F64), Infinity, NaN, NegativeInfinity])
 	new = |props| {
 		hole = InternalJson.encode(props.hole)?
 		if (props.hole < 0 or props.hole > 1) return Err(InvalidHole(props.hole))
-		labels = props.data.map_try(|slice| InternalJson.encode(slice.label))?
+		labels = props.data.map(|slice| InternalJson.string(slice.label))
 		values = props.data.map_try(
 			|slice| {
 				encoded = InternalJson.encode(slice.value)?
@@ -75,9 +75,12 @@ expect {
 
 ## Empty typed pies produce valid empty arrays.
 expect {
-	slices : List(Pie.Slice(Str))
+	slices : List(Pie.Slice)
 	slices = []
 	pie = Pie.new({ data: slices })?
 	pie.to_json() ==
 		\\{"type":"pie","labels":[],"values":[],"hole":0,"name":""}
 }
+
+## Empty pies need no generic label annotation.
+expect Pie.new({ data: [] })?.to_json().contains("\"labels\":[]")

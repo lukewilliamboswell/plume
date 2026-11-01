@@ -1,24 +1,25 @@
 import InternalJson
 import Color
+import Coordinate
 
 ## A validated Plotly bar trace.
 Bar :: InternalJson.{
 	is_eq : _
-	Point(x, y) := { x : x, y : y, color : Color ?? Color.rgb({ red: 31, green: 119, blue: 180 }) }
-	Props(x, y) := {
-		data : List(Point(x, y)),
+	Point := { x : Coordinate, y : Coordinate, color : Color ?? Color.rgb({ red: 31, green: 119, blue: 180 }) }
+	Props := {
+		data : List(Point),
 		orientation : [Vertical, Horizontal] ?? Vertical,
 		name : Str ?? "",
 		width : F64 ?? 0.75,
 	}
 
 	## Construct bars, with width measured in position-axis units.
-	new : Props(x, y) -> Try(Bar, [InvalidBarWidth(F64), Infinity, NaN, NegativeInfinity, ..err]) where [x.Json.Encodable([InvalidBarWidth(F64), Infinity, NaN, NegativeInfinity, ..err]), y.Json.Encodable([InvalidBarWidth(F64), Infinity, NaN, NegativeInfinity, ..err])]
+	new : Props -> Try(Bar, [InvalidBarWidth(F64), Infinity, NaN, NegativeInfinity])
 	new = |props| {
 		width = InternalJson.encode(props.width)?
 		if (props.width < 0) return Err(InvalidBarWidth(props.width))
-		xs = props.data.map_try(|point| InternalJson.encode(point.x))?
-		ys = props.data.map_try(|point| InternalJson.encode(point.y))?
+		xs = props.data.map(|point| point.x.to_json_value())
+		ys = props.data.map(|point| point.y.to_json_value())
 		colors = props.data.map(|point| point.color.to_json_value())
 		marker = InternalJson.object([{ name: "color", value: InternalJson.array(colors) }])
 		orientation = match props.orientation {
@@ -60,8 +61,14 @@ expect {
 ## Negative bar widths return a structured error.
 expect Bar.new({ data: [{ x: "a", y: 3 }], width: -1 }) == Err(InvalidBarWidth(-1))
 
-## Bar coordinates reject non-finite numbers during construction.
-expect Bar.new({ data: [{ x: "a", y: F64.nan }] }) == Err(NaN)
+## Runtime coordinates pass through the validated Coordinate constructor.
+expect {
+	coordinate = Coordinate.from_number(2.5)?
+	bar = Bar.new({ data: [{ x: "a", y: coordinate }] })?
+	decoded : { y : List(F64) }
+	decoded = Json.parse(bar.to_json())?
+	decoded.y == [2.5]
+}
 
 ## Bar JSON contains exactly the supported bar properties.
 expect {
@@ -72,7 +79,7 @@ expect {
 
 ## Empty typed bar data serializes as empty coordinate and color arrays.
 expect {
-	points : List(Bar.Point(Str, F64))
+	points : List(Bar.Point)
 	points = []
 	bar = Bar.new({ data: points })?
 	bar.to_json() ==
@@ -87,3 +94,6 @@ expect {
 
 ## NaN bar widths fail before any trace can be rendered.
 expect Bar.new({ data: [{ x: "x", y: 0 }], width: F64.nan }) == Err(NaN)
+
+## Empty bars need no generic coordinate annotation.
+expect Bar.new({ data: [] })?.to_json().contains("\"x\":[]")

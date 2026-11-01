@@ -88,7 +88,7 @@ expect {
 ## One chart may combine traces with unrelated coordinate types.
 expect {
 	bar = Bar.new({ data: [{ x: "apples", y: 3 }] })?
-	scatter = Scatter.new({ data: [{ x: 1.5, y: 2.5 }] })?
+	scatter = Scatter.new({ data: [{ x: 1.5, y: 2.5 }] })
 	chart = Chart.new({ traces: [Bar(bar), Scatter(scatter)] })
 	decoded : { data : List({ type : Str }) }
 	decoded = Json.parse(chart.to_json())?
