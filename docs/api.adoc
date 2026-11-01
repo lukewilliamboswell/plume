@@ -1,0 +1,141 @@
+[#working-with-charts]
+== Working with charts
+
+A chart has three layers: validated domain values, a trace describing one
+series, and a figure that combines traces with a layout. Applications import
+the modules they use from their `plume` dependency and decide where to write
+the resulting text.
+
+=== Construct a figure
+
+Inside an application's `main!`, create a trace and wrap it in the matching
+`Chart.Trace` tag:
+
+[source,roc]
+----
+sales = Bar.new({
+    data: [
+        { x: "Apples", y: 12 },
+        { x: "Oranges", y: 8 },
+    ],
+    name: "Sales",
+})?
+
+chart = Chart.new({
+    traces: [Bar(sales)],
+    layout: Layout.new({ title: Title.new({ text: "Fruit sales" }) }),
+})
+
+html = chart.to_html()
+----
+
+`Chart.new` and `Layout.new` are infallible. Constructors that validate raw
+numeric settings, such as `Bar.new`, return `Try`; use `?` to propagate their
+structured errors. An empty trace list is valid. A figure can contain several
+trace kinds, and each trace retains the order of its input points or slices.
+
+[cols="1,2,3",options="header"]
+|===
+|Constructor |Use |Important settings
+|`Bar.new` |Vertical or horizontal bars |Per-point color, orientation, width in axis units
+|`Scatter.new` |Lines, scatter plots, bubbles and text |Mode, per-point marker and text, shared line style
+|`Pie.new` |Pies and donuts |Labeled nonnegative slices; hole in the closed interval zero to one
+|`Sankey.new` |Directed flows |Stable node IDs, links, hover overrides and orientation
+|===
+
+=== Coordinates and styling
+
+Cartesian point fields use `Coordinate`. Plain string and number literals
+convert at compile time; runtime data uses explicit constructors:
+
+[source,roc]
+----
+label = Coordinate.from_text(product_name)
+quantity = Coordinate.from_number(measured_quantity)?
+sales = Bar.new({ data: [{ x: label, y: quantity }] })?
+----
+
+Text coordinates remain text even when they contain digits. Numeric
+coordinates use F64 precision, and `Coordinate.from_number` rejects NaN and
+both infinities with `NonFiniteCoordinate(number)`. For date axes, supply
+appropriate date text and select `Axis`'s `Date` type; Plotly interprets the
+strings. Plume does not parse date syntax.
+
+Markers and line styles are validated before they enter a scatter trace:
+
+[source,roc]
+----
+purple = Color.rgb({ red: 124, green: 56, blue: 245 })
+marker = Marker.new({ size: 12, symbol: Diamond, color: purple })?
+line = Line.new({ width: 2, color: purple, dash: Dash })?
+points = Scatter.new({
+    data: [{ x: 1, y: 2, marker }],
+    mode: LinesMarkers,
+    line,
+})
+----
+
+`Scatter.new` is infallible because its coordinates and styles have already
+been checked. The `mode` selects lines, markers, text, or a combination;
+per-point `text` is drawn only by a mode that includes text. Point order is
+also line-connection order. A marker's size is its diameter in pixels, and a
+line's width is measured in pixels. Their zero sizes hide the corresponding
+shape; negative and nonfinite values are errors.
+
+Use named symbol tags in source. `Marker.Symbol.from_str` accepts canonical
+Plotly names when reading configuration, returning `InvalidSymbol(text)` for
+unknown or unsupported names. `Color.hex` accepts six hexadecimal digits
+following `#`; `Color.named` accepts supported CSS color names without regard
+to ASCII case. RGB and alpha channels use bytes, so alpha zero is transparent
+and alpha 255 is opaque.
+
+`Font.default`, `Axis.default` and `Title.default` leave their settings to
+Plotly. Calling their constructors applies the documented props explicitly.
+A `Font`'s size must be finite and at least one pixel. Font families are CSS
+family lists resolved by the browser; the package does not load fonts.
+Numeric axis bounds may run in either direction. On logarithmic axes the
+bounds are base-10 exponents: zero to two displays values from one to 100.
+
+=== Titles, legends and hover text
+
+`Layout`'s `title` is the title drawn in the chart. Its legend is hidden by
+default; set `legend: Shown` to display trace names. `Chart`'s separate `title`
+controls the HTML document title: `FromLayout` derives it from the visible
+title, with a fallback when no title is set; `Text(text)` overrides the
+document title without changing the chart or its JSON figure.
+
+Sankey nodes use distinct string IDs independently of display labels. Links
+must reference existing, different IDs; duplicate IDs, absent endpoints and
+self-links produce separate errors from `Sankey.new`. Nonnegative finite
+flow values, including zero, are accepted. Cycles through distinct nodes are
+supported.
+
+A node or link's `hover: Default` preserves Plotly's normal hover content.
+`Text(text)` overrides only that node or link. Chart labels and hover text
+follow Plotly's supported formatting rules. The package escapes their JSON
+representation; this does not turn Plotly's text formatting into plain text.
+
+=== Render the result
+
+`chart.to_json()` returns a complete figure object containing `data` and
+`layout`. Use it when another application manages Plotly and its document.
+`chart.to_html()` returns a complete HTML document with a pinned Plotly CDN
+script and an integrity hash. Viewing that document requires network access
+to the CDN. HTML document-title text and JSON embedded in the script element
+are escaped for their separate contexts.
+
+Low-level `to_json_value` methods are composition hooks used by the package's
+renderers. Their `InternalJson` result is an opaque, safely encoded value;
+it has no unchecked raw-JSON constructor and is intentionally absent from the
+package's exposed modules. Applications normally use the complete `to_json`
+or `to_html` output instead of these hooks.
+
+=== Browse the API reference
+
+Browse the link:api/index.html[API reference]. To generate it locally, run
+`blueprint run api-docs` and open `generated-docs/index.html`. The generated
+pages describe each constructor, its props, defaults, closed choices and
+failure tags. `blueprint run policy` checks that public definitions have
+attached documentation, and `blueprint run check` runs the same policy gate.
+Presence checks do not judge clarity or completeness: review the rendered
+pages whenever public types, options or behavior change.

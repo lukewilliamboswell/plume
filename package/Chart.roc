@@ -5,16 +5,45 @@ import Sankey
 import Layout
 import Pie
 
-## A mixed collection of traces and its presentation.
+## A complete Plotly figure containing any supported trace kinds.
+## Construct validated traces first, then pass their tags to [Chart.new].
+## The package is pure: [Chart.to_json] and [Chart.to_html] return text,
+## and the application chooses where to write it.
 Chart :: { traces : List(Trace), layout : Layout, title : [FromLayout, Text(Str)] }.{
+
+	## A trace paired with its chart kind.
+	## Wrap values produced by [Bar.new], [Scatter.new], [Pie.new] or
+	## [Sankey.new] in the matching tag. Different kinds and coordinate
+	## shapes can share one chart; list order controls trace order.
 	Trace : [Bar(Bar), Scatter(Scatter), Sankey(Sankey), Pie(Pie)]
+
+	## Configure the whole figure and its HTML document title.
+	## - `traces` defaults to an empty list, producing a valid empty figure.
+	## - `layout` defaults to [Layout.new] with default props.
+	## - `title: FromLayout` derives the HTML document title from the layout's
+	##   title, or uses "My Chart" when no title is set.
+	## - `title: Text(text)` overrides only the HTML document title. The
+	##   visible chart title remains [Layout.Props]'s `title`.
+	## The document-title setting is not included in [Chart.to_json].
 	Props := { traces : List(Trace) ?? [], layout : Layout ?? Layout.new({}), title : [FromLayout, Text(Str)] ?? FromLayout }
 
-	## Construct the complete chart through one props record.
+	## Assemble a figure from validated traces and layout settings.
+	## Construction is infallible, and `Chart.new({})` is a valid empty chart.
+	##
+	## ```roc
+	## expect {
+	##     bars = Bar.new({ data: [{ x: "Apples", y: 3 }] })?
+	##     chart = Chart.new({ traces: [Bar(bars)], title: Text("Fruit sales") })
+	##     chart.to_html().contains("<title>Fruit sales</title>")
+	## }
+	## ```
 	new : Props -> Chart
 	new = |props| Chart.({ traces: props.traces, layout: props.layout, title: props.title })
 
-	## Serialize a complete Plotly figure, including the empty chart.
+	## Return a complete Plotly figure object with `data` and `layout`.
+	## The result is standalone JSON, with strings escaped by Roc's encoder.
+	## It contains no script tags or renderer dependency. An application can
+	## parse it or pass the object to its own Plotly instance.
 	to_json : Chart -> Str
 	to_json = |Chart.(chart)| {
 		traces = chart.traces.map(
@@ -31,8 +60,12 @@ Chart :: { traces : List(Trace), layout : Layout, title : [FromLayout, Text(Str)
 		]).to_json()
 	}
 
-	## Render a standalone document. Plotly is loaded from its pinned CDN URL.
-	## User strings cannot terminate the document title or JSON script element.
+	## Return a complete HTML document loading the pinned Plotly CDN script.
+	## Viewing it requires access to `cdn.plot.ly`. The document includes
+	## the figure as JSON and creates a chart in its `chart` element.
+	## Document-title text and embedded JSON are escaped for their separate
+	## HTML contexts, including script terminators. This does not change
+	## Plotly's own interpretation of chart text and supported markup.
 	to_html : Chart -> Str
 	to_html = |chart| {
 		Chart.(inner) = chart

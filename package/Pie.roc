@@ -2,11 +2,34 @@ import InternalJson
 
 ## A validated Plotly pie or donut trace.
 Pie :: InternalJson.{
+
+	## Compare the encoded trace, including input order and all style settings.
 	is_eq : _
+
+	## A displayed label and its nonnegative numeric contribution.
+	## `label` is text. `value` must be a finite F64 at least zero; [Pie.new]
+	## checks it before constructing the trace. Slice order is preserved.
 	Slice := { label : Str, value : F64 }
+
+	## Configure a pie or donut series.
+	## `data` contains ordered slices and may be empty. `hole` defaults to
+	## zero for a pie; a value strictly between zero and one makes a donut,
+	## and one leaves no filled area. `name` is the legend/hover label.
 	Props := { data : List(Slice), hole : F64 ?? 0, name : Str ?? "" }
 
-	## Construct a pie with nonnegative finite values and a hole in [0, 1].
+	## Validate every slice and construct a pie or donut trace.
+	## `hole` must be finite and in the closed interval [0, 1]. Each slice
+	## value must be finite and nonnegative. Negative values return
+	## `InvalidPieValue(value)`; an out-of-range hole returns
+	## `InvalidHole(hole)`. Nonfinite inputs return `NaN`, `Infinity`, or
+	## `NegativeInfinity`. Zero-valued slices and empty data are accepted.
+	##
+	## ```roc
+	## expect {
+	##     donut = Pie.new({ data: [{ label: "Rent", value: 1200 }], hole: 0.4 })?
+	##     donut.to_json().contains("Rent")
+	## }
+	## ```
 	new : Props -> Try(Pie, [InvalidHole(F64), InvalidPieValue(F64), Infinity, NaN, NegativeInfinity])
 	new = |props| {
 		hole = InternalJson.encode(props.hole)?
@@ -31,7 +54,9 @@ Pie :: InternalJson.{
 		)
 	}
 
-	## The safe JSON object used when composing a chart.
+	## Internal composition hook used by Plume's renderers.
+	## Applications normally use [Pie.to_json] for complete JSON text;
+	## this returns the package's safe internal value without accepting raw JSON.
 	to_json_value : Pie -> InternalJson
 	to_json_value = |Pie.(json)| json
 

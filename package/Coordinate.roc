@@ -5,7 +5,11 @@ import InternalJson
 ## Runtime text uses [Coordinate.from_text]; runtime floating numbers pass
 ## through [Coordinate.from_number] before entering a point.
 Coordinate :: [Text(Str), Number(F64)].{
+
+	## Compare coordinates by kind and value; text "1" differs from numeric 1.
 	is_eq : _
+
+	## Hash the coordinate kind and value consistently with [Coordinate.is_eq].
 	to_hash : _
 
 	## Construct categorical or date text. Plotly interprets date strings
@@ -13,7 +17,17 @@ Coordinate :: [Text(Str), Number(F64)].{
 	from_text : Str -> Coordinate
 	from_text = |text| Text(text)
 
-	## Reject NaN and either infinity before a number can enter a trace.
+	## Construct a numeric coordinate after checking that it is finite.
+	## Returns `NonFiniteCoordinate(number)` for NaN or either infinity.
+	## All finite F64 values, including negative values and zero, are
+	## accepted without changing them. Numbers use F64 precision.
+	##
+	## ```roc
+	## expect {
+	##     coordinate = Coordinate.from_number(2.5)?
+	##     coordinate.to_json() == "2.5"
+	## }
+	## ```
 	from_number : F64 -> Try(Coordinate, [NonFiniteCoordinate(F64)])
 	from_number = |number| if (number.is_finite()) Ok(Number(number)) else Err(NonFiniteCoordinate(number))
 
@@ -28,8 +42,9 @@ Coordinate :: [Text(Str), Number(F64)].{
 		if (number.is_finite()) Ok(Number(number)) else Err(InvalidNumeral("Coordinates must be finite numbers"))
 	}
 
-	## Compose a scalar JSON value. The opaque constructors guarantee that
-	## the number encoder cannot encounter a non-finite value.
+	## Internal composition hook used by Plume's renderers.
+	## Applications normally use [Coordinate.to_json] for complete JSON text;
+	## this returns the package's safe internal value without accepting raw JSON.
 	to_json_value : Coordinate -> InternalJson
 	to_json_value = |coordinate| match coordinate {
 		Text(text) => InternalJson.string(text)

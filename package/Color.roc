@@ -2,7 +2,11 @@ import InternalJson
 
 ## A validated CSS color. RGB channels and alpha use bytes in the range 0–255.
 Color :: Str.{
+
+	## Compare stored CSS spellings; different spellings may render the same color.
 	is_eq : _
+
+	## Hash the stored CSS spelling consistently with [Color.is_eq].
 	to_hash : _
 
 	## Construct an opaque RGB color.
@@ -16,7 +20,9 @@ Color :: Str.{
 		Color.("rgba(${red.to_str()}, ${green.to_str()}, ${blue.to_str()}, ${fraction.to_str()})")
 	}
 
-	## Parse exactly six hexadecimal digits preceded by #.
+	## Parse exactly six hexadecimal digits preceded by `#`.
+	## Both letter cases are accepted and preserved. Short forms and alpha
+	## suffixes are rejected as `InvalidHex(original_text)`.
 	hex : Str -> Try(Color, [InvalidHex(Str)])
 	hex = |text| match text.to_utf8() {
 		['#', a, b, c, d, e, f] =>
@@ -28,7 +34,10 @@ Color :: Str.{
 		_ => Err(InvalidHex(text))
 	}
 
-	## Parse a CSS named color, independent of ASCII case.
+	## Parse a supported CSS named color, independent of ASCII case.
+	## The stored spelling is lowercase. Unknown names return
+	## `UnknownColor(original_text)`. Use [Color.rgba] when transparency
+	## is needed.
 	named : Str -> Try(Color, [UnknownColor(Str)])
 	named = |text| {
 		lower = text.with_ascii_lowercased()
@@ -39,7 +48,9 @@ Color :: Str.{
 	to_css : Color -> Str
 	to_css = |Color.(text)| text
 
-	## Encode the CSS color as a JSON string.
+	## Internal composition hook used by Plume's renderers.
+	## Applications normally use [Color.to_json] for complete JSON text;
+	## this returns the package's safe internal value without accepting raw JSON.
 	to_json_value : Color -> InternalJson
 	to_json_value = |color| InternalJson.string(color.to_css())
 

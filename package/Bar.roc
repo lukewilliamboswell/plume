@@ -4,8 +4,23 @@ import Coordinate
 
 ## A validated Plotly bar trace.
 Bar :: InternalJson.{
+
+	## Compare the encoded trace, including input order and all style settings.
 	is_eq : _
+
+	## One bar's axis coordinates and fill color.
+	## `x` and `y` accept text or finite numeric [Coordinate] values. For
+	## `Vertical`, x locates the bar and y gives its height; `Horizontal`
+	## uses x for its length and y for its position. `color` sets this bar's
+	## fill and defaults to Plotly blue. Point order is preserved.
 	Point := { x : Coordinate, y : Coordinate, color : Color ?? Color.rgb({ red: 31, green: 119, blue: 180 }) }
+
+	## The complete bar series.
+	## - `data` contains bars in display order; an empty list is valid.
+	## - `orientation` defaults to `Vertical`; `Horizontal` swaps axis roles.
+	## - `name` is the legend/hover label, and may be empty.
+	## - `width` is measured in position-axis units, defaults to 0.75, and
+	##   may exceed one. It must be finite and nonnegative; zero hides bars.
 	Props := {
 		data : List(Point),
 		orientation : [Vertical, Horizontal] ?? Vertical,
@@ -13,7 +28,18 @@ Bar :: InternalJson.{
 		width : F64 ?? 0.75,
 	}
 
-	## Construct bars, with width measured in position-axis units.
+	## Validate the width and construct one bar trace.
+	## Returns `InvalidBarWidth(width)` for a negative width, or `NaN`,
+	## `Infinity`, or `NegativeInfinity` for a nonfinite width. Coordinates
+	## are already checked by their opaque type; values and colors retain
+	## input order. Use `Bar(trace)` to include the result in [Chart.Props].
+	##
+	## ```roc
+	## expect {
+	##     bars = Bar.new({ data: [{ x: "Apples", y: 3 }], name: "Sales" })?
+	##     Chart.new({ traces: [Bar(bars)] }).to_json().contains("Sales")
+	## }
+	## ```
 	new : Props -> Try(Bar, [InvalidBarWidth(F64), Infinity, NaN, NegativeInfinity])
 	new = |props| {
 		width = InternalJson.encode(props.width)?
@@ -41,7 +67,9 @@ Bar :: InternalJson.{
 		)
 	}
 
-	## The safe JSON object used when composing a chart.
+	## Internal composition hook used by Plume's renderers.
+	## Applications normally use [Bar.to_json] for complete JSON text;
+	## this returns the package's safe internal value without accepting raw JSON.
 	to_json_value : Bar -> InternalJson
 	to_json_value = |Bar.(json)| json
 

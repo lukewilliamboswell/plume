@@ -1,6 +1,8 @@
 ## JSON assembled only from values encoded by Roc's builtin JSON encoder.
 ## This internal type has no constructor accepting preformatted JSON.
 InternalJson :: Str.{
+
+	## Compare the encoded JSON bytes, including object and array order.
 	is_eq : _
 
 	## Encode a JSON string, including its quotes and escapes.

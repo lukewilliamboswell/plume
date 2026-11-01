@@ -3,6 +3,15 @@ import InternalJson
 
 ## Font overrides. The default inherits Plotly's font settings.
 Font :: [Inherit, Explicit(Props)].{
+
+	## Override font presentation for a title or layout.
+	## `family` is a CSS font-family list resolved by the browser; Plume does
+	## not load fonts. `size` is measured in pixels and must be finite and
+	## at least one. `color` supplies the text color. `shadow: AutoShadow`
+	## asks Plotly for contrast and shadow; `NoShadow` disables it.
+	## `style`, `textcase` and `variant` use the shown closed choices.
+	## Calling [Font.new] applies these defaults explicitly; [Font.default]
+	## instead inherits Plotly's settings.
 	Props := {
 		family : Str ?? "Arial, sans-serif",
 		size : F64 ?? 12,
@@ -13,14 +22,28 @@ Font :: [Inherit, Explicit(Props)].{
 		variant : [Normal, SmallCaps, PetiteCaps, Unicase, AllSmallCaps, AllPetiteCaps] ?? Normal,
 	}
 
+	## Inherit Plotly's font settings without applying any overrides.
+	## It serializes as an empty object and differs from [Font.new] with
+	## default props, which explicitly selects the documented defaults.
 	default : Font
 	default = Inherit
 
-	## Font size must be finite and at least one pixel.
+	## Construct an explicit font, validating its size in pixels.
+	## A size below one or a nonfinite size returns `InvalidFontSize(size)`.
+	## The browser chooses an available family from the CSS family list.
+	##
+	## ```roc
+	## expect {
+	##     font = Font.new({ family: "Arial, sans-serif", size: 18, style: Italic })?
+	##     font.to_json().contains("italic")
+	## }
+	## ```
 	new : Props -> Try(Font, [InvalidFontSize(F64)])
 	new = |props| if (props.size.is_finite() and props.size >= 1) Ok(Explicit(props)) else Err(InvalidFontSize(props.size))
 
-	## Encode an object for composition without accepting raw JSON.
+	## Internal composition hook used by Plume's renderers.
+	## Applications normally use [Font.to_json] for complete JSON text;
+	## this returns the package's safe internal value without accepting raw JSON.
 	to_json_value : Font -> InternalJson
 	to_json_value = |font| match font {
 		Inherit => InternalJson.object([])
