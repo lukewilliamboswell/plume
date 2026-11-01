@@ -1,7 +1,10 @@
-= Plume 0.5.0
+= plume 0.5.0
 
 Plume provides a props-based chart API, validated data and safe JSON and HTML
 output for the modern Roc compiler.
+
+Generated HTML uses Plotly 4.2.0 with a versioned CDN URL and verified script
+integrity.
 
 == Use this release
 
@@ -24,8 +27,9 @@ Use `to_json` for Plotly data and `to_html` for a full document. Color channels
 are named records; scatter modes and marker symbols have typed options.
 Sankey links refer to unique node IDs independently of display labels.
 
-Constructors reject invalid sizes, nonfinite numeric data and missing Sankey
-endpoints. Empty charts produce valid JSON. Text is escaped for its JSON or
+Coordinates use an opaque scalar type with checked literal conversions.
+Constructors reject invalid sizes, nonfinite numeric data, self-links and missing
+Sankey endpoints. Empty charts produce valid JSON. Text is escaped for its JSON or
 HTML context, including script terminators and template-like text. The cosine
 example now computes cosine.
 

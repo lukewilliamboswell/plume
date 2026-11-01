@@ -26,6 +26,9 @@ out.html
 dist/
 .roc-cache/
 scripts/check
-tests/consumer
+tests/consumer/main
+.fuzz-out/
+.roc-fuzz/
+.playwright-mcp/
 core
 core.*

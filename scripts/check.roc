@@ -18,6 +18,8 @@ main! = |_args| {
 	run!({ program: "roc", args: ["fmt", "--check", "Blueprint.roc", "package", "examples", "tests", "fuzz"] })?
 	run!({ program: "roc-stable", args: ["fmt", "--check", "scripts"] })?
 	run!({ program: "roc", args: ["test", "--opt=dev", "package/main.roc"] })?
+	run!({ program: "roc-stable", args: ["test", "--opt=dev", "scripts/type_safety.roc"] })?
+	run!({ program: "roc-stable", args: ["scripts/type_safety.roc"] })?
 	check_fuzz!()?
 	for root in ["examples", "tests"] {
 		for path in roc_sources!(Path.utf8(root))? {
@@ -81,6 +83,14 @@ check_fuzz! = || {
 			run!({ program: "roc", args: ["build", "--fuzz", "--opt=speed", "--target=x64musl", "--output=.fuzz-out/serialization", "fuzz/serialization.roc"] })?
 			# run checks every named example and the allocation baseline before
 			# exploring. Missing/stale baselines fail; this never accepts them.
+			report_args = match Env.var_str!("RUNNER_TEMP") {
+				Ok(directory) => {
+					Path.utf8("${directory}/release-package").create_all!()?
+					["--report-dir=${directory}/release-package/fuzz"]
+				}
+				Err(VarNotFound(_)) => []
+				Err(error) => return Err(error)
+			}
 			args = [
 				"run",
 				".roc-fuzz/corpus",
@@ -91,7 +101,7 @@ check_fuzz! = || {
 				"--timeout=2",
 				"--max-input-size=512",
 				"--seed=1",
-			]
+			].concat(report_args)
 			Stdout.line!("+ .fuzz-out/serialization ${Str.join_with(args, " ")}")?
 			Cmd.new(OsStr.from_str(".fuzz-out/serialization"))
 				.args(args.map(OsStr.from_str))

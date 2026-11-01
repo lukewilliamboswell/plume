@@ -1,0 +1,72 @@
+= API guarantees
+
+Plume's API should make invalid chart states difficult to express and impossible
+to carry past a validated constructor. This is a product contract, enforced by
+types and executable tests rather than naming conventions alone.
+
+[cols="1,2,2",options="header"]
+|===
+| Boundary | Guarantee | Enforcement
+| Cartesian coordinate
+| A category/date string or a finite F64 number
+| Opaque `Coordinate`; string/number literal hooks; checked runtime numeric constructor
+| Style value
+| Valid size, width, color and closed symbol/dash options
+| Opaque types, props and structured constructor errors
+| Trace
+| Validated points and presentation; aligned arrays preserve point order
+| Non-generic opaque trace types and decoded-output tests
+| Sankey graph
+| Unique IDs, existing endpoints, nonnegative finite flows and no self-links
+| Constructor validation with distinct error tags
+| JSON
+| Only properly encoded scalars and structured arrays/objects
+| Opaque internal builder; no unchecked string-fragment constructor
+| HTML
+| Chart text cannot terminate its JSON script element or document title
+| Separate context escaping and adversarial round-trip tests
+|===
+
+`Coordinate.from_quote` and `Coordinate.from_numeral` let normal literals use
+the same checked boundary without wrapping every point. Runtime strings use
+`Coordinate.from_text`; runtime numbers use `Coordinate.from_number` and return
+`Try`. Numeric coordinates have F64 precision. Records, lists and booleans
+are not coordinates. Date strings are interpreted by Plotly according to the
+axis configuration; the coordinate type does not validate a date grammar.
+
+Constructors return errors only when their input can be invalid.
+`Scatter.new` is infallible because its coordinates, marker and line already
+carry their guarantees. `Bar.new`, `Pie.new` and `Sankey.new` validate their
+additional numeric or graph inputs. Rendering a valid value needs no new
+user-input validation.
+
+== Keep the contract executable
+
+`blueprint run check` runs four complementary forms of evidence:
+
+* Named unit tests check exact output, enum mappings and boundary failures.
+* Consumer tests use the public API and independently decode the JSON.
+* Type-contract tests compile valid controls and require invalid programs to
+  fail for the intended reason, including opacity bypass attempts.
+* The roc-fuzz target generates text, floating-point boundaries and graph
+  cases, checking constructor policy and safe populated-chart round trips.
+
+Type-contract fixtures are data; the driver writes temporary Roc applications
+and requires a normal compiler rejection with the expected diagnostic. A
+warning, timeout, signal or unrelated setup failure cannot satisfy a case.
+The corresponding positive control must compile successfully first.
+
+The fuzz smoke checks the target's declared examples and committed allocation
+baseline before a bounded exploration. The check task owns the build options,
+execution budget and process deadline. Its output identifies skipped checks
+and records diagnostics for failures.
+
+Review changes to expected output and allocation baselines as code changes.
+Use the test reports to understand the observations behind a baseline change;
+routine checks never accept new expectations automatically.
+
+When changing a public type, demonstrate both a valid intended use and the
+invalid construction it excludes. When a runtime constructor gains a rule,
+add its boundary cases and extend the relevant generated-input property.
+Keep error tags distinct and avoid adding a fallible return to an operation
+whose input types already guarantee success.

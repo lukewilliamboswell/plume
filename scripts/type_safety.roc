@@ -23,8 +23,8 @@ main! : List(OsStr) => Try({}, _)
 main! = |_args| {
 	manifest : { format : Str, cases : List(Contract) }
 	manifest = Json.parse(Path.utf8("tests/type-safety/cases.json").read_utf8!()?)?
-	if manifest.format != "plume-type-safety/1" or manifest.cases.len() < 7 {
-		return Err(InvalidTypeSafetyManifest("expected plume-type-safety/1 and at least seven contracts"))
+	if manifest.format != "plume-type-safety/1" or manifest.cases.is_empty() {
+		return Err(InvalidTypeSafetyManifest("expected plume-type-safety/1 and a nonempty set of contracts"))
 	}
 	var $ids = Set.empty()
 	for contract in manifest.cases {

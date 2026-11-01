@@ -13,6 +13,7 @@ config = [
 	Environment("docs", [Programs([Fetch("roc-docs", Recipes.file("https://github.com/lukewilliamboswell/roc-automation/releases/download/tools-0.8.0/roc-docs-{system}"))]), Expect(["sh", "realpath"])]),
 	Task("check", [Use("package"), Run(["roc-stable", "scripts/check.roc"])]),
 	Task("test", [Use("package"), Run(["roc", "test", "--opt=dev", "package/main.roc"])]),
+	Task("type-safety", [Use("package"), Run(["roc-stable", "scripts/type_safety.roc"])]),
 	Task("release-package", [Use("release"), Run(["release-package"])]),
 	Task("release-test", [Use("release-test"), Run(["release-package"])]),
 	Task("docs", [Use("docs"), Run(["roc-docs", "build", "--workspace", ".", "--pdf-filename", "plume.pdf"])]),

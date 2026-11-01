@@ -13,10 +13,10 @@ Install the latest Roc nightly. From the repository root:
 roc examples/simple.roc > chart.html
 ----
 
-Open the resulting file in a browser. HTML uses Plotly 2.35.2 from
-`cdn.plot.ly`, with a fixed URL and integrity hash; viewing the chart requires
-network access to that CDN. This migration retains the existing renderer
-version. Chart labels and hover text follow Plotly's own text and markup rules.
+Open the resulting file in a browser. HTML loads Plotly from `cdn.plot.ly`
+with a fixed versioned URL and integrity hash; viewing the chart requires
+network access to that CDN. Chart labels and hover text follow Plotly's
+own text and markup rules.
 HTML document titles and embedded JSON are escaped separately.
 
 == API
@@ -32,11 +32,13 @@ numeric or date values. Sankey links refer to explicit node IDs independently
 of their display labels. See `examples/` for complete, runnable applications.
 
 Construction validates numeric sizes, ranges, pie values and Sankey graphs.
-Cartesian coordinates support strings and JSON-encodable numbers. Nonfinite
-numbers fail construction. Empty data is supported. A bar width is measured
+Cartesian coordinates are opaque text or finite F64 values, with literal
+conversions for ordinary string and numeric literals. Runtime numbers pass
+through `Coordinate.from_number`. Empty data is supported. A bar width is measured
 in axis units and may exceed one. Pie holes range from zero to one inclusive.
 Sankey nodes may share a display label but must have unique IDs; every link
-must reference an existing ID.
+must reference an existing ID. Self-links are rejected because the renderer
+cannot display them; cycles through distinct nodes are supported.
 
 JSON scalars pass through Roc's builtin encoder. One opaque internal builder
 composes objects and arrays without accepting unchecked JSON fragments.
@@ -46,7 +48,8 @@ that resemble template placeholders remain literal data.
 
 == Development and validation
 
-Use Blueprint 0.11.0 and the latest Roc nightly as `roc` on `PATH`:
+Use the Blueprint release declared in `Blueprint.roc` and the latest Roc
+nightly as `roc` on `PATH`:
 
 [source,sh]
 ----
@@ -70,9 +73,7 @@ stderr and exit status for each case. Failed commands and timeouts fail the
 run. The release archive is tested separately against the exact bundled
 package over loopback.
 
-The workflows pin
-https://github.com/lukewilliamboswell/roc-automation/tree/ae089dae16f63f11a754e49c48a9310445e084dd[roc-automation at the revision reviewed for this migration]
-and use its
+The workflows pin shared roc-automation code and use its
 https://lukewilliamboswell.github.io/roc-automation/pure-package.html[pure-package model].
 Roc source follows the
 https://gist.github.com/lukewilliamboswell/241a4e8adb7c89c7e0e02f1d303a8fa1[style guide].
@@ -93,3 +94,5 @@ shared release contract.
 Local checks and dry runs do not establish hosted CI or publication success.
 
 include::releases/0.5.0.adoc[leveloffset=+1]
+
+include::type-safety.adoc[leveloffset=+1]
