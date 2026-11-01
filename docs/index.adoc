@@ -80,9 +80,10 @@ stderr and exit status for each case. Failed commands and timeouts fail the
 run. The release archive is tested separately against the exact bundled
 package over loopback.
 
-The README gallery uses the same images as the visual CI check. With Docker
-and Node available, run `blueprint run screenshots` to rebuild the examples
-and compare fresh browser renders with those images. A mismatch retains
+The README gallery uses the same images as the visual CI check. With Node
+available, run `blueprint run screenshots-setup` to install the configured
+browser, then `blueprint run screenshots` to rebuild the examples and compare
+fresh renders with those images. A mismatch retains
 expected, actual and difference images for review. For an intentional visual
 change, update any changed example output first, then run
 `blueprint run screenshots-update` and review the PNG diff before committing.
