@@ -64,7 +64,7 @@ Chart :: { traces : List(Trace), layout : Layout, title : [FromLayout, Text(Str)
 		\\        <title>${escaped_title}</title>
 		\\        <meta charset="utf-8" />
 		\\        <meta name="viewport" content="width=device-width, initial-scale=1" />
-		\\        <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" integrity="sha384-cCVCZkAjYNxaYKbM8lsArLznDF/SvMFr1jcZrvOpSTCa0W40ZAdLzHCEulnUa5i7" crossorigin="anonymous"></script>
+		\\        <script src="https://cdn.plot.ly/plotly-4.2.0.min.js" integrity="sha384-F4AdcRk3NYRZZUZ7qARRp/wPkwvdta756IMuHDAZcmtM5nuHKykTbDJd7N9h+Qff" crossorigin="anonymous"></script>
 		\\    </head>
 		\\    <body>
 		\\        <div id="chart"></div>
@@ -123,7 +123,7 @@ expect Chart.new({}).to_html() ==
 	\\        <title>My Chart</title>
 	\\        <meta charset="utf-8" />
 	\\        <meta name="viewport" content="width=device-width, initial-scale=1" />
-	\\        <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" integrity="sha384-cCVCZkAjYNxaYKbM8lsArLznDF/SvMFr1jcZrvOpSTCa0W40ZAdLzHCEulnUa5i7" crossorigin="anonymous"></script>
+	\\        <script src="https://cdn.plot.ly/plotly-4.2.0.min.js" integrity="sha384-F4AdcRk3NYRZZUZ7qARRp/wPkwvdta756IMuHDAZcmtM5nuHKykTbDJd7N9h+Qff" crossorigin="anonymous"></script>
 	\\    </head>
 	\\    <body>
 	\\        <div id="chart"></div>
