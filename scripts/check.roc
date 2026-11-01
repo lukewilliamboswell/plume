@@ -37,7 +37,7 @@ main! = |_args| {
 		}
 	}
 	run!({ program: "release-package", args: ["test-examples"] })?
-	Stdout.line!("PASS formatting, package and consumer expects, bounded fuzz checks, and recorded examples")?
+	Stdout.line!("PASS formatting, documentation policy, package and consumer expects, bounded fuzz checks, and recorded examples")?
 	Ok({})
 }
 
