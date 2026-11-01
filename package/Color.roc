@@ -1,71 +1,60 @@
-module [
-    Color,
-    to_str,
-    rgb,
-    rgba,
-    hex,
-    named,
-]
+import InternalJson
 
-Color := [
-    RGB U8 U8 U8,
-    RGBA U8 U8 U8 Dec,
-    Named Str,
-    Hex Str,
-]
-    implements [Inspect]
+## A validated CSS color. RGB channels and alpha use bytes in the range 0–255.
+Color :: Str.{
+	is_eq : _
+	to_hash : _
 
-rgb : U8, U8, U8 -> Color
-rgb = |r, g, b| @Color(RGB(r, g, b))
+	## Construct an opaque RGB color.
+	rgb : { red : U8, green : U8, blue : U8 } -> Color
+	rgb = |{ red, green, blue }| Color.("rgb(${red.to_str()}, ${green.to_str()}, ${blue.to_str()})")
 
-rgba : U8, U8, U8, U8 -> Color
-rgba = |r, g, b, a|
-    rounded = Num.to_frac(a) / 255.0
-    @Color(RGBA(r, g, b, rounded))
+	## Alpha 0 is transparent and 255 is opaque.
+	rgba : { red : U8, green : U8, blue : U8, alpha : U8 } -> Color
+	rgba = |{ red, green, blue, alpha }| {
+		fraction = alpha.to_dec() / 255
+		Color.("rgba(${red.to_str()}, ${green.to_str()}, ${blue.to_str()}, ${fraction.to_str()})")
+	}
 
-hex : Str -> Result Color [InvalidHex Str]
-hex = |str|
+	## Parse exactly six hexadecimal digits preceded by #.
+	hex : Str -> Try(Color, [InvalidHex(Str)])
+	hex = |text| match text.to_utf8() {
+		['#', a, b, c, d, e, f] =>
+			if [a, b, c, d, e, f].all(|byte| (byte >= '0' and byte <= '9') or (byte >= 'a' and byte <= 'f') or (byte >= 'A' and byte <= 'F')) {
+				Ok(Color.(text))
+			} else {
+				Err(InvalidHex(text))
+			}
+		_ => Err(InvalidHex(text))
+	}
 
-    bytes = Str.to_utf8(str)
-    is_char_in_hex_range = |b| (b >= '0' and b <= '9') or (b >= 'a' and b <= 'f') or (b >= 'A' and b <= 'F')
+	## Parse a CSS named color, independent of ASCII case.
+	named : Str -> Try(Color, [UnknownColor(Str)])
+	named = |text| {
+		lower = text.with_ascii_lowercased()
+		if (named_colors.contains(lower)) Ok(Color.(lower)) else Err(UnknownColor(text))
+	}
 
-    when bytes is
-        ['#', a, b, c, d, e, f] ->
-            is_valid =
-                is_char_in_hex_range(a)
-                and is_char_in_hex_range(b)
-                and is_char_in_hex_range(c)
-                and is_char_in_hex_range(d)
-                and is_char_in_hex_range(e)
-                and is_char_in_hex_range(f)
+	## Read the CSS value for use in a stylesheet or Plotly field.
+	to_css : Color -> Str
+	to_css = |Color.(text)| text
 
-            if is_valid then
-                Ok(@Color(Hex(str)))
-            else
-                Err(InvalidHex("Expected Hex to be in the range 0-9, a-f, A-F, got ${str}"))
+	## Encode the CSS color as a JSON string.
+	to_json_value : Color -> InternalJson
+	to_json_value = |color| InternalJson.string(color.to_css())
 
-        _ -> Err(InvalidHex("Expected Hex must start with # and be 7 characters long, got ${str}"))
+	to_json : Color -> Str
+	to_json = |color| color.to_json_value().to_json()
+}
 
-to_str : Color -> Str
-to_str = |@Color(color)|
-    when color is
-        RGB(r, g, b) -> "rgb(${Num.to_str(r)}, ${Num.to_str(g)}, ${Num.to_str(b)})"
-        RGBA(r, g, b, a) -> "rgba(${Num.to_str(r)}, ${Num.to_str(g)}, ${Num.to_str(b)}, ${Num.to_str(a)})"
-        Named(inner) -> inner
-        Hex(inner) -> inner
+named_colors = ["aliceblue", "antiquewhite", "aqua", "aquamarine", "azure", "beige", "bisque", "black", "blanchedalmond", "blue", "blueviolet", "brown", "burlywood", "cadetblue", "chartreuse", "chocolate", "coral", "cornflowerblue", "cornsilk", "crimson", "cyan", "darkblue", "darkcyan", "darkgoldenrod", "darkgray", "darkgrey", "darkgreen", "darkkhaki", "darkmagenta", "darkolivegreen", "darkorange", "darkorchid", "darkred", "darksalmon", "darkseagreen", "darkslateblue", "darkslategray", "darkslategrey", "darkturquoise", "darkviolet", "deeppink", "deepskyblue", "dimgray", "dimgrey", "dodgerblue", "firebrick", "floralwhite", "forestgreen", "fuchsia", "gainsboro", "ghostwhite", "gold", "goldenrod", "gray", "grey", "green", "greenyellow", "honeydew", "hotpink", "indianred", "indigo", "ivory", "khaki", "lavender", "lavenderblush", "lawngreen", "lemonchiffon", "lightblue", "lightcoral", "lightcyan", "lightgoldenrodyellow", "lightgray", "lightgrey", "lightgreen", "lightpink", "lightsalmon", "lightseagreen", "lightskyblue", "lightslategray", "lightslategrey", "lightsteelblue", "lightyellow", "lime", "limegreen", "linen", "magenta", "maroon", "mediumaquamarine", "mediumblue", "mediumorchid", "mediumpurple", "mediumseagreen", "mediumslateblue", "mediumspringgreen", "mediumturquoise", "mediumvioletred", "midnightblue", "mintcream", "mistyrose", "moccasin", "navajowhite", "navy", "oldlace", "olive", "olivedrab", "orange", "orangered", "orchid", "palegoldenrod", "palegreen", "paleturquoise", "palevioletred", "papayawhip", "peachpuff", "peru", "pink", "plum", "powderblue", "purple", "rebeccapurple", "red", "rosybrown", "royalblue", "saddlebrown", "salmon", "sandybrown", "seagreen", "seashell", "sienna", "silver", "skyblue", "slateblue", "slategray", "slategrey", "snow", "springgreen", "steelblue", "tan", "teal", "thistle", "tomato", "turquoise", "violet", "wheat", "white", "whitesmoke", "yellow", "yellowgreen"]
 
-expect to_str(rgb(124, 56, 245)) == "rgb(124, 56, 245)"
-expect to_str(rgba(124, 56, 245, 255)) == "rgba(124, 56, 245, 1.0)"
-expect hex("#ff00ff") |> Result.map_ok(to_str) == Ok("#ff00ff")
-
-named : Str -> Result Color [UnknownColor Str]
-named = |str|
-    if is_named_color(str) then
-        Ok(@Color(Named(str)))
-    else
-        Err(UnknownColor("Unknown color ${str}"))
-
-is_named_color = |str|
-    colors = Set.from_list(["AliceBlue", "AntiqueWhite", "Aqua", "Aquamarine", "Azure", "Beige", "Bisque", "Black", "BlanchedAlmond", "Blue", "BlueViolet", "Brown", "BurlyWood", "CadetBlue", "Chartreuse", "Chocolate", "Coral", "CornflowerBlue", "Cornsilk", "Crimson", "Cyan", "DarkBlue", "DarkCyan", "DarkGoldenRod", "DarkGray", "DarkGrey", "DarkGreen", "DarkKhaki", "DarkMagenta", "DarkOliveGreen", "DarkOrange", "DarkOrchid", "DarkRed", "DarkSalmon", "DarkSeaGreen", "DarkSlateBlue", "DarkSlateGray", "DarkSlateGrey", "DarkTurquoise", "DarkViolet", "DeepPink", "DeepSkyBlue", "DimGray", "DimGrey", "DodgerBlue", "FireBrick", "FloralWhite", "ForestGreen", "Fuchsia", "Gainsboro", "GhostWhite", "Gold", "GoldenRod", "Gray", "Grey", "Green", "GreenYellow", "HoneyDew", "HotPink", "IndianRed", "Indigo", "Ivory", "Khaki", "Lavender", "LavenderBlush", "LawnGreen", "LemonChiffon", "LightBlue", "LightCoral", "LightCyan", "LightGoldenRodYellow", "LightGray", "LightGrey", "LightGreen", "LightPink", "LightSalmon", "LightSeaGreen", "LightSkyBlue", "LightSlateGray", "LightSlateGrey", "LightSteelBlue", "LightYellow", "Lime", "LimeGreen", "Linen", "Magenta", "Maroon", "MediumAquaMarine", "MediumBlue", "MediumOrchid", "MediumPurple", "MediumSeaGreen", "MediumSlateBlue", "MediumSpringGreen", "MediumTurquoise", "MediumVioletRed", "MidnightBlue", "MintCream", "MistyRose", "Moccasin", "NavajoWhite", "Navy", "OldLace", "Olive", "OliveDrab", "Orange", "OrangeRed", "Orchid", "PaleGoldenRod", "PaleGreen", "PaleTurquoise", "PaleVioletRed", "PapayaWhip", "PeachPuff", "Peru", "Pink", "Plum", "PowderBlue", "Purple", "RebeccaPurple", "Red", "RosyBrown", "RoyalBlue", "SaddleBrown", "Salmon", "SandyBrown", "SeaGreen", "SeaShell", "Sienna", "Silver", "SkyBlue", "SlateBlue", "SlateGray", "SlateGrey", "Snow", "SpringGreen", "SteelBlue", "Tan", "Teal", "Thistle", "Tomato", "Turquoise", "Violet", "Wheat", "White", "WhiteSmoke", "Yellow", "YellowGreen"])
-
-    Set.contains(colors, str)
+expect Color.rgb({ red: 124, green: 56, blue: 245 }).to_css() == "rgb(124, 56, 245)"
+expect Color.rgba({ red: 1, green: 2, blue: 3, alpha: 0 }).to_css() == "rgba(1, 2, 3, 0.0)"
+expect Color.rgba({ red: 1, green: 2, blue: 3, alpha: 255 }).to_css() == "rgba(1, 2, 3, 1.0)"
+expect Color.hex("#aB09fF").map_ok(Color.to_css) == Ok("#aB09fF")
+expect Color.hex("#ff00fg") == Err(InvalidHex("#ff00fg"))
+expect Color.hex("#fff") == Err(InvalidHex("#fff"))
+expect Color.hex("#ff00ff\n") == Err(InvalidHex("#ff00ff\n"))
+expect Color.named("DEEpskyBlue").map_ok(Color.to_css) == Ok("deepskyblue")
+expect Color.named("not-a-color") == Err(UnknownColor("not-a-color"))

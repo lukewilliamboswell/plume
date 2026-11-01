@@ -1,96 +1,99 @@
-module [
-    Axis,
-    Type,
-    new,
-    default,
-    to_str,
-]
-
 import Title
 import Color
+import InternalJson
 
-## For raw see https://plotly.com/javascript/reference/layout/xaxis/#layout-xaxis-range
-Range value : [
-    Auto,
-    Fixed,
-    Reversed,
-    Set { min : value, max : value },
-    Raw Str,
-]
+## Plotly axis settings. Numeric and date bounds are explicit closed cases;
+## arbitrary JSON fragments are never accepted as bounds.
+Axis :: [Automatic, Explicit(Props)].{
+	Type : [Auto, Linear, Log, Date, Category, MultiCategory]
+	RangeSpec : [Auto, Fixed, Reversed, Bounds({ min : F64, max : F64 }), DateBounds({ start : Str, end : Str })]
+	Props := {
+		title : Title ?? Title.default,
+		type : Type ?? Auto,
+		range : RangeSpec ?? Auto,
+		color : Color ?? Color.rgb({ red: 68, green: 68, blue: 68 }),
+	}
 
-Axis value := [
-    None,
-    Some {
-            type : Type,
-            title : Title.Title,
-            range : Range value,
-            color : Color.Color,
-        },
-]
+	default : Axis
+	default = Automatic
 
-Type : [
-    None,
-    Auto,
-    Linear,
-    Log,
-    Date,
-    Category,
-    MultiCategory,
-]
+	## Numeric bounds must be finite. Their order may reverse the axis.
+	## Log bounds use Plotly's base-10 exponent convention. Date bounds are
+	## ISO date strings interpreted by Plotly.
+	new : Props -> Try(Axis, [InvalidAxisBounds({ min : F64, max : F64 })])
+	new = |props| match props.range {
+		Bounds(bounds) =>
+			if bounds.min.is_finite() and bounds.max.is_finite() {
+				Ok(Explicit(props))
+			} else {
+				Err(InvalidAxisBounds(bounds))
+			}
+		_ => Ok(Explicit(props))
+	}
 
-new :
-    {
-        title ?? Title.Title,
-        type ?? Type,
-        range ?? Range value,
-        color ?? Color.Color,
-    }
-    -> Axis value
-new = |{ type ?? None, range ?? Auto, title ?? Title.default, color ?? Color.rgb(68, 68, 68) }|
-    @Axis(Some({ type, title, range, color }))
+	to_json_value : Axis -> InternalJson
+	to_json_value = |axis| match axis {
+		Automatic => InternalJson.object([])
+		Explicit(props) => {
+			range_fields = match props.range {
+				Auto => [{ name: "autorange", value: InternalJson.encode(True) ?? crash "Axis.to_json_value: Bool encoding failed" }]
+				Fixed => [{ name: "fixedrange", value: InternalJson.encode(True) ?? crash "Axis.to_json_value: Bool encoding failed" }]
+				Reversed => [{ name: "autorange", value: InternalJson.string("reversed") }]
+				Bounds(bounds) => [
+					{
+						name: "range",
+						value: InternalJson.array([
+							InternalJson.encode(bounds.min) ?? crash "Axis.to_json_value: non-finite minimum passed constructor",
+							InternalJson.encode(bounds.max) ?? crash "Axis.to_json_value: non-finite maximum passed constructor",
+						]),
+					},
+				]
+				DateBounds(bounds) => [{ name: "range", value: InternalJson.array([InternalJson.string(bounds.start), InternalJson.string(bounds.end)]) }]
+			}
+			type_fields = match props.type {
+				Auto => []
+				_ => [
+					{
+						name: "type",
+						value: InternalJson.string(
+							match props.type {
+								Auto => crash "Axis.to_json_value: Auto type was already handled"
+								Linear => "linear"
+								Log => "log"
+								Date => "date"
+								Category => "category"
+								MultiCategory => "multicategory"
+							},
+						),
+					},
+				]
+			}
+			InternalJson.object(
+				range_fields.concat(type_fields).concat([
+					{ name: "title", value: props.title.to_json_value() },
+					{ name: "color", value: props.color.to_json_value() },
+				]),
+			)
+		}
+	}
+	to_json : Axis -> Str
+	to_json = |axis| axis.to_json_value().to_json()
+}
 
-default : {} -> Axis value
-default = |{}| @Axis(None)
-
-to_str : Axis value -> Str where value implements Inspect
-to_str = |@Axis(outer)|
-    when outer is
-        None -> ""
-        Some(inner) ->
-            title_str = Title.to_str(inner.title)
-
-            range_str =
-                when inner.range is
-                    Auto -> "\"autorange\":true"
-                    Fixed -> "\"fixedrange\":true"
-                    Reversed -> "\"autorange\":\"reversed\""
-                    Set({ min, max }) -> "\"range\":[${Inspect.to_str(min)}, ${Inspect.to_str(max)}]"
-                    Raw(raw) -> "\"range\":${raw}"
-
-            type_str = if inner.type == None then "" else "\"type\": \"${axis_type_to_str(inner.type)}\""
-
-            color_str = "\"color\":\"${Color.to_str(inner.color)}\""
-
-            [
-                range_str,
-                type_str,
-                title_str,
-                color_str,
-            ]
-            |> List.drop_if(Str.is_empty)
-            |> Str.join_with(",")
-            |> |str| "{${str}}"
-
-axis_type_to_str : Type -> Str
-axis_type_to_str = |axis_type|
-    when axis_type is
-        None -> ""
-        Auto -> "auto"
-        Linear -> "linear"
-        Log -> "log"
-        Date -> "date"
-        Category -> "category"
-        MultiCategory -> "multicategory"
-
-# Sets the range of this axis. If the axis `type` is "log", then you must take the log of your desired range (e.g. to set the range from 1 to 100, set the range from 0 to 2). If the axis `type` is "date", it should be date strings, like date data, though Date objects and unix milliseconds will be accepted and converted to strings. If the axis `type` is "category", it should be numbers, using the scale where each category is assigned a serial number from zero in the order it appears. Leaving either or both elements `null` impacts the default `autorange`.
-# check_valid_range = ...
+expect Axis.default.to_json() == "{}"
+expect Axis.new({ range: Bounds({ min: 0, max: 10 }) }).is_ok()
+expect Axis.new({ range: Bounds({ min: 10, max: 0 }) }).is_ok()
+expect Axis.new({ range: Bounds({ min: F64.nan, max: 10 }) }).is_err()
+expect Axis.new({ range: Bounds({ min: 0, max: F64.infinity }) }).is_err()
+expect {
+	axis = Axis.new({ type: Date, range: DateBounds({ start: "2026-01-01", end: "2026-12-31" }) })?
+	parsed : Try({ type : Str, range : List(Str) }, _)
+	parsed = Json.parse(axis.to_json())
+	parsed == Ok({ type: "date", range: ["2026-01-01", "2026-12-31"] })
+}
+expect {
+	axis = Axis.new({ range: Reversed })?
+	parsed : Try({ autorange : Str }, _)
+	parsed = Json.parse(axis.to_json())
+	parsed == Ok({ autorange: "reversed" })
+}

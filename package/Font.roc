@@ -1,114 +1,88 @@
-module [
-    Font,
-    default,
-    new,
-    to_str,
-]
-
-# https://plotly.com/javascript/reference/layout/
-
 import Color
+import InternalJson
 
-Style : [Normal, Italic]
-TextCase : [Normal, Upper, Lower]
-Variant : [Normal, SmallCaps, PetiteCaps, Unicase, AllSmallCaps, AllPetiteCaps]
+## Font overrides. The default inherits Plotly's font settings.
+Font :: [Inherit, Explicit(Props)].{
+	Props := {
+		family : Str ?? "Arial, sans-serif",
+		size : F64 ?? 12,
+		color : Color ?? Color.rgb({ red: 0, green: 0, blue: 0 }),
+		shadow : [NoShadow, AutoShadow] ?? NoShadow,
+		style : [Normal, Italic] ?? Normal,
+		textcase : [Normal, Upper, Lower] ?? Normal,
+		variant : [Normal, SmallCaps, PetiteCaps, Unicase, AllSmallCaps, AllPetiteCaps] ?? Normal,
+	}
 
-Font := [
-    None,
-    Some {
-            family : Str,
-            size : F32,
-            color : Color.Color,
-            shadow : [None, Auto],
-            style : Style,
-            textcase : TextCase,
-            variant : Variant,
-        },
-]
-    implements [Inspect]
+	default : Font
+	default = Inherit
 
-default : Font
-default = @Font(None)
+	## Font size must be finite and at least one pixel.
+	new : Props -> Try(Font, [InvalidFontSize(F64)])
+	new = |props| if (props.size.is_finite() and props.size >= 1) Ok(Explicit(props)) else Err(InvalidFontSize(props.size))
 
-new :
-    {
-        family ?? Str,
-        size ?? F32,
-        color ?? Color.Color,
-        shadow ?? [None, Auto],
-        style ?? Style,
-        textcase ?? TextCase,
-        variant ?? Variant,
-    }
-    -> Result Font _
-new = |{ family ?? "", size ?? 12.0, color ?? Color.rgb(0, 0, 0), shadow ?? None, style ?? Normal, textcase ?? Normal, variant ?? Normal }|
-    Ok(
-        @Font(
-            Some(
-                {
-                    family,
-                    size: parse_size(size)?,
-                    color,
-                    shadow,
-                    style,
-                    textcase,
-                    variant,
-                },
-            ),
-        ),
-    )
+	to_json_value : Font -> InternalJson
+	to_json_value = |font| match font {
+		Inherit => InternalJson.object([])
+		Explicit(props) => InternalJson.object([
+			{ name: "family", value: InternalJson.string(props.family) },
+			{ name: "size", value: InternalJson.encode(props.size) ?? crash "Font.to_json_value: non-finite size passed constructor" },
+			{ name: "color", value: props.color.to_json_value() },
+			{
+				name: "shadow",
+				value: InternalJson.string(
+					match props.shadow {
+						NoShadow => "none"
+						AutoShadow => "auto"
+					},
+				),
+			},
+			{
+				name: "style",
+				value: InternalJson.string(
+					match props.style {
+						Normal => "normal"
+						Italic => "italic"
+					},
+				),
+			},
+			{
+				name: "textcase",
+				value: InternalJson.string(
+					match props.textcase {
+						Normal => "normal"
+						Upper => "upper"
+						Lower => "lower"
+					},
+				),
+			},
+			{
+				name: "variant",
+				value: InternalJson.string(
+					match props.variant {
+						Normal => "normal"
+						SmallCaps => "small-caps"
+						PetiteCaps => "petite-caps"
+						Unicase => "unicase"
+						AllSmallCaps => "all-small-caps"
+						AllPetiteCaps => "all-petite-caps"
+					},
+				),
+			},
+		])
+	}
 
-parse_size : F32 -> Result F32 [InvalidSize Str]
-parse_size = |f32|
-    if f32 >= 1.0 then
-        Ok(f32)
-    else
-        Err(InvalidSize("Font size must be equal to or greater than 1.0"))
+	to_json : Font -> Str
+	to_json = |font| font.to_json_value().to_json()
+}
 
-to_str : Font -> Str
-to_str = |@Font(maybe_font)|
-    when maybe_font is
-        None -> ""
-        Some(inner) ->
-            fields_str =
-                [
-                    "\"family\":\"${inner.family}\"",
-                    "\"size\":${Num.to_str(inner.size)}",
-                    "\"color\":\"${Color.to_str(inner.color)}\"",
-                    "\"shadow\":\"${shadow_to_str(inner.shadow)}\"",
-                    "\"style\":\"${style_to_str(inner.style)}\"",
-                    "\"textcase\":\"${textcase_to_str(inner.textcase)}\"",
-                    "\"variant\":\"${variant_to_str(inner.variant)}\"",
-                ]
-                |> Str.join_with(",")
-
-            "\"font\":{${fields_str}}"
-
-shadow_to_str : [None, Auto] -> Str
-shadow_to_str = |shadow|
-    when shadow is
-        None -> "none"
-        Auto -> "auto"
-
-style_to_str : Style -> Str
-style_to_str = |style|
-    when style is
-        Normal -> "normal"
-        Italic -> "italic"
-
-textcase_to_str : TextCase -> Str
-textcase_to_str = |textcase|
-    when textcase is
-        Normal -> "normal"
-        Upper -> "upper"
-        Lower -> "lower"
-
-variant_to_str : Variant -> Str
-variant_to_str = |variant|
-    when variant is
-        Normal -> "normal"
-        SmallCaps -> "small-caps"
-        PetiteCaps -> "petite-caps"
-        Unicase -> "unicase"
-        AllSmallCaps -> "all-small-caps"
-        AllPetiteCaps -> "all-petite-caps"
+expect Font.default.to_json() == "{}"
+expect Font.new({ size: 1 }).is_ok()
+expect Font.new({ size: 0.999 }).is_err()
+expect Font.new({ size: F64.nan }).is_err()
+expect Font.new({ size: F64.infinity }).is_err()
+expect {
+	font = Font.new({ family: "Courier \"New\"\n雪", size: 18, style: Italic, shadow: AutoShadow, textcase: Upper, variant: SmallCaps })?
+	parsed : Try({ family : Str, size : F64, style : Str, shadow : Str, textcase : Str, variant : Str }, _)
+	parsed = Json.parse(font.to_json())
+	parsed == Ok({ family: "Courier \"New\"\n雪", size: 18, style: "italic", shadow: "auto", textcase: "upper", variant: "small-caps" })
+}
