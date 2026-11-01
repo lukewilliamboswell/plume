@@ -19,24 +19,17 @@ network access to that CDN. This migration retains the existing renderer
 version. Chart labels and hover text follow Plotly's own text and markup rules.
 HTML document titles and embedded JSON are escaped separately.
 
-== API and migration
+== API
 
-This release changes the public API and requires the modern Roc compiler.
-See the repository's `examples/` for complete, runnable applications.
+Plume requires the modern Roc compiler. Construct charts with `Chart.new`,
+passing a `traces` list of `Bar`, `Scatter`, `Pie` or `Sankey` tags and an
+optional layout. Constructors take named props; defaulted fields let callers
+specify only what they need. Use `to_json` for a Plotly figure and `to_html`
+for a complete document. `Color.to_css` returns a CSS color.
 
-[cols="1,2",options="header"]
-|===
-| Legacy API | Modern API
-| `Chart.empty` and `add_*` | `Chart.new` with a `traces` list of tagged traces
-| `with_layout`, `with_name`, `with_bar_width` | Constructor props with defaulted fields
-| Generic chart coordinate parameters | Non-generic traces and charts; constructors encode coordinates
-| `to_str` serializers | `to_json`; `Color.to_str` remains CSS text
-| Positional RGB channels | Named color channel records
-| String scatter modes | Named mode tags
-| Raw axis JSON | Structured numeric or date bounds
-| Sankey labels used as keys | Explicit node IDs and separate display labels
-| Exceptions during rendering | `Try` errors when constructing invalid values
-|===
+Scatter modes and marker symbols use named tags. Axis bounds are structured
+numeric or date values. Sankey links refer to explicit node IDs independently
+of their display labels. See `examples/` for complete, runnable applications.
 
 Construction validates numeric sizes, ranges, pie values and Sankey graphs.
 Cartesian coordinates support strings and JSON-encodable numbers. Nonfinite
@@ -95,8 +88,8 @@ by repository policy. Adding these workflow files does not configure GitHub
 branch rules or environment protection.
 
 The nightly workflow checks the latest published release, rather than the
-working tree. The old 0.4.0 release predates modern syntax and the new examples
-archive contract, so nightly compatibility requires a new published release.
+working tree. It requires a published examples archive that follows the
+shared release contract.
 Local checks and dry runs do not establish hosted CI or publication success.
 
 include::releases/0.5.0.adoc[leveloffset=+1]

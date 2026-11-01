@@ -1,7 +1,7 @@
 #!/usr/bin/env roc-stable
 app [main!] {
 	cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.25.0/CZsY7tYZwR3rj9kYbpaCfxki2yVAaRL8bBwMLvB2xkbA.tar.zst",
-	roc: "nightly-2026-10-31-f7bef6b",
+	roc: "nightly-2026-10-18-1df370f",
 }
 
 import cli.Cmd
@@ -14,7 +14,8 @@ main! : List(OsStr) => Try({}, _)
 main! = |_args| {
 	run!({ program: "roc", args: ["version"] })?
 	run!({ program: "roc-stable", args: ["version"] })?
-	run!({ program: "roc", args: ["fmt", "--check", "Blueprint.roc", "package", "examples", "tests", "scripts"] })?
+	run!({ program: "roc", args: ["fmt", "--check", "Blueprint.roc", "package", "examples", "tests"] })?
+	run!({ program: "roc-stable", args: ["fmt", "--check", "scripts"] })?
 	run!({ program: "roc", args: ["test", "--opt=dev", "package/main.roc"] })?
 	for root in ["examples", "tests"] {
 		for path in roc_sources!(Path.utf8(root))? {

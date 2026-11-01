@@ -1,7 +1,7 @@
 = Plume 0.5.0
 
-Plume now supports modern Roc syntax with a props-based chart API, validated
-data and safe JSON and HTML output. This is a breaking change from 0.4.0.
+Plume provides a props-based chart API, validated data and safe JSON and HTML
+output for the modern Roc compiler.
 
 == Use this release
 
