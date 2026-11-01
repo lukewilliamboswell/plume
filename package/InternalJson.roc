@@ -27,16 +27,44 @@ InternalJson :: Str.{
 	to_json = |InternalJson.(json)| json
 }
 
+## JSON string encoding preserves controls, quotes and Unicode.
 expect {
 	# Quotes, slashes, controls and Unicode must survive a JSON round trip.
 	original = "a\"\\\n\t\u(1)雪"
-	parsed : Try({ text : Str }, _)
-	parsed = Json.parse(InternalJson.object([{ name: "text", value: InternalJson.string(original) }]).to_json())
-	parsed == Ok({ text: original })
+	parsed : { text : Str }
+	parsed = Json.parse(InternalJson.object([{ name: "text", value: InternalJson.string(original) }]).to_json())?
+	parsed == { text: original }
 }
 
+## Empty objects serialize exactly.
 expect InternalJson.object([]).to_json() == "{}"
+
+## Empty arrays serialize exactly.
 expect InternalJson.array([]).to_json() == "[]"
+
+## Positive infinity cannot be encoded as JSON.
 expect InternalJson.encode(F64.infinity) == Err(Infinity)
+
+## NaN cannot be encoded as JSON.
 expect InternalJson.encode(F64.nan) == Err(NaN)
+
+## Negative infinity cannot be encoded as JSON.
 expect InternalJson.encode(-F64.infinity) == Err(NegativeInfinity)
+
+## Object keys are encoded, and fields keep their supplied order.
+expect InternalJson.object([
+	{ name: "a\"\n", value: InternalJson.array([InternalJson.string("x"), InternalJson.encode(2.U64)?]) },
+	{ name: "", value: InternalJson.encode(Bool.False)? },
+]).to_json() == "{\"a\\\"\\n\":[\"x\",2],\"\":false}"
+
+## Finite floating extrema retain their value through JSON encoding.
+expect {
+	var $passed = True
+	for number in [F64.lowest, -1, -0.0, 0, 1, F64.highest] {
+		encoded = InternalJson.encode(number)?
+		decoded : F64
+		decoded = Json.parse(encoded.to_json())?
+		$passed = $passed and !(decoded != number)
+	}
+	$passed
+}

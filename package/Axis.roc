@@ -31,13 +31,14 @@ Axis :: [Automatic, Explicit(Props)].{
 		_ => Ok(Explicit(props))
 	}
 
+	## Encode an object for composition without accepting raw JSON.
 	to_json_value : Axis -> InternalJson
 	to_json_value = |axis| match axis {
 		Automatic => InternalJson.object([])
 		Explicit(props) => {
 			range_fields = match props.range {
-				Auto => [{ name: "autorange", value: InternalJson.encode(True) ?? crash "Axis.to_json_value: Bool encoding failed" }]
-				Fixed => [{ name: "fixedrange", value: InternalJson.encode(True) ?? crash "Axis.to_json_value: Bool encoding failed" }]
+				Auto => [{ name: "autorange", value: InternalJson.encode(Bool.True) ?? crash "Axis.to_json_value: Bool encoding failed" }]
+				Fixed => [{ name: "fixedrange", value: InternalJson.encode(Bool.True) ?? crash "Axis.to_json_value: Bool encoding failed" }]
 				Reversed => [{ name: "autorange", value: InternalJson.string("reversed") }]
 				Bounds(bounds) => [
 					{
@@ -76,24 +77,86 @@ Axis :: [Automatic, Explicit(Props)].{
 			)
 		}
 	}
+
+	## Serialize this validated value as a complete JSON document.
 	to_json : Axis -> Str
 	to_json = |axis| axis.to_json_value().to_json()
 }
 
+## Automatic axes serialize as an empty object.
 expect Axis.default.to_json() == "{}"
+
+## Finite numeric ranges are accepted.
 expect Axis.new({ range: Bounds({ min: 0, max: 10 }) }).is_ok()
+
+## Reversed numeric ranges are accepted.
 expect Axis.new({ range: Bounds({ min: 10, max: 0 }) }).is_ok()
+
+## NaN numeric bounds are rejected.
 expect Axis.new({ range: Bounds({ min: F64.nan, max: 10 }) }).is_err()
+
+## Infinite numeric bounds are rejected.
 expect Axis.new({ range: Bounds({ min: 0, max: F64.infinity }) }).is_err()
+
+## Date ranges retain their endpoint strings.
 expect {
 	axis = Axis.new({ type: Date, range: DateBounds({ start: "2026-01-01", end: "2026-12-31" }) })?
-	parsed : Try({ type : Str, range : List(Str) }, _)
-	parsed = Json.parse(axis.to_json())
-	parsed == Ok({ type: "date", range: ["2026-01-01", "2026-12-31"] })
+	parsed : { type : Str, range : List(Str) }
+	parsed = Json.parse(axis.to_json())?
+	parsed == { type: "date", range: ["2026-01-01", "2026-12-31"] }
 }
+
+## A reversed automatic range uses Plotly autorange.
 expect {
 	axis = Axis.new({ range: Reversed })?
-	parsed : Try({ autorange : Str }, _)
-	parsed = Json.parse(axis.to_json())
-	parsed == Ok({ autorange: "reversed" })
+	parsed : { autorange : Str }
+	parsed = Json.parse(axis.to_json())?
+	parsed == { autorange: "reversed" }
+}
+
+## Negative infinity in either numeric endpoint is invalid.
+expect Axis.new({ range: Bounds({ min: -F64.infinity, max: 0 }) }).is_err() and Axis.new({ range: Bounds({ min: 0, max: -F64.infinity }) }).is_err()
+
+## Every explicit axis type has the corresponding Plotly spelling.
+expect {
+	var $passed = True
+	for row in [
+		{ type: Linear, name: "linear" },
+		{ type: Log, name: "log" },
+		{ type: Date, name: "date" },
+		{ type: Category, name: "category" },
+		{ type: MultiCategory, name: "multicategory" },
+	] {
+		axis = Axis.new({ type: row.type })?
+		decoded : { type : Str }
+		decoded = Json.parse(axis.to_json())?
+		$passed = $passed and !(decoded.type != row.name)
+	}
+	$passed
+}
+
+## Automatic axis type defers to Plotly without a type field.
+expect {
+	axis = Axis.new({})?
+	axis.to_json() == "{\"autorange\":true,\"title\":{},\"color\":\"rgb(68, 68, 68)\"}"
+}
+
+## Fixed ranges set fixedrange without inventing numeric bounds.
+expect {
+	axis = Axis.new({ range: Fixed })?
+	decoded : { fixedrange : Bool }
+	decoded = Json.parse(axis.to_json())?
+	decoded.fixedrange
+}
+
+## Reversed numeric bounds and a zero-width range are preserved exactly.
+expect {
+	var $passed = True
+	for bounds in [{ min: 10, max: 0 }, { min: 0, max: 0 }] {
+		axis = Axis.new({ range: Bounds(bounds) })?
+		decoded : { range : List(F64) }
+		decoded = Json.parse(axis.to_json())?
+		$passed = $passed and !(decoded.range != [bounds.min, bounds.max])
+	}
+	$passed
 }

@@ -18,6 +18,7 @@ Title :: [Hidden, Text(Props)].{
 		Text(props) => Ok(props.text)
 	}
 
+	## Encode an object for composition without accepting raw JSON.
 	to_json_value : Title -> InternalJson
 	to_json_value = |title| match title {
 		Hidden => InternalJson.object([])
@@ -26,16 +27,26 @@ Title :: [Hidden, Text(Props)].{
 			{ name: "font", value: props.font.to_json_value() },
 		])
 	}
+
+	## Serialize this validated value as a complete JSON document.
 	to_json : Title -> Str
 	to_json = |title| title.to_json_value().to_json()
 }
 
+## Inherited titles report that no explicit title is set.
 expect Title.default.get_text() == Err(TitleNotSet)
+
+## Inherited titles serialize as an empty object.
 expect Title.default.to_json() == "{}"
+
+## Title text survives quotes, controls, Unicode and markup.
 expect {
 	original = "A \"title\"\n雪</script>"
 	title = Title.new({ text: original })
-	parsed : Try({ text : Str }, _)
-	parsed = Json.parse(title.to_json())
-	parsed == Ok({ text: original }) and title.get_text() == Ok(original)
+	parsed : { text : Str }
+	parsed = Json.parse(title.to_json())?
+	parsed == { text: original } and title.get_text()? == original
 }
+
+## An explicit empty title is different from an inherited title.
+expect Title.new({ text: "" }).get_text()? == ""

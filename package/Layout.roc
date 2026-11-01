@@ -21,6 +21,7 @@ Layout :: Props.{
 	get_title : Layout -> Str
 	get_title = |Layout.(props)| props.title.get_text() ?? "My Chart"
 
+	## Encode an object for composition without accepting raw JSON.
 	to_json_value : Layout -> InternalJson
 	to_json_value = |Layout.(props)| InternalJson.object([
 		{ name: "font", value: props.global_font.to_json_value() },
@@ -29,21 +30,33 @@ Layout :: Props.{
 		{ name: "yaxis", value: props.y_axis.to_json_value() },
 		{ name: "showlegend", value: InternalJson.encode(props.legend == Shown) ?? crash "Layout.to_json_value: Bool encoding failed" },
 	])
+
+	## Serialize this validated value as a complete JSON document.
 	to_json : Layout -> Str
 	to_json = |layout| layout.to_json_value().to_json()
 }
 
+## A missing title gets the HTML display fallback.
 expect Layout.new({}).get_title() == "My Chart"
+
+## Explicit titles are available to the HTML document.
 expect Layout.new({ title: Title.new({ text: "Fruit" }) }).get_title() == "Fruit"
+
+## Default layout fields encode as valid JSON values.
 expect {
-	parsed : Try({ showlegend : Bool, xaxis : {}, yaxis : {}, title : {}, font : {} }, _)
-	parsed = Json.parse(Layout.new({}).to_json())
-	parsed == Ok({ showlegend: False, xaxis: {}, yaxis: {}, title: {}, font: {} })
+	parsed : { showlegend : Bool, xaxis : {}, yaxis : {}, title : {}, font : {} }
+	parsed = Json.parse(Layout.new({}).to_json())?
+	parsed == { showlegend: False, xaxis: {}, yaxis: {}, title: {}, font: {} }
 }
+
+## Axis bounds and explicit legend settings compose into a layout.
 expect {
 	axis = Axis.new({ type: Linear, range: Bounds({ min: -2, max: 4 }) })?
 	layout = Layout.new({ x_axis: axis, legend: Shown })
-	parsed : Try({ showlegend : Bool, xaxis : { type : Str, range : List(F64) } }, _)
-	parsed = Json.parse(layout.to_json())
-	parsed == Ok({ showlegend: True, xaxis: { type: "linear", range: [-2, 4] } })
+	parsed : { showlegend : Bool, xaxis : { type : Str, range : List(F64) } }
+	parsed = Json.parse(layout.to_json())?
+	parsed == { showlegend: True, xaxis: { type: "linear", range: [-2, 4] } }
 }
+
+## An explicit empty title stays empty at the HTML title boundary.
+expect Layout.new({ title: Title.new({ text: "" }) }).get_title() == ""
