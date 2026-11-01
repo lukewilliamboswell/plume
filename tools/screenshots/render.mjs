@@ -2,28 +2,38 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFile, writeFile, mkdir, readdir, copyFile, rm } from 'node:fs/promises';
 import { createRequire } from 'node:module';
+import { resolve, dirname, join } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { parseArgs } from 'node:util';
 import { chromium } from 'playwright';
 import { compareImages, checkInventory } from './compare.mjs';
 import { classifyValidation } from './validation.mjs';
 
 const require = createRequire(import.meta.url);
-const update = process.argv.slice(2).join(' ') === '--update';
-assert.ok(process.argv.length === 2 || update, 'Use no arguments to check, or --update to refresh reviewed images');
-assert.equal(process.platform, 'linux', 'Run through the pinned Docker environment');
-assert.equal(process.arch, 'x64', 'Run the screenshot environment with --platform linux/amd64');
-const output = '/output';
-const baselines = '/baselines';
+const { values } = parseArgs({ options: {
+  workspace: { type: 'string' }, output: { type: 'string' }, baselines: { type: 'string' },
+  update: { type: 'boolean', default: false },
+} });
+for (const name of ['workspace', 'output', 'baselines']) assert.ok(values[name], `Missing --${name}`);
+const update = values.update;
+const workspace = resolve(values.workspace);
+const output = resolve(values.output);
+const baselines = resolve(values.baselines);
+assert.equal(process.platform, 'linux', 'Canonical screenshot checks run on Linux');
+assert.equal(process.arch, 'x64', 'Canonical screenshot checks run on x64 Linux');
 const report = { format: 'plume-screenshots/1', mode: update ? 'update' : 'check', results: [] };
 let browser;
 
 try {
-  const dockerfile = await readFile('/workspace/tools/screenshots/Dockerfile', 'utf8');
-  const imageVersion = dockerfile.match(/FROM mcr\.microsoft\.com\/playwright:v([\d.]+)-noble@sha256:[a-f0-9]{64}/)?.[1];
-  assert.equal(require('playwright/package.json').version, imageVersion, 'Playwright package and browser image versions must match');
+  const pinned = JSON.parse(await readFile(new URL('./package.json', import.meta.url), 'utf8'));
+  assert.equal(require('playwright/package.json').version, pinned.dependencies.playwright, 'Run blueprint run screenshots-setup to install the locked Playwright version');
+  const core = dirname(require.resolve('playwright-core/package.json'));
+  const browserInventory = JSON.parse(await readFile(join(core, 'browsers.json'), 'utf8'));
+  const pinnedBrowser = browserInventory.browsers.find(browser => browser.name === 'chromium-headless-shell');
   const manifest = JSON.parse(await readFile(`${output}/manifest.json`, 'utf8'));
   assert.equal(manifest.format, 'plume-screenshot-inputs/1');
   assert.ok(manifest.examples.every(example => /^[a-z0-9][a-z0-9-]*$/.test(example.name)));
-  const readme = await readFile('/workspace/README.md', 'utf8');
+  const readme = await readFile(join(workspace, 'README.md'), 'utf8');
   const gallery = [...new Set([...readme.matchAll(/examples\/demo-images\/([a-z0-9-]+\.png)/g)].map(match => match[1]))];
   checkInventory({
     names: manifest.examples.map(example => example.name),
@@ -57,8 +67,24 @@ try {
   browser = await chromium.launch({
     headless: true,
     args: ['--disable-gpu', '--font-render-hinting=none', '--disable-lcd-text'],
+    env: { ...process.env, FONTCONFIG_FILE: fileURLToPath(new URL('./fonts.conf', import.meta.url)) },
   });
+  assert.equal(browser.version(), pinnedBrowser.browserVersion, 'The browser must match the locked Playwright browser revision');
+  // Verify the font actually selected by Chromium, rather than accepting a
+  // successful CSS font lookup that can silently use a fallback family.
+  const fontPage = await browser.newPage();
+  await fontPage.setContent('<span id="font-probe" style="font-family:monospace">Qty 0123456789</span>');
+  await fontPage.evaluate(() => document.fonts.ready);
+  const session = await fontPage.context().newCDPSession(fontPage);
+  await session.send('DOM.enable');
+  await session.send('CSS.enable');
+  const { root: documentRoot } = await session.send('DOM.getDocument');
+  const { nodeId } = await session.send('DOM.querySelector', { nodeId: documentRoot.nodeId, selector: '#font-probe' });
+  const { fonts } = await session.send('CSS.getPlatformFontsForNode', { nodeId });
+  assert.ok(fonts.length && fonts.every(font => font.familyName === 'Liberation Mono'), 'Install fonts-liberation: Chromium must use Liberation Mono, without font fallback');
+  await fontPage.close();
   report.browser = browser.version();
+  report.browser_revision = pinnedBrowser.revision;
   report.viewport = { width: 960, height: 540, device_scale_factor: 1 };
   for (const [index, example] of manifest.examples.entries()) {
     console.log(`[${index + 1}/${manifest.examples.length}] render ${example.name}`);
@@ -77,7 +103,7 @@ try {
       const url = route.request().url();
       if (url === example.renderer.url) {
         await route.fulfill({ body: assets.get(url).bytes, contentType: 'application/javascript', headers: { 'access-control-allow-origin': '*' } });
-      } else if (url === `file:///output/html/${example.name}.html`) {
+      } else if (url === pathToFileURL(join(output, 'html', `${example.name}.html`)).href) {
         await route.continue();
       } else {
         errors.push(`Unexpected network request: ${url}`);
@@ -98,7 +124,7 @@ try {
       });
     });
     try {
-      await page.goto(`file:///output/html/${example.name}.html`, { waitUntil: 'load' });
+      await page.goto(pathToFileURL(join(output, 'html', `${example.name}.html`)).href, { waitUntil: 'load' });
       await page.waitForFunction(() => Boolean(window.__plumePlot));
       const observed = await page.evaluate(async version => {
         await Promise.race([

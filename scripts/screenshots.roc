@@ -15,7 +15,7 @@ Case : { name : Str, args : List(Str), stdin : Str, stdout : Str, stderr : Str, 
 Application : { path : Str, cases : List(Case) }
 
 ## Build the current examples once, then check or explicitly update their
-## README screenshots in the same pinned browser, fonts and OS used by CI.
+## README screenshots with the pinned headless browser used by CI.
 main! : List(OsStr) => Try({}, _)
 main! = |args| {
 	text_args = args.map_try(OsStr.to_str_try)?
@@ -75,27 +75,16 @@ render! = |mode| {
 	}
 	manifest = Json.to_str({ format: "plume-screenshot-inputs/1", examples: $examples })
 	output.join("manifest.json").write_utf8!("${manifest}\n")?
-	# An immutable image ID prevents another worktree's Docker build from
-	# changing which helper runs between the build and the rendering step.
-	image_file = output.join("browser-image.id")
-	run!({ program: "docker", args: ["build", "--platform=linux/amd64", "--iidfile=${image_file.display()}", "tools/screenshots"] })?
-	image = image_file.read_utf8!()?.trim()
-	user = Cmd.new("id").args(["-u"]).exec_output!()?.stdout_utf8.trim()
-	group = Cmd.new("id").args(["-g"]).exec_output!()?.stdout_utf8.trim()
-	baseline_mode = if (mode == Check) ",readonly" else ""
 	run!({
-		program: "docker",
+		program: "node",
 		args: [
-			"run",
-			"--rm",
-			"--init",
-			"--platform=linux/amd64",
-			"--ipc=host",
-			"--user=${user}:${group}",
-			"--mount=type=bind,src=${root.display()},dst=/workspace,readonly",
-			"--mount=type=bind,src=${output.display()},dst=/output",
-			"--mount=type=bind,src=${root.join("examples/demo-images").display()},dst=/baselines${baseline_mode}",
-			image,
+			"tools/screenshots/render.mjs",
+			"--workspace",
+			root.display(),
+			"--output",
+			output.display(),
+			"--baselines",
+			root.join("examples/demo-images").display(),
 		].concat(mode_args(mode)),
 	})?
 	Ok({})
