@@ -10,6 +10,8 @@ function run(program, args) {
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
 mkdirSync('.screenshots-out', { recursive: true });
+run(process.execPath, ['tools/screenshots/setup.mjs']);
+run(process.execPath, ['--test', 'tools/screenshots/compare.test.mjs', 'tools/screenshots/validation.test.mjs']);
 run('roc-stable', ['test', '--opt=dev', 'scripts/screenshots.roc']);
 run('roc-stable', ['build', '--opt=dev', '--output=.screenshots-out/driver', 'scripts/screenshots.roc']);
 run('.screenshots-out/driver', process.argv.slice(2));
