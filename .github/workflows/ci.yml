@@ -26,3 +26,4 @@ jobs:
           name: plume-manual
           path: .docs-out/
           if-no-files-found: error
+          include-hidden-files: true
