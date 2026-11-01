@@ -7,6 +7,7 @@ import fuzz.Fuzz
 import plume.Axis
 import plume.Bar
 import plume.Chart
+import plume.Coordinate
 import plume.Font
 import plume.Layout
 import plume.Line
@@ -51,8 +52,7 @@ is_numeric_policy_correct = |number| {
 	finite = number.is_finite()
 	nonnegative = finite and number >= 0
 	actual = {
-		bar_coordinate: Bar.new({ data: [{ x: number, y: "y" }] }).is_ok(),
-		scatter_coordinate: Scatter.new({ data: [{ x: "x", y: number }] }).is_ok(),
+		coordinate: Coordinate.from_number(number).is_ok(),
 		bar_width: Bar.new({ data: [{ x: "x", y: 0 }], width: number }).is_ok(),
 		pie_value: Pie.new({ data: [{ label: "slice", value: number }] }).is_ok(),
 		pie_hole: Pie.new({ data: [{ label: "slice", value: 0 }], hole: number }).is_ok(),
@@ -63,8 +63,7 @@ is_numeric_policy_correct = |number| {
 		axis_bounds: Axis.new({ range: Bounds({ min: number, max: 0 }) }).is_ok(),
 	}
 	expected = {
-		bar_coordinate: finite,
-		scatter_coordinate: finite,
+		coordinate: finite,
 		bar_width: nonnegative,
 		pie_value: nonnegative,
 		pie_hole: nonnegative and number <= 1,
@@ -91,8 +90,10 @@ populated_chart : Input -> Try(Chart, _)
 populated_chart = |input| {
 	finite_number = if (input.number.is_finite()) input.number else 0
 	magnitude = if (finite_number < 0) -finite_number else finite_number
-	bar = Bar.new({ data: [{ x: input.text, y: finite_number }], name: input.text })?
-	scatter = Scatter.new({ data: [{ x: finite_number, y: finite_number, text: input.text }], mode: MarkersText, name: input.text })?
+	text_coordinate = Coordinate.from_text(input.text)
+	number_coordinate = Coordinate.from_number(finite_number)?
+	bar = Bar.new({ data: [{ x: text_coordinate, y: number_coordinate }], name: input.text })?
+	scatter = Scatter.new({ data: [{ x: number_coordinate, y: number_coordinate, text: input.text }], mode: MarkersText, name: input.text })
 	pie = Pie.new({ data: [{ label: input.text, value: magnitude }], name: input.text })?
 	sankey = Sankey.new({
 		nodes: [{ id: "a", label: input.text, hover: Text(input.text) }, { id: "b", label: input.text }],
@@ -133,7 +134,11 @@ is_trace_round_trip : Input -> Bool
 is_trace_round_trip = |input| {
 	finite_number = if (input.number.is_finite()) input.number else 0
 	magnitude = if (finite_number < 0) -finite_number else finite_number
-	bar = Bar.new({ data: [{ x: input.text, y: finite_number }] })
+	number_coordinate = match Coordinate.from_number(finite_number) {
+		Ok(coordinate) => coordinate
+		Err(_) => return False
+	}
+	bar = Bar.new({ data: [{ x: Coordinate.from_text(input.text), y: number_coordinate }] })
 	pie = Pie.new({ data: [{ label: input.text, value: magnitude }] })
 	match (bar, pie) {
 		(Ok(bars), Ok(slices)) => {
