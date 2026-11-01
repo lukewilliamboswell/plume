@@ -1,0 +1,102 @@
+= Plume
+
+Plume is a pure Roc package that builds Plotly chart specifications and complete
+HTML documents. It supports bar, scatter, pie, donut and Sankey charts. The
+package performs no I/O; applications choose where to send its output.
+
+== Run an example
+
+Install the latest Roc nightly. From the repository root:
+
+[source,sh]
+----
+roc examples/simple.roc > chart.html
+----
+
+Open the resulting file in a browser. HTML uses Plotly 2.35.2 from
+`cdn.plot.ly`, with a fixed URL and integrity hash; viewing the chart requires
+network access to that CDN. This migration retains the existing renderer
+version. Chart labels and hover text follow Plotly's own text and markup rules.
+HTML document titles and embedded JSON are escaped separately.
+
+== API and migration
+
+This release changes the public API and requires the modern Roc compiler.
+See the repository's `examples/` for complete, runnable applications.
+
+[cols="1,2",options="header"]
+|===
+| Legacy API | Modern API
+| `Chart.empty` and `add_*` | `Chart.new` with a `traces` list of tagged traces
+| `with_layout`, `with_name`, `with_bar_width` | Constructor props with defaulted fields
+| Generic chart coordinate parameters | Non-generic traces and charts; constructors encode coordinates
+| `to_str` serializers | `to_json`; `Color.to_str` remains CSS text
+| Positional RGB channels | Named color channel records
+| String scatter modes | Named mode tags
+| Raw axis JSON | Structured numeric or date bounds
+| Sankey labels used as keys | Explicit node IDs and separate display labels
+| Exceptions during rendering | `Try` errors when constructing invalid values
+|===
+
+Construction validates numeric sizes, ranges, pie values and Sankey graphs.
+Cartesian coordinates support strings and JSON-encodable numbers. Nonfinite
+numbers fail construction. Empty data is supported. A bar width is measured
+in axis units and may exceed one. Pie holes range from zero to one inclusive.
+Sankey nodes may share a display label but must have unique IDs; every link
+must reference an existing ID.
+
+JSON scalars pass through Roc's builtin encoder. One opaque internal builder
+composes objects and arrays without accepting unchecked JSON fragments.
+`Chart.to_json` returns standalone JSON. `Chart.to_html` separately escapes
+the JSON for an HTML script element and escapes the document title. Values
+that resemble template placeholders remain literal data.
+
+== Development and validation
+
+Use Blueprint 0.11.0 and the latest Roc nightly as `roc` on `PATH`:
+
+[source,sh]
+----
+blueprint check
+blueprint run check
+blueprint run docs
+blueprint run release-package -- build 0.0.1-dryrun
+blueprint run release-test -- test-archive
+----
+
+`Blueprint.lock` records the digest and length of each released utility and
+the fixed compiler used for repository scripts. The product compiler is
+supplied by the host and by CI. Checks use the dev backend. These are
+correctness checks, not performance measurements.
+
+`check` formats sources, runs package and consumer `expect` tests, and runs
+every example against `tests/spec.json`. Expected output changes are recorded
+with `blueprint run release-test -- test-examples --update` and reviewed as
+a diff. The release utility builds each example once and compares output,
+stderr and exit status for each case. Failed commands and timeouts fail the
+run. The release archive is tested separately against the exact bundled
+package over loopback.
+
+The workflows pin
+https://github.com/lukewilliamboswell/roc-automation/tree/ae089dae16f63f11a754e49c48a9310445e084dd[roc-automation at the revision reviewed for this migration]
+and use its
+https://lukewilliamboswell.github.io/roc-automation/pure-package.html[pure-package model].
+Roc source follows the
+https://gist.github.com/lukewilliamboswell/241a4e8adb7c89c7e0e02f1d303a8fa1[style guide].
+
+== Release operation
+
+Pull requests run the shared release dry run. Publication requires dispatching
+`Release` from the default branch with a version, after reviewing its artifacts
+and configuring the repository's `release` environment. The required checks
+are `Release / Build and test the source` and
+`Release / Test the release candidate`, plus the documentation job if required
+by repository policy. Adding these workflow files does not configure GitHub
+branch rules or environment protection.
+
+The nightly workflow checks the latest published release, rather than the
+working tree. The old 0.4.0 release predates modern syntax and the new examples
+archive contract, so nightly compatibility requires a new published release.
+Local checks and dry runs do not establish hosted CI or publication success.
+
+include::releases/0.5.0.adoc[leveloffset=+1]

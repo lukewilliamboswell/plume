@@ -20,3 +20,12 @@ examples/bubble
 generated-docs/
 
 out.html
+
+.blueprint/
+.docs-out/
+dist/
+.roc-cache/
+scripts/check
+tests/consumer
+core
+core.*
