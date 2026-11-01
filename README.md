@@ -2,150 +2,30 @@
 
 A pure [Roc](https://www.roc-lang.org) package for building interactive charts with [Plotly.js](https://github.com/plotly/plotly.js). Create typed traces and layouts, then render JSON or a complete HTML document.
 
-Build bar charts, scatter plots, lines, bubbles, pies, donuts and Sankey diagrams using validated constructors and props records.
+[Documentation](https://lukewilliamboswell.github.io/plume/) · [Latest release](https://github.com/lukewilliamboswell/plume/releases/latest)
+
+## Gallery
+
+Select a chart to open its runnable source.
+
+| | | |
+| :---: | :---: | :---: |
+| [<img src="examples/demo-images/bar-chart.png" alt="Vertical bars comparing Roc programmers by country" width="260">](examples/bar-chart.roc)<br>**Bars** | [<img src="examples/demo-images/horizontal-bar-chart.png" alt="Horizontal bars comparing Roc programmers by country" width="260">](examples/horizontal-bar-chart.roc)<br>**Horizontal bars** | [<img src="examples/demo-images/scatter.png" alt="Scatter points showing house price against floor area" width="260">](examples/scatter.roc)<br>**Scatter** |
+| [<img src="examples/demo-images/line.png" alt="A line connecting house prices against floor area" width="260">](examples/line.roc)<br>**Lines** | [<img src="examples/demo-images/bubble.png" alt="Bubble traces using different marker shapes, sizes and colors" width="260">](examples/bubble.roc)<br>**Bubbles** | [<img src="examples/demo-images/simple.png" alt="Purple diamond markers and a dashed line showing fruit sales" width="260">](examples/simple.roc)<br>**Styled scatter** |
+| [<img src="examples/demo-images/pie.png" alt="Pie slices comparing Roc programmers by country" width="260">](examples/pie.roc)<br>**Pie** | [<img src="examples/demo-images/donut.png" alt="A donut chart comparing Roc programmers by country" width="260">](examples/donut.roc)<br>**Donut** | [<img src="examples/demo-images/hello.png" alt="Bar and scatter traces sharing a chart of snacks and fruit" width="260">](examples/hello.roc)<br>**Mixed traces** |
+| [<img src="examples/demo-images/equation-sine.png" alt="A sine wave plotted as a line" width="260">](examples/equation-sine.roc)<br>**Sine** | [<img src="examples/demo-images/equation-cosine.png" alt="A cosine wave plotted as a line" width="260">](examples/equation-cosine.roc)<br>**Cosine** | [<img src="examples/demo-images/sankey.png" alt="Colored Sankey nodes connected by weighted flows" width="260">](examples/sankey.roc)<br>**Sankey** |
+| [<img src="examples/demo-images/budget.png" alt="A budget Sankey diagram connecting income, bills and household expenses" width="260">](examples/budget.roc)<br>**Budget flows** | | |
 
 ## Try an example
 
-Use the current Roc new compiler nightly. From this checkout:
+Use the current Roc nightly. From this checkout:
 
 ```sh
 roc examples/simple.roc > chart.html
-roc examples/bar-chart.roc > bars.html
-roc examples/budget.roc examples/baseline.json > budget.html
 ```
 
-Open the resulting HTML in your browser. Examples print HTML to standard output and never launch a browser. The HTML loads the pinned Plotly.js script from its CDN, so displaying a chart requires network access.
+Open `chart.html` in your browser. The generated HTML loads Plotly from its CDN, so viewing the chart requires network access. Examples print HTML to standard output and never launch a browser.
 
-Each release's examples archive contains runnable examples bound to that exact package release. Repository examples use the package in this checkout.
+Release examples are bound to their package release; checkout examples use the local package. See the [manual](https://lukewilliamboswell.github.io/plume/) for installation, chart construction, API guarantees and contributor setup.
 
-## Build a chart
-
-This example uses the same relative import as files under `examples/`. For an application outside this checkout, use the content-addressed package URL from the release instead.
-
-```roc
-app [main!] {
-    cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.26.0/GddgvsGjiNXrHFW6au5i5dUDbTs8FinQdrgE2Gqmw53t.tar.zst",
-    plume: "../package/main.roc",
-}
-
-import cli.OsStr
-import cli.Stdout
-import plume.Bar
-import plume.Chart
-import plume.Layout
-import plume.Title
-
-main! : List(OsStr) => Try({}, _)
-main! = |_args| {
-    sales = Bar.new({
-        data: [
-            { x: "Apples", y: 12 },
-            { x: "Oranges", y: 8 },
-        ],
-        name: "Sales",
-    })?
-    chart = Chart.new({
-        traces: [Bar(sales)],
-        layout: Layout.new({ title: Title.new({ text: "Fruit Sales" }) }),
-    })
-    Stdout.line!(chart.to_html())?
-    Ok({})
-}
-```
-
-Configure a constructor with a record containing only the fields you need. Mix trace types in `Chart.new({ traces: [...] })`; each Cartesian point uses a `Coordinate` containing text or a finite number. Use `chart.to_json()` when embedding the Plotly figure in another application, or `chart.to_html()` for a standalone document.
-
-Marker symbols and scatter modes are closed tags such as `Diamond` and `LinesMarkers`. Bar and Sankey orientations use `Horizontal` and `Vertical`. Colors use named channels: `Color.rgb({ red: 124, green: 56, blue: 245 })`. Fallible constructors return `Try` and compose with `?`; invalid data never waits until rendering to report an error. Sankey nodes have stable string IDs distinct from their displayed labels.
-
-Coordinates accept plain string and number literals, checked at compile time. For runtime data, use `Coordinate.from_text(label)` or `Coordinate.from_number(measurement)?`; records, lists and non-finite numbers cannot become coordinates. `Scatter.new` is infallible because its coordinate, marker and line values are already validated. Pie labels are strings and slice values are nonnegative numbers.
-
-JSON output escapes user text, and HTML rendering additionally protects the document title and embedded JSON data. Plotly interprets supported formatting within chart labels and hover text.
-
-## Develop and validate
-
-The repository follows the [Roc style guide](https://gist.github.com/lukewilliamboswell/241a4e8adb7c89c7e0e02f1d303a8fa1) and [roc-automation's pure package guidance](https://lukewilliamboswell.github.io/roc-automation/pure-package.html). The package has no runtime platform dependency; basic-cli is used only by applications and tests.
-
-```sh
-blueprint check
-blueprint run check
-blueprint run docs
-```
-
-`check` formats all Roc sources, runs package and application tests, and builds and executes every recorded example. For focused work, `roc test package/main.roc` runs package tests and `roc tests/consumer/main.roc` checks independently decoded JSON and hostile HTML input through the public API.
-
-Example cases live in `tests/spec.json` and record exact stdout, stderr and exit status, including invalid budget input. Review intentional output changes with:
-
-```sh
-blueprint run release-test -- test-examples --update
-```
-
-Release preparation builds a content-addressed bundle and immutable examples archive, then tests that archive against the candidate bundle with an empty package cache:
-
-```sh
-blueprint run release-package -- build 0.0.1-dryrun
-blueprint run release-test -- test-archive
-```
-
-See the manual under `docs/` for release and automation details. A dry run publishes nothing.
-
-## Examples
-
-### Bar
-
-[Source Code](examples/bar-chart.roc)
-
-![Screenshot of the bar chart example](examples/demo-images/bar-chart.png)
-
-### Bubble
-
-[Source Code](examples/bubble.roc)
-
-![Screenshot of the bubble chart example](examples/demo-images/bubble.png)
-
-### Donut
-
-[Source Code](examples/donut.roc)
-
-![Screenshot of the donut chart example](examples/demo-images/donut.png)
-
-### Equation Cosine
-
-[Source Code](examples/equation-cosine.roc)
-
-![Screenshot of the equation cosine chart example](examples/demo-images/equation-cosine.png)
-
-### Equation Sine
-
-[Source Code](examples/equation-sine.roc)
-
-![Screenshot of the equation sine chart example](examples/demo-images/equation-sine.png)
-
-### Horizontal Bar
-
-[Source Code](examples/horizontal-bar-chart.roc)
-
-![Screenshot of the horizontal bar chart example](examples/demo-images/horizontal-bar-chart.png)
-
-### Line
-
-[Source Code](examples/line.roc)
-
-![Screenshot of the line chart example](examples/demo-images/line.png)
-
-### Pie
-
-[Source Code](examples/pie.roc)
-
-![Screenshot of the pie chart example](examples/demo-images/pie.png)
-
-### Sankey
-
-[Source Code](examples/sankey.roc)
-
-![Screenshot of the sankey chart example](examples/demo-images/sankey.png)
-
-### Scatter
-
-[Source Code](examples/scatter.roc)
-
-![Screenshot of the scatter chart example](examples/demo-images/scatter.png)
+For contributors, check the gallery images with `blueprint run screenshots`; review intentional visual changes with `blueprint run screenshots-update`. These are the same images checked in CI.
