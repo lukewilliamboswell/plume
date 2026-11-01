@@ -1,4 +1,4 @@
-name: Documentation
+name: Example screenshots
 
 on:
   pull_request:
@@ -7,8 +7,9 @@ on:
 permissions: {}
 
 jobs:
-  docs:
+  screenshots:
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     permissions:
       contents: read
     steps:
@@ -18,12 +19,16 @@ jobs:
       - uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@ae089dae16f63f11a754e49c48a9310445e084dd
         with:
           cache: 'true'
-          cache-workload: docs
-      - run: blueprint check
-      - run: blueprint run docs
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+          cache-workload: screenshots
+      - uses: roc-lang/setup-roc@f5a74bf90aa694b43ab4a7cbfdb19273bc6aa697
         with:
-          name: plume-manual
-          path: .docs-out/
-          if-no-files-found: error
+          version: nightly-new-compiler
+      - run: blueprint check
+      - run: blueprint run screenshots
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: plume-screenshots
+          path: .screenshots-out/
           include-hidden-files: true
+          if-no-files-found: error
