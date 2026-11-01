@@ -11,19 +11,20 @@ import plume.Chart
 import plume.Layout
 import plume.Title
 import plume.Scatter
+import plume.Coordinate
 
 main! : List(OsStr) => Try({}, _)
 main! = |_args| {
-	# Generate integers first so the step count is exact, then scale to F64.
-	points = List.from_iter(
-		(0.U64..<50).iter().map(
-			|step| {
-				x = step.to_f64() / 5
-				{ x, y: F64.cos(x) }
-			},
-		),
-	)
-	curve = Scatter.new({ data: points, mode: Lines })?
+	# Generate an exact step count, then validate computed numbers at the boundary.
+	points = List.from_iter((0.U64..<50).iter()).map_try(
+		|step| {
+			number = step.to_f64() / 5
+			x = Coordinate.from_number(number)?
+			y = Coordinate.from_number(F64.cos(number))?
+			Ok({ x, y })
+		},
+	)?
+	curve = Scatter.new({ data: points, mode: Lines })
 	chart = Chart.new({
 		traces: [Scatter(curve)],
 		layout: Layout.new({ title: Title.new({ text: "y = Math.cos(x)" }) }),

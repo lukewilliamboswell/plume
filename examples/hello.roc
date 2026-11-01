@@ -24,17 +24,17 @@ main! = |_args| {
 	marker = Marker.new({ size: 15, color: purple, symbol: Diamond })?
 	fruit = Scatter.new({
 		data: [
-			{ x: "Apples", y: 2.1.F64, marker },
+			{ x: "Apples", y: 2.1, marker },
 			{ x: "Oranges", y: 3, marker },
 			{ x: "Bananas", y: 4, marker },
 		],
 		name: "Fruit",
 		mode: LinesMarkers,
 		line: Line.new({ width: 2, color: Color.named("FireBrick")?, dash: Dash })?,
-	})?
+	})
 	snacks = Bar.new({
 		data: [
-			{ x: "Tuna", y: 0.3.F64, color: purple },
+			{ x: "Tuna", y: 0.3, color: purple },
 			{ x: "Muesli Bar", y: 2.5, color: purple },
 			{ x: "Carrot", y: 5.5, color: purple },
 		],

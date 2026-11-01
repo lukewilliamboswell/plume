@@ -25,13 +25,13 @@ main! = |_args| {
 	marker = Marker.new({ size: 15, symbol: Diamond, color: purple })?
 	sales = Scatter.new({
 		data: [
-			{ x: "Apples", y: 2.1.F64, marker },
+			{ x: "Apples", y: 2.1, marker },
 			{ x: "Oranges", y: 3, marker },
 			{ x: "Bananas", y: 4, marker },
 		],
 		mode: LinesMarkers,
 		line: Line.new({ width: 2, color: purple, dash: Dash })?,
-	})?
+	})
 	chart = Chart.new({
 		traces: [Scatter(sales)],
 		layout: Layout.new({

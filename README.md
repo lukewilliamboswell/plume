@@ -39,7 +39,7 @@ main! : List(OsStr) => Try({}, _)
 main! = |_args| {
     sales = Bar.new({
         data: [
-            { x: "Apples", y: 12.F64 },
+            { x: "Apples", y: 12 },
             { x: "Oranges", y: 8 },
         ],
         name: "Sales",
@@ -53,9 +53,11 @@ main! = |_args| {
 }
 ```
 
-Configure a constructor with a record containing only the fields you need. Mix trace types in `Chart.new({ traces: [...] })`; each trace owns its coordinate types. Use `chart.to_json()` when embedding the Plotly figure in another application, or `chart.to_html()` for a standalone document.
+Configure a constructor with a record containing only the fields you need. Mix trace types in `Chart.new({ traces: [...] })`; each Cartesian point uses a `Coordinate` containing text or a finite number. Use `chart.to_json()` when embedding the Plotly figure in another application, or `chart.to_html()` for a standalone document.
 
 Marker symbols and scatter modes are closed tags such as `Diamond` and `LinesMarkers`. Bar and Sankey orientations use `Horizontal` and `Vertical`. Colors use named channels: `Color.rgb({ red: 124, green: 56, blue: 245 })`. Fallible constructors return `Try` and compose with `?`; invalid data never waits until rendering to report an error. Sankey nodes have stable string IDs distinct from their displayed labels.
+
+Coordinates accept plain string and number literals, checked at compile time. For runtime data, use `Coordinate.from_text(label)` or `Coordinate.from_number(measurement)?`; records, lists and non-finite numbers cannot become coordinates. `Scatter.new` is infallible because its coordinate, marker and line values are already validated. Pie labels are strings and slice values are nonnegative numbers.
 
 JSON output escapes user text, and HTML rendering additionally protects the document title and embedded JSON data. Plotly interprets supported formatting within chart labels and hover text.
 

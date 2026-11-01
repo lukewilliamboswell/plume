@@ -18,24 +18,24 @@ main! : List(OsStr) => Try({}, _)
 main! = |_args| {
 	shapes = Scatter.new({
 		data: [
-			{ x: 1.F64, y: 15.F64, marker: Marker.new({ size: 20, symbol: Circle })? },
+			{ x: 1, y: 15, marker: Marker.new({ size: 20, symbol: Circle })? },
 			{ x: 2, y: 30, marker: Marker.new({ size: 20, symbol: Square })? },
 			{ x: 3, y: 45, marker: Marker.new({ size: 20, symbol: Diamond })? },
 			{ x: 4, y: 60, marker: Marker.new({ size: 20, symbol: Cross })? },
 		],
 		name: "Shapes",
 		mode: Markers,
-	})?
+	})
 	colors = Scatter.new({
 		data: [
-			{ x: 1.F64, y: 10.F64, marker: Marker.new({ size: 20, color: Color.named("Red")? })? },
+			{ x: 1, y: 10, marker: Marker.new({ size: 20, color: Color.named("Red")? })? },
 			{ x: 2, y: 20, marker: Marker.new({ size: 30, color: Color.named("Green")? })? },
 			{ x: 3, y: 30, marker: Marker.new({ size: 40, color: Color.named("Blue")? })? },
 			{ x: 4, y: 40, marker: Marker.new({ size: 50, color: Color.named("Orange")? })? },
 		],
 		name: "Colors",
 		mode: Markers,
-	})?
+	})
 	chart = Chart.new({
 		traces: [Scatter(shapes), Scatter(colors)],
 		layout: Layout.new({ title: Title.new({ text: "Plotting Bubbles" }), legend: Shown }),

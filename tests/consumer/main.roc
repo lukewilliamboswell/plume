@@ -9,6 +9,7 @@ import cli.Stdout
 import plume.Bar
 import plume.Chart
 import plume.Color
+import plume.Coordinate
 import plume.Layout
 import plume.Line
 import plume.Marker
@@ -28,14 +29,15 @@ main! = |_args| {
 	check_sankey()?
 	check_html()?
 	check_text_corpus()?
-	Stdout.line!("Consumer contract: 6 checks passed")?
+	check_coordinates()?
+	Stdout.line!("Consumer contract: 7 checks passed")?
 	Ok({})
 }
 
 check_bar : () -> Try({}, _)
 check_bar = || {
 	color = Color.rgb({ red: 1, green: 2, blue: 3 })
-	series = Bar.new({ data: [{ x: hostile, y: -2.5.F64, color }], name: hostile, width: 2.5, orientation: Horizontal })?
+	series = Bar.new({ data: [{ x: Coordinate.from_text(hostile), y: -2.5, color }], name: hostile, width: 2.5, orientation: Horizontal })?
 	parsed : { x : List(Str), y : List(F64), name : Str, width : F64, orientation : Str, type : Str, marker : { color : List(Str) } }
 	parsed = Json.parse(series.to_json())?
 	expected = {
@@ -57,11 +59,11 @@ check_scatter : () -> Try({}, _)
 check_scatter = || {
 	marker = Marker.new({ color: Color.rgb({ red: 10, green: 20, blue: 30 }), size: 7, symbol: Diamond })?
 	curve = Scatter.new({
-		data: [{ x: 1.F64, y: 2.F64, text: hostile, marker }],
+		data: [{ x: 1, y: 2, text: hostile, marker }],
 		mode: LinesMarkersText,
 		line: Line.new({ width: 3, dash: DashDot })?,
 		name: hostile,
-	})?
+	})
 	parsed : { x : List(F64), y : List(F64), text : List(Str), mode : Str, type : Str, name : Str, line : { width : F64, dash : Str }, marker : { color : List(Str), size : List(F64), symbol : List(Str) } }
 	parsed = Json.parse(curve.to_json())?
 	actual = { x: parsed.x, y: parsed.y, text: parsed.text, mode: parsed.mode, type: parsed.type, name: parsed.name, width: parsed.line.width, dash: parsed.line.dash, marker: parsed.marker }
@@ -188,4 +190,35 @@ check_text_corpus = || {
 ## Every ASCII control and adversarial Unicode/script spelling survives HTML JSON.
 expect {
 	check_text_corpus()? == {}
+}
+
+check_coordinates : () -> Try({}, _)
+check_coordinates = || {
+	# Literal hooks construct validated scalars at compile time. Runtime values
+	# enter explicitly, so a NaN or object cannot reach a trace coordinate.
+	number = Coordinate.from_number(2.5)?
+	text = Coordinate.from_text(hostile)
+	points = Scatter.new({
+		data: [
+			{ x: "literal", y: 1 },
+			{ x: text, y: number },
+			{ x: 3.5, y: -4 },
+		],
+	})
+	decoded : { x : (Str, Str, F64), y : List(F64) }
+	decoded = Json.parse(points.to_json())?
+	expected = { x: ("literal", hostile, 3.5.F64), y: [1.F64, 2.5, -4] }
+	if decoded != expected {
+		return Err(ContractFailure("coordinate literal or runtime representation"))
+	}
+	rejected = [F64.infinity, -F64.infinity, F64.nan].map(|invalid| Coordinate.from_number(invalid).is_err())
+	if rejected != [True, True, True] {
+		return Err(ContractFailure("non-finite runtime coordinate accepted"))
+	}
+	Ok({})
+}
+
+## Coordinate literals and checked runtime values serialize as JSON scalars.
+expect {
+	check_coordinates()? == {}
 }

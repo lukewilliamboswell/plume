@@ -19,11 +19,11 @@ main! = |_args| {
 	color = Color.rgba({ red: 40, green: 90, blue: 210, alpha: 210 })
 	bars = Bar.new({
 		data: [
-			{ x: 55.F64, y: "Italy", color },
-			{ x: 49.F64, y: "France", color },
-			{ x: 44.F64, y: "Spain", color },
-			{ x: 24.F64, y: "USA", color },
-			{ x: 15.F64, y: "Australia", color },
+			{ x: 55, y: "Italy", color },
+			{ x: 49, y: "France", color },
+			{ x: 44, y: "Spain", color },
+			{ x: 24, y: "USA", color },
+			{ x: 15, y: "Australia", color },
 		],
 		orientation: Horizontal,
 	})?

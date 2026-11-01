@@ -21,7 +21,7 @@ main! = |_args| {
 	down = Marker.new({ size: 12, color: Color.named("Red")?, symbol: TriangleDown })?
 	prices = Scatter.new({
 		data: [
-			{ x: 50.F64, y: 7.F64, marker: up },
+			{ x: 50, y: 7, marker: up },
 			{ x: 60, y: 8, marker: up },
 			{ x: 70, y: 8, marker: up },
 			{ x: 80, y: 9, marker: up },
@@ -34,7 +34,7 @@ main! = |_args| {
 			{ x: 150, y: 15, marker: down },
 		],
 		mode: Lines,
-	})?
+	})
 	chart = Chart.new({
 		traces: [Scatter(prices)],
 		layout: Layout.new({
