@@ -1,181 +1,109 @@
-module [
-    Trace,
-    new,
-    to_str,
-]
-
+import InternalJson
 import Color
 
-Node node : {
-    label : node,
-    color : Color.Color,
+## A Sankey flow diagram whose endpoints are checked at construction.
+Sankey :: InternalJson.{
+	is_eq : _
+	Node := { id : Str, label : Str, color : Color ?? Color.rgb({ red: 31, green: 119, blue: 180 }), hover : Str ?? "" }
+	Link := { source : Str, target : Str, value : F64, hover : Str ?? "" }
+	Props := { nodes : List(Node), links : List(Link), orientation : [Vertical, Horizontal] ?? Horizontal, name : Str ?? "" }
 
-    # only some html elements permitted
-    # ['br', 'sub', 'sup', 'b', 'i', 'em']
-    # https://github.com/plotly/plotly.js/blob/c1ef6911da054f3b16a7abe8fb2d56019988ba14/src/components/fx/hover.js#L1596
-    hover : Str,
+	## Node identities are distinct from display labels, which may repeat.
+	new : Props -> Try(Sankey, [DuplicateNode(Str), MissingSource(Str), MissingTarget(Str), InvalidLinkValue(F64), Infinity, NaN, NegativeInfinity])
+	new = |props| {
+		var $indexes = Dict.empty()
+		initial_index : U64
+		initial_index = 0
+		var $node_index = initial_index
+		for node in props.nodes {
+			if $indexes.contains(node.id) {
+				return Err(DuplicateNode(node.id))
+			}
+			$indexes = $indexes.insert(node.id, $node_index)
+			$node_index = $node_index + 1
+		}
+		indexes = $indexes
+		sources = props.links.map_try(
+			|link| {
+				source = indexes.get(link.source) ? |_| MissingSource(link.source)
+				InternalJson.encode(source)
+			},
+		)?
+		target_indices = props.links.map_try(
+			|link| {
+				target = indexes.get(link.target) ? |_| MissingTarget(link.target)
+				InternalJson.encode(target)
+			},
+		)?
+		values = props.links.map_try(
+			|link| {
+				encoded = InternalJson.encode(link.value)?
+				if (link.value < 0) Err(InvalidLinkValue(link.value)) else Ok(encoded)
+			},
+		)?
+		nodes = InternalJson.object([
+			{ name: "label", value: InternalJson.array(props.nodes.map(|node| InternalJson.string(node.label))) },
+			{ name: "color", value: InternalJson.array(props.nodes.map(|node| InternalJson.string(node.color.to_css()))) },
+			{ name: "customdata", value: InternalJson.array(props.nodes.map(|node| InternalJson.string(node.hover))) },
+			{ name: "hovertemplate", value: InternalJson.string("%{customdata}<extra></extra>") },
+		])
+		links = InternalJson.object([
+			{ name: "source", value: InternalJson.array(sources) },
+			{ name: "target", value: InternalJson.array(target_indices) },
+			{ name: "value", value: InternalJson.array(values) },
+			{ name: "customdata", value: InternalJson.array(props.links.map(|link| InternalJson.string(link.hover))) },
+			{ name: "hovertemplate", value: InternalJson.string("%{customdata}<extra></extra>") },
+		])
+		orientation = match props.orientation {
+			Horizontal => "h"
+			Vertical => "v"
+		}
+		Ok(
+			Sankey.(
+				InternalJson.object([
+					{ name: "type", value: InternalJson.string("sankey") },
+					{ name: "node", value: nodes },
+					{ name: "link", value: links },
+					{ name: "orientation", value: InternalJson.string(orientation) },
+					{ name: "arrangement", value: InternalJson.string("snap") },
+					{ name: "name", value: InternalJson.string(props.name) },
+				]),
+			),
+		)
+	}
+
+	## The safe JSON object used when composing a chart.
+	to_json_value : Sankey -> InternalJson
+	to_json_value = |Sankey.(json)| json
+
+	## Serialize the trace as JSON.
+	to_json : Sankey -> Str
+	to_json = |sankey| sankey.to_json_value().to_json()
 }
 
-Link node value : {
-    source : node,
-    target : node,
-    value : value,
-    hover : Str,
+## Sankey endpoints resolve identities, preserving repeated display labels.
+expect {
+	sankey = Sankey.new({
+		nodes: [{ id: "b", label: "same" }, { id: "a", label: "same" }],
+		links: [{ source: "a", target: "b", value: 2.5, hover: "quote\"\n" }],
+		orientation: Vertical,
+	})?
+	decoded : { node : { label : List(Str) }, link : { source : List(U64), target : List(U64), value : List(F64), customdata : List(Str) }, orientation : Str }
+	decoded = Json.parse(sankey.to_json())?
+	decoded == { node: { label: ["same", "same"] }, link: { source: [1], target: [0], value: [2.5], customdata: ["quote\"\n"] }, orientation: "v" }
 }
 
-Trace node value := {
-    nodes : List (Node node),
-    links : List (Link node value),
-    orientation : [Vertical, Horizontal],
-}
-    implements [Inspect]
+## Duplicate identities fail construction instead of crashing during rendering.
+expect Sankey.new({ nodes: [{ id: "a", label: "A" }, { id: "a", label: "B" }], links: [] }) == Err(DuplicateNode("a"))
 
-new : { nodes : List (Node node), links : List (Link node value) } -> Trace node value
-new = |{ nodes, links }|
-    @Trace(
-        {
-            nodes,
-            links,
+## Unknown link sources return a structured error.
+expect Sankey.new({ nodes: [{ id: "a", label: "A" }], links: [{ source: "missing", target: "a", value: 1 }] }) == Err(MissingSource("missing"))
 
-            # default values
-            orientation: Vertical,
-        },
-    )
+## Unknown link targets return a structured error.
+expect Sankey.new({ nodes: [{ id: "a", label: "A" }], links: [{ source: "a", target: "missing", value: 1 }] }) == Err(MissingTarget("missing"))
 
-node_help : List (Node node) -> Str where node implements Inspect
-node_help = |nodes|
+## Negative flows fail construction.
+expect Sankey.new({ nodes: [{ id: "a", label: "A" }], links: [{ source: "a", target: "a", value: -1 }] }) == Err(InvalidLinkValue(-1))
 
-    nodes_str =
-        nodes
-        |> List.map(|node| "${Inspect.to_str(node.label)}")
-        |> Str.join_with(",")
-
-    color_str =
-        nodes
-        |> List.map(|node| "\"${Color.to_str(node.color)}\"")
-        |> Str.join_with(",")
-
-    custom_data_str =
-        # if any nodes have hover text, we need to add custom data to it
-        if List.any(nodes, |node| !(Str.is_empty(node.hover))) then
-            custom_data_strs =
-                nodes
-                |> List.map(|node| "\"${node.hover}\"")
-                |> Str.join_with(",")
-
-            """
-            "customdata": [${custom_data_strs}],
-            "hovertemplate": "%{customdata}<extra></extra>",
-            """
-        else
-            ""
-
-    if List.is_empty(nodes) then
-        "{}"
-    else
-        """
-        {${custom_data_str}"label":[${nodes_str}],"color":[${color_str}]}
-        """
-
-link_help : List Str, List (Link Str Str) -> Str
-link_help = |labels, links|
-
-    indexes = help_indexes(labels, 0, Dict.empty({}))
-
-    (value_str, source_str, target_str, hover_str) = help_links(indexes, links, ([], [], [], []))
-
-    custom_data_str =
-        if List.any(links, |link| !(Str.is_empty(link.hover))) then
-            """
-            "customdata": [${hover_str}],
-            "hovertemplate": "%{customdata}<extra></extra>",
-            """
-        else
-            ""
-
-    """
-    {${custom_data_str}"value":[${value_str}],"source":[${source_str}],"target":[${target_str}]}
-    """
-
-# map the node labels to their index from the nodes list
-help_indexes : List Str, U64, Dict Str U64 -> Dict Str U64
-help_indexes = |ls, idx, dict|
-    when ls is
-        [] -> dict
-        [first, .. as rest] ->
-            if Dict.contains(dict, first) then
-                crash("Found duplicate node value ${Inspect.to_str(first)}")
-            else
-                help_indexes(rest, Num.add_wrap(idx, 1), Dict.insert(dict, first, idx))
-
-help_links : Dict Str U64, List (Link Str Str), (List Str, List Str, List Str, List Str) -> (Str, Str, Str, Str)
-help_links = |indexes, ls, (values, sources, targets, hovers)|
-    when ls is
-        [] ->
-            (
-                values |> Str.join_with(","),
-                sources |> Str.join_with(","),
-                targets |> Str.join_with(","),
-                hovers |> Str.join_with(","),
-            )
-
-        [{ source, target, value, hover }, .. as rest] ->
-            source_idx =
-                when Dict.get(indexes, source) is
-                    Ok(u64) -> Num.to_str(u64)
-                    _ -> crash("Missing source node ${Inspect.to_str(source)}")
-
-            target_idx =
-                when Dict.get(indexes, target) is
-                    Ok(u64) -> Num.to_str(u64)
-                    _ -> crash("Missing target node ${Inspect.to_str(target)}")
-
-            help_links(
-                indexes,
-                rest,
-                (
-                    List.append(values, value),
-                    List.append(sources, source_idx),
-                    List.append(targets, target_idx),
-                    List.append(hovers, "\"${hover}\""),
-                ),
-            )
-
-to_str : Trace node value -> Str where node implements Inspect, value implements Inspect
-to_str = |@Trace(data)|
-
-    # orientation_str = if data.orientation == Vertical then "\"orientation\": \"v\"," else "\"orientation\": \"h\","
-
-    labels : List Str
-    labels =
-        data.nodes
-        |> List.map(.label)
-        |> List.map(Inspect.to_str)
-
-    links : List (Link Str Str)
-    links =
-        List.map(
-            data.links,
-            |{ source, target, value, hover }|
-                # map to Str using Inspect here to ensure we have Hash and Eq,
-                # and avoid some type craziness
-                {
-                    source: Inspect.to_str(source),
-                    target: Inspect.to_str(target),
-                    value: Inspect.to_str(value),
-                    hover,
-                },
-        )
-
-    node_str = node_help(data.nodes)
-
-    links_str = link_help(labels, links)
-
-    """
-    {
-        "type":"sankey",
-        "node":${node_str},
-        "arrangement": "snap",
-        "link":${links_str}
-    }
-    """
+## Infinite flows fail construction.
+expect Sankey.new({ nodes: [{ id: "a", label: "A" }], links: [{ source: "a", target: "a", value: F64.infinity }] }) == Err(Infinity)

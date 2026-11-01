@@ -1,110 +1,81 @@
-module [
-    Trace,
-    new,
-    to_str,
-]
-
+import InternalJson
 import Marker
 import Line
-import Color
 
-Trace x y := {
-    data : List { x : x, y : y, marker : Marker.Marker },
-    orientation : [Vertical, Horizontal],
-    name : Str,
-    line : Line.Line,
-    mode : Str,
+## A validated Plotly scatter, line, text, or bubble trace.
+Scatter :: InternalJson.{
+	is_eq : _
+	Point(x, y) := { x : x, y : y, marker : Marker ?? Marker.default, text : Str ?? "" }
+	Mode : [Lines, Markers, Text, LinesMarkers, LinesText, MarkersText, LinesMarkersText, Hidden]
+	Props(x, y) := {
+		data : List(Point(x, y)),
+		orientation : [Vertical, Horizontal] ?? Vertical,
+		name : Str ?? "",
+		line : Line ?? Line.default,
+		mode : Mode ?? Lines,
+	}
+
+	## Encode coordinates once and preserve point order.
+	new : Props(x, y) -> Try(Scatter, [Infinity, NaN, NegativeInfinity, ..err]) where [x.Json.Encodable([Infinity, NaN, NegativeInfinity, ..err]), y.Json.Encodable([Infinity, NaN, NegativeInfinity, ..err])]
+	new = |props| {
+		xs = props.data.map_try(|point| InternalJson.encode(point.x))?
+		ys = props.data.map_try(|point| InternalJson.encode(point.y))?
+		colors = props.data.map(|point| InternalJson.string(point.marker.get_color().to_css()))
+		sizes = props.data.map_try(|point| InternalJson.encode(point.marker.get_size()))?
+		symbols = props.data.map(|point| InternalJson.string(point.marker.get_symbol()))
+		texts = props.data.map(|point| InternalJson.string(point.text))
+		marker = InternalJson.object([
+			{ name: "color", value: InternalJson.array(colors) },
+			{ name: "size", value: InternalJson.array(sizes) },
+			{ name: "symbol", value: InternalJson.array(symbols) },
+		])
+		orientation = match props.orientation {
+			Vertical => "v"
+			Horizontal => "h"
+		}
+		mode = match props.mode {
+			Lines => "lines"
+			Markers => "markers"
+			Text => "text"
+			LinesMarkers => "lines+markers"
+			LinesText => "lines+text"
+			MarkersText => "markers+text"
+			LinesMarkersText => "lines+markers+text"
+			Hidden => "none"
+		}
+		Ok(
+			Scatter.(
+				InternalJson.object([
+					{ name: "type", value: InternalJson.string("scatter") },
+					{ name: "x", value: InternalJson.array(xs) },
+					{ name: "y", value: InternalJson.array(ys) },
+					{ name: "marker", value: marker },
+					{ name: "text", value: InternalJson.array(texts) },
+					{ name: "orientation", value: InternalJson.string(orientation) },
+					{ name: "name", value: InternalJson.string(props.name) },
+					{ name: "line", value: props.line.to_json_value() },
+					{ name: "mode", value: InternalJson.string(mode) },
+				]),
+			),
+		)
+	}
+
+	## The safe JSON object used when composing a chart.
+	to_json_value : Scatter -> InternalJson
+	to_json_value = |Scatter.(json)| json
+
+	## Serialize the trace as JSON.
+	to_json : Scatter -> Str
+	to_json = |scatter| scatter.to_json_value().to_json()
 }
-    implements [Inspect]
 
-new :
-    {
-        data : List { x : x, y : y, marker : Marker.Marker },
-        orientation ?? [Vertical, Horizontal],
-        name ?? Str,
-        line ?? Line.Line,
-        mode ?? Str,
-    }
-    -> Result (Trace x y) _
-new = |{ data, orientation ?? Vertical, name ?? "", line ?? Line.new({}), mode ?? "lines" }|
-    Ok(
-        @Trace(
-            {
-                data,
-                orientation,
-                name,
-                line,
-                mode: check_valid_mode(mode)?,
-            },
-        ),
-    )
+## Scatter text and names round trip through JSON escaping.
+expect {
+	scatter = Scatter.new({ data: [{ x: "a\"", y: 2, text: "line\n雪" }], mode: LinesMarkersText, name: "x\\y" })?
+	decoded : { x : List(Str), text : List(Str), name : Str, mode : Str }
+	decoded = Json.parse(scatter.to_json())?
+	decoded == { x: ["a\""], text: ["line\n雪"], name: "x\\y", mode: "lines+markers+text" }
+}
 
-check_valid_mode = |mode|
-    valid_modes = Set.from_list(["lines", "markers", "text"])
-    if mode == "none" then
-        Ok(mode)
-    else if Str.split_on(mode, "+") |> List.all(|m| Set.contains(valid_modes, m)) then
-        Ok(mode)
-    else
-        Err(InvalidMode("Invalid mode: ${mode}, expected one of: ${Inspect.to_str(valid_modes)}"))
-
-to_str : Trace x y -> Str where x implements Inspect, y implements Inspect
-to_str = |@Trace(inner)|
-
-    data = List.walk(
-        inner.data,
-        { xs: [], ys: [], ms: [] },
-        |state, { x, y, marker }| {
-            xs: List.append(state.xs, x),
-            ys: List.append(state.ys, y),
-            ms: List.append(state.ms, marker),
-        },
-    )
-
-    x_str = data.xs |> List.map(Inspect.to_str) |> Str.join_with(",")
-    y_str = data.ys |> List.map(Inspect.to_str) |> Str.join_with(",")
-    color_str =
-        data.ms
-        |> List.map(
-            |marker|
-                marker
-                |> Marker.get_color
-                |> Color.to_str
-                |> |str| "\"${str}\"",
-        )
-        |> Str.join_with(",")
-        |> |str| "\"color\":[${str}]"
-
-    size_str =
-        data.ms
-        |> List.map(|marker| Marker.get_size(marker) |> Num.to_str)
-        |> Str.join_with(",")
-        |> |str| "\"size\":[${str}]"
-
-    symbol_str =
-        data.ms
-        |> List.map(|marker| Marker.get_symbol(marker) |> Inspect.to_str)
-        |> Str.join_with(",")
-        |> |str| "\"symbol\":[${str}]"
-
-    orientation_str = if inner.orientation == Vertical then "\"orientation\":\"v\"" else "\"orientation\":\"h\""
-
-    line_str = Line.to_str(inner.line)
-
-    mode_str = "\"mode\":\"${inner.mode}\""
-
-    name_str = if Str.is_empty(inner.name) then "" else "\"name\":\"${inner.name}\""
-
-    [
-        "\"x\":[${x_str}]",
-        "\"y\":[${y_str}]",
-        "\"marker\":{${color_str},${size_str},${symbol_str}}",
-        "${line_str}",
-        "${orientation_str}",
-        "${name_str}",
-        "${mode_str}",
-        "\"type\":\"scatter\"",
-    ]
-    |> List.drop_if(Str.is_empty)
-    |> Str.join_with(",")
-    |> |str| "{${str}}"
+## Scatter coordinates reject infinity before serialization.
+expect Scatter.new({ data: [{ x: 1, y: F64.infinity }] }) == Err(Infinity)
