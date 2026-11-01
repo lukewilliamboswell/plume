@@ -30,5 +30,7 @@ tests/consumer/main
 .fuzz-out/
 .roc-fuzz/
 .playwright-mcp/
+.screenshots-out/
+tools/screenshots/node_modules/
 core
 core.*

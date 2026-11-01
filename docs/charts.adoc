@@ -1,12 +1,12 @@
 [#working-with-charts]
-== Working with charts
+= Working with charts
 
 A chart has three layers: validated domain values, a trace describing one
 series, and a figure that combines traces with a layout. Applications import
 the modules they use from their `plume` dependency and decide where to write
 the resulting text.
 
-=== Construct a figure
+== Construct a figure
 
 Inside an application's `main!`, create a trace and wrap it in the matching
 `Chart.Trace` tag:
@@ -43,7 +43,7 @@ trace kinds, and each trace retains the order of its input points or slices.
 |`Sankey.new` |Directed flows |Stable node IDs, links, hover overrides and orientation
 |===
 
-=== Coordinates and styling
+== Coordinates and styling
 
 Cartesian point fields use `Coordinate`. Plain string and number literals
 convert at compile time; runtime data uses explicit constructors:
@@ -96,7 +96,7 @@ family lists resolved by the browser; the package does not load fonts.
 Numeric axis bounds may run in either direction. On logarithmic axes the
 bounds are base-10 exponents: zero to two displays values from one to 100.
 
-=== Titles, legends and hover text
+== Titles, legends and hover text
 
 `Layout`'s `title` is the title drawn in the chart. Its legend is hidden by
 default; set `legend: Shown` to display trace names. `Chart`'s separate `title`
@@ -115,7 +115,7 @@ A node or link's `hover: Default` preserves Plotly's normal hover content.
 follow Plotly's supported formatting rules. The package escapes their JSON
 representation; this does not turn Plotly's text formatting into plain text.
 
-=== Render the result
+== Render the result
 
 `chart.to_json()` returns a complete figure object containing `data` and
 `layout`. Use it when another application manages Plotly and its document.
@@ -130,7 +130,7 @@ it has no unchecked raw-JSON constructor and is intentionally absent from the
 package's exposed modules. Applications normally use the complete `to_json`
 or `to_html` output instead of these hooks.
 
-=== Browse the API reference
+== Browse the API reference
 
 Browse the link:api/index.html[API reference]. To generate it locally, run
 `blueprint run api-docs` and open `generated-docs/index.html`. The generated
