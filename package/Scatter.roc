@@ -79,3 +79,26 @@ expect {
 
 ## Scatter coordinates reject infinity before serialization.
 expect Scatter.new({ data: [{ x: 1, y: F64.infinity }] }) == Err(Infinity)
+
+## Scatter JSON includes exactly its point arrays and presentation settings.
+expect {
+	scatter = Scatter.new({ data: [{ x: "x", y: "y" }] })?
+	scatter.to_json() ==
+		\\{"type":"scatter","x":["x"],"y":["y"],"marker":{"color":["rgb(31, 119, 180)"],"size":[6],"symbol":["circle"]},"text":[""],"orientation":"v","name":"","line":{"width":2,"color":"rgb(31, 119, 180)","dash":"solid"},"mode":"lines"}
+}
+
+## Every scatter mode maps to one canonical Plotly flag list.
+expect {
+	actual = [Lines, Markers, Text, LinesMarkers, LinesText, MarkersText, LinesMarkersText, Hidden].map_try(
+		|mode| {
+			scatter = Scatter.new({ data: [{ x: 1, y: 2 }], mode })?
+			decoded : { mode : Str }
+			decoded = Json.parse(scatter.to_json())?
+			Ok(decoded.mode)
+		},
+	)?
+	actual == ["lines", "markers", "text", "lines+markers", "lines+text", "markers+text", "lines+markers+text", "none"]
+}
+
+## Negative infinity in an x coordinate fails construction.
+expect Scatter.new({ data: [{ x: -F64.infinity, y: 2 }] }) == Err(NegativeInfinity)

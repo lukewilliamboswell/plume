@@ -56,3 +56,28 @@ expect Pie.new({ data: [{ label: "a", value: -1 }] }) == Err(InvalidPieValue(-1)
 
 ## Pie values reject NaN.
 expect Pie.new({ data: [{ label: "a", value: F64.nan }] }) == Err(NaN)
+
+## Pie JSON is a complete object with aligned label and value arrays.
+expect {
+	pie = Pie.new({ data: [{ label: "slice", value: 2 }] })?
+	pie.to_json() ==
+		\\{"type":"pie","labels":["slice"],"values":[2],"hole":0,"name":""}
+}
+
+## The lower hole boundary is accepted and negative holes are rejected.
+expect Pie.new({ data: [{ label: "a", value: 0 }], hole: -0.1 }) == Err(InvalidHole(-0.1))
+
+## Pie hole settings reject every non-finite value.
+expect {
+	actual = [F64.nan, F64.infinity, -F64.infinity].map(|hole| Pie.new({ data: [{ label: "a", value: 0 }], hole }).is_err())
+	actual == [True, True, True]
+}
+
+## Empty typed pies produce valid empty arrays.
+expect {
+	slices : List(Pie.Slice(Str))
+	slices = []
+	pie = Pie.new({ data: slices })?
+	pie.to_json() ==
+		\\{"type":"pie","labels":[],"values":[],"hole":0,"name":""}
+}

@@ -110,3 +110,27 @@ expect {
 
 replace_sequences : Str, List({ pattern : Str, replacement : Str }) -> Str
 replace_sequences = |text, replacements| replacements.fold(text, |escaped, rule| Str.join_with(escaped.split_on(rule.pattern), rule.replacement))
+
+## The complete empty figure has stable JSON output.
+expect Chart.new({}).to_json() ==
+	\\{"data":[],"layout":{"font":{},"title":{},"xaxis":{},"yaxis":{},"showlegend":false}}
+
+## The complete document is generated with Roc multiline interpolation.
+expect Chart.new({}).to_html() ==
+	\\<!doctype html>
+	\\<html>
+	\\    <head>
+	\\        <title>My Chart</title>
+	\\        <meta charset="utf-8" />
+	\\        <meta name="viewport" content="width=device-width, initial-scale=1" />
+	\\        <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" integrity="sha384-cCVCZkAjYNxaYKbM8lsArLznDF/SvMFr1jcZrvOpSTCa0W40ZAdLzHCEulnUa5i7" crossorigin="anonymous"></script>
+	\\    </head>
+	\\    <body>
+	\\        <div id="chart"></div>
+	\\        <script type="application/json" id="chartData">{"data":[],"layout":{"font":{},"title":{},"xaxis":{},"yaxis":{},"showlegend":false}}</script>
+	\\        <script>
+	\\            const chartData = JSON.parse(document.getElementById("chartData").textContent);
+	\\            Plotly.newPlot("chart", chartData);
+	\\        </script>
+	\\    </body>
+	\\</html>

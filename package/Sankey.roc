@@ -4,8 +4,8 @@ import Color
 ## A Sankey flow diagram whose endpoints are checked at construction.
 Sankey :: InternalJson.{
 	is_eq : _
-	Node := { id : Str, label : Str, color : Color ?? Color.rgb({ red: 31, green: 119, blue: 180 }), hover : Str ?? "" }
-	Link := { source : Str, target : Str, value : F64, hover : Str ?? "" }
+	Node := { id : Str, label : Str, color : Color ?? Color.rgb({ red: 31, green: 119, blue: 180 }), hover : [Default, Text(Str)] ?? Default }
+	Link := { source : Str, target : Str, value : F64, hover : [Default, Text(Str)] ?? Default }
 	Props := { nodes : List(Node), links : List(Link), orientation : [Vertical, Horizontal] ?? Horizontal, name : Str ?? "" }
 
 	## Node identities are distinct from display labels, which may repeat.
@@ -41,19 +41,19 @@ Sankey :: InternalJson.{
 				if (link.value < 0) Err(InvalidLinkValue(link.value)) else Ok(encoded)
 			},
 		)?
-		nodes = InternalJson.object([
-			{ name: "label", value: InternalJson.array(props.nodes.map(|node| InternalJson.string(node.label))) },
-			{ name: "color", value: InternalJson.array(props.nodes.map(|node| InternalJson.string(node.color.to_css()))) },
-			{ name: "customdata", value: InternalJson.array(props.nodes.map(|node| InternalJson.string(node.hover))) },
-			{ name: "hovertemplate", value: InternalJson.string("%{customdata}<extra></extra>") },
-		])
-		links = InternalJson.object([
-			{ name: "source", value: InternalJson.array(sources) },
-			{ name: "target", value: InternalJson.array(target_indices) },
-			{ name: "value", value: InternalJson.array(values) },
-			{ name: "customdata", value: InternalJson.array(props.links.map(|link| InternalJson.string(link.hover))) },
-			{ name: "hovertemplate", value: InternalJson.string("%{customdata}<extra></extra>") },
-		])
+		nodes = InternalJson.object(
+			[
+				{ name: "label", value: InternalJson.array(props.nodes.map(|node| InternalJson.string(node.label))) },
+				{ name: "color", value: InternalJson.array(props.nodes.map(|node| node.color.to_json_value())) },
+			].concat(hover_fields(props.nodes.map(|node| node.hover))),
+		)
+		links = InternalJson.object(
+			[
+				{ name: "source", value: InternalJson.array(sources) },
+				{ name: "target", value: InternalJson.array(target_indices) },
+				{ name: "value", value: InternalJson.array(values) },
+			].concat(hover_fields(props.links.map(|link| link.hover))),
+		)
 		orientation = match props.orientation {
 			Horizontal => "h"
 			Vertical => "v"
@@ -85,7 +85,7 @@ Sankey :: InternalJson.{
 expect {
 	sankey = Sankey.new({
 		nodes: [{ id: "b", label: "same" }, { id: "a", label: "same" }],
-		links: [{ source: "a", target: "b", value: 2.5, hover: "quote\"\n" }],
+		links: [{ source: "a", target: "b", value: 2.5, hover: Text("quote\"\n") }],
 		orientation: Vertical,
 	})?
 	decoded : { node : { label : List(Str) }, link : { source : List(U64), target : List(U64), value : List(F64), customdata : List(Str) }, orientation : Str }
@@ -107,3 +107,67 @@ expect Sankey.new({ nodes: [{ id: "a", label: "A" }], links: [{ source: "a", tar
 
 ## Infinite flows fail construction.
 expect Sankey.new({ nodes: [{ id: "a", label: "A" }], links: [{ source: "a", target: "a", value: F64.infinity }] }) == Err(Infinity)
+
+## Sankey JSON preserves source order and validates numeric values once.
+expect {
+	sankey = Sankey.new({ nodes: [{ id: "a", label: "A" }, { id: "b", label: "B" }], links: [{ source: "a", target: "b", value: 0 }] })?
+	sankey.to_json() ==
+		\\{"type":"sankey","node":{"label":["A","B"],"color":["rgb(31, 119, 180)","rgb(31, 119, 180)"]},"link":{"source":[0],"target":[1],"value":[0]},"orientation":"h","arrangement":"snap","name":""}
+}
+
+## An empty Sankey remains a valid complete trace.
+expect {
+	sankey = Sankey.new({ nodes: [], links: [] })?
+	decoded : { node : { label : List(Str) }, link : { source : List(U64), target : List(U64), value : List(F64) } }
+	decoded = Json.parse(sankey.to_json())?
+	decoded == { node: { label: [] }, link: { source: [], target: [], value: [] } }
+}
+
+## NaN and negative-infinite flows cannot become JSON numbers.
+expect {
+	actual = [F64.nan, -F64.infinity].map(|value| Sankey.new({ nodes: [{ id: "a", label: "A" }], links: [{ source: "a", target: "a", value }] }).is_err())
+	actual == [True, True]
+}
+
+hover_fields : List([Default, Text(Str)]) -> List({ name : Str, value : InternalJson })
+hover_fields = |hovers| {
+	has_text = hovers.any(
+		|hover| match hover {
+			Default => False
+			Text(_) => True
+		},
+	)
+	if !has_text {
+		return []
+	}
+	texts = hovers.map(
+		|hover| match hover {
+			Default => InternalJson.string("")
+			Text(text) => InternalJson.string(text)
+		},
+	)
+	templates = hovers.map(
+		|hover| match hover {
+			Default => InternalJson.string("")
+			Text(_) => InternalJson.string("%{customdata}<extra></extra>")
+		},
+	)
+	[
+		{ name: "customdata", value: InternalJson.array(texts) },
+		{ name: "hovertemplate", value: InternalJson.array(templates) },
+	]
+}
+
+## Hover text overrides only explicitly configured nodes and links.
+expect {
+	sankey = Sankey.new({
+		nodes: [{ id: "a", label: "A", hover: Text("quoted \"text\"") }, { id: "b", label: "B" }],
+		links: [{ source: "a", target: "b", value: 1 }],
+	})?
+	decoded : { node : { customdata : List(Str), hovertemplate : List(Str) }, link : { source : List(U64), target : List(U64), value : List(F64) } }
+	decoded = Json.parse(sankey.to_json())?
+	decoded == {
+		node: { customdata: ["quoted \"text\"", ""], hovertemplate: ["%{customdata}<extra></extra>", ""] },
+		link: { source: [0], target: [1], value: [1] },
+	}
+}
