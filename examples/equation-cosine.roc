@@ -1,42 +1,33 @@
+# Sample cos(x) at evenly spaced coordinates.
+# Run from the repository root: roc examples/equation-cosine.roc > chart.html
 app [main!] {
-    cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.19.0/bi5zubJ-_Hva9vxxPq4kNx4WHX6oFs8OP6Ad0tCYlrY.tar.br",
-    plume: "../package/main.roc",
+	cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.26.0/GddgvsGjiNXrHFW6au5i5dUDbTs8FinQdrgE2Gqmw53t.tar.zst",
+	plume: "../package/main.roc",
 }
 
-import cli.File
-import cli.Cmd
-import plume.Chart exposing [Chart]
-import plume.Scatter
+import cli.OsStr
+import cli.Stdout
+import plume.Chart
 import plume.Layout
 import plume.Title
-import plume.Marker
+import plume.Scatter
 
-main! = |_|
-
-    marker = Marker.new({})?
-
-    data : List { x : F64, y : F64, marker : _ }
-    data =
-        List.range({ start: At(0), end: Before(10), step: 0.2 })
-        |> List.map(|x| { x, y: Num.sin(x), marker })
-
-    scatter : Scatter.Trace F64 F64
-    scatter =
-        Scatter.new(
-            {
-                data,
-                mode: "markers",
-            },
-        )?
-
-    chart : Chart F64 F64
-    chart =
-        Chart.empty({})
-        |> Chart.add_scatter_chart(scatter)
-        |> Chart.with_layout(Layout.new({ title: Title.new({ text: "y = Math.cos(x)" }) }))
-
-    File.write_utf8!(Chart.to_html(chart), "out.html")?
-
-    Cmd.exec!("open", ["out.html"])?
-
-    Ok({})
+main! : List(OsStr) => Try({}, _)
+main! = |_args| {
+	# Generate integers first so the step count is exact, then scale to F64.
+	points = List.from_iter(
+		(0.U64..<50).iter().map(
+			|step| {
+				x = step.to_f64() / 5
+				{ x, y: F64.cos(x) }
+			},
+		),
+	)
+	curve = Scatter.new({ data: points, mode: Lines })?
+	chart = Chart.new({
+		traces: [Scatter(curve)],
+		layout: Layout.new({ title: Title.new({ text: "y = Math.cos(x)" }) }),
+	})
+	Stdout.line!(chart.to_html())?
+	Ok({})
+}

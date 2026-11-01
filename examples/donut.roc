@@ -1,49 +1,34 @@
+# Show each country’s share with a donut hole.
+# Run from the repository root: roc examples/donut.roc > chart.html
 app [main!] {
-    cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.19.0/bi5zubJ-_Hva9vxxPq4kNx4WHX6oFs8OP6Ad0tCYlrY.tar.br",
-    plume: "../package/main.roc",
+	cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.26.0/GddgvsGjiNXrHFW6au5i5dUDbTs8FinQdrgE2Gqmw53t.tar.zst",
+	plume: "../package/main.roc",
 }
 
-import cli.File
-import cli.Cmd
-import plume.Chart exposing [Chart]
-import plume.Pie
+import cli.OsStr
+import cli.Stdout
+import plume.Chart
 import plume.Layout
 import plume.Title
+import plume.Pie
 
-main! = |_|
-
-    donut : Pie.Trace Str F64
-    donut = Pie.new(
-        {
-            data: [
-                { label: "Italy", value: 55 },
-                { label: "France", value: 49 },
-                { label: "Spain", value: 44 },
-                { label: "USA", value: 24 },
-                { label: "Australia", value: 15 },
-            ],
-            hole: 0.4,
-        },
-    )?
-
-    chart : Chart Str F64
-    chart =
-        Chart.empty({})
-        |> Chart.add_pie_chart(donut)
-        |> Chart.with_layout(
-            Layout.new(
-                {
-                    title: Title.new(
-                        {
-                            text: "Roc Programmers by Country",
-                        },
-                    ),
-                },
-            ),
-        )
-
-    File.write_utf8!(Chart.to_html(chart), "out.html")?
-
-    Cmd.exec!("open", ["out.html"])?
-
-    Ok({})
+main! : List(OsStr) => Try({}, _)
+main! = |_args| {
+	# Values are nonnegative amounts; Plotly calculates their proportions.
+	distribution = Pie.new({
+		data: [
+			{ label: "Italy", value: 55 },
+			{ label: "France", value: 49 },
+			{ label: "Spain", value: 44 },
+			{ label: "USA", value: 24 },
+			{ label: "Australia", value: 15 },
+		],
+		hole: 0.4,
+	})?
+	chart = Chart.new({
+		traces: [Pie(distribution)],
+		layout: Layout.new({ title: Title.new({ text: "Roc Programmers by Country" }) }),
+	})
+	Stdout.line!(chart.to_html())?
+	Ok({})
+}
