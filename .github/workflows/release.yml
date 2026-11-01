@@ -27,3 +27,15 @@ jobs:
       nightly-tag: ${{ inputs.nightly-tag || '' }}
       check-task: check
       manual: true
+
+  documentation:
+    name: Publish release documentation
+    if: github.event_name == 'workflow_dispatch' && inputs.version != ''
+    needs: Release
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/docs.yml
+    with:
+      docs-version: ${{ needs.Release.outputs.version }}

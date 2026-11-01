@@ -17,6 +17,7 @@ main! = |_args| {
 	run!({ program: "roc-stable", args: ["version"] })?
 	run!({ program: "roc", args: ["fmt", "--check", "Blueprint.roc", "package", "examples", "tests", "fuzz"] })?
 	run!({ program: "roc-stable", args: ["fmt", "--check", "scripts"] })?
+	run!({ program: "roc-policy", args: ["check", "--root", "."] })?
 	run!({ program: "roc", args: ["test", "--opt=dev", "package/main.roc"] })?
 	run!({ program: "roc-stable", args: ["test", "--opt=dev", "scripts/type_safety.roc"] })?
 	run!({ program: "roc-stable", args: ["scripts/type_safety.roc"] })?
@@ -36,7 +37,7 @@ main! = |_args| {
 		}
 	}
 	run!({ program: "release-package", args: ["test-examples"] })?
-	Stdout.line!("PASS formatting, package and consumer expects, bounded fuzz checks, and recorded examples")?
+	Stdout.line!("PASS formatting, documentation policy, package and consumer expects, bounded fuzz checks, and recorded examples")?
 	Ok({})
 }
 

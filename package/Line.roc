@@ -3,20 +3,34 @@ import InternalJson
 
 ## A finite, nonnegative line width and its CSS style.
 Line :: Props.{
+
+	## Choose a connected line's dash pattern.
+	## `Solid` draws a continuous line. The other tags select dots, short
+	## or long dashes, and their combinations in Plotly's canonical order.
 	Type : [Solid, Dot, Dash, LongDash, DashDot, LongDashDot]
+
+	## Style the connected segments of a scatter trace.
+	## `width` is measured in pixels, must be finite and nonnegative, and
+	## defaults to two. Zero hides the stroke. `color` defaults to Plotly
+	## blue and `dash` defaults to `Solid`.
 	Props := {
 		width : F64 ?? 2,
 		color : Color ?? Color.rgb({ red: 31, green: 119, blue: 180 }),
 		dash : Type ?? Solid,
 	}
 
+	## A solid, two-pixel-wide line in Plotly blue.
 	default : Line
 	default = Line.({})
 
-	## Zero hides the line. Negative and non-finite widths are rejected.
+	## Validate a line width and construct its style.
+	## A negative or nonfinite width returns `InvalidLineWidth(width)`.
+	## Zero is accepted for a hidden stroke.
 	new : Props -> Try(Line, [InvalidLineWidth(F64)])
 	new = |props| if (props.width.is_finite() and props.width >= 0) Ok(Line.(props)) else Err(InvalidLineWidth(props.width))
 
+	## Return the canonical Plotly dash name, such as "longdashdot".
+	## Use tags in props; this conversion is useful when inspecting a style.
 	dash_to_str : Type -> Str
 	dash_to_str = |dash| match dash {
 		Solid => "solid"
@@ -27,7 +41,9 @@ Line :: Props.{
 		LongDashDot => "longdashdot"
 	}
 
-	## Encode an object for composition without accepting raw JSON.
+	## Internal composition hook used by Plume's renderers.
+	## Applications normally use [Line.to_json] for complete JSON text;
+	## this returns the package's safe internal value without accepting raw JSON.
 	to_json_value : Line -> InternalJson
 	to_json_value = |Line.(props)| InternalJson.object([
 		{ name: "width", value: InternalJson.encode(props.width) ?? crash "Line.to_json_value: non-finite width passed constructor" },

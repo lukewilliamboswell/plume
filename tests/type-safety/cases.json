@@ -211,6 +211,19 @@
       "module_names": [
         "Pie"
       ]
+    },
+    {
+      "id": "hierarchical-axis-mode",
+      "purpose": "An axis cannot advertise hierarchical categories that scalar Coordinate values cannot represent.",
+      "positive": "_axis = Axis.new({ type: Category })?",
+      "negative": "_axis = Axis.new({ type: MultiCategory })?",
+      "diagnostics": [
+        "type mismatch",
+        "MultiCategory"
+      ],
+      "module_names": [
+        "Axis"
+      ]
     }
   ]
 }
