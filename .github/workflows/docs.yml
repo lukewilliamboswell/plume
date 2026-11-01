@@ -5,6 +5,16 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      docs-version:
+        description: Version label for the documentation
+        type: string
+        default: unreleased
+  workflow_call:
+    inputs:
+      docs-version:
+        type: string
+        default: unreleased
 
 permissions: {}
 
@@ -30,7 +40,9 @@ jobs:
         with:
           version: nightly-new-compiler
       - run: blueprint check
-      - run: blueprint run docs
+      - run: blueprint run docs -- --docs-version "$DOCS_VERSION"
+        env:
+          DOCS_VERSION: ${{ inputs.docs-version || 'unreleased' }}
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: plume-documentation
