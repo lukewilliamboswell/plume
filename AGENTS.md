@@ -29,9 +29,8 @@ Plume is a pure Roc package. Preserve the public guarantees documented in
 - Follow the style guide linked from the manual and the SHA-pinned roc-automation
   workflows. Package/apps use the current nightly; scripts keep the fixed
   tooling compiler. Format each with its corresponding compiler.
-- Keep manuals focused on API guarantees and contributor workflows. Do not
-  copy test counts, execution budgets, platform measurements or run-specific
-  compiler provenance from test definitions and diagnostics into prose.
+- Follow the editorial rule in `docs/contributing.adoc#documentation`.
+  Keep runtime budgets, test counts and run-specific provenance in diagnostics.
 - For pure performance investigations, build Zig code with
   `-Doptimize=ReleaseFast`, retain debug symbols, and state the measurement mode.
   Use ReleaseSafe separately for safety validation.

@@ -28,4 +28,5 @@ Open `chart.html` in your browser. The generated HTML loads Plotly from its CDN,
 
 Release examples are bound to their package release; checkout examples use the local package. See the [manual](https://lukewilliamboswell.github.io/plume/) for installation, chart construction, API guarantees and contributor setup.
 
-For contributors, check the gallery images with `blueprint run screenshots`; review intentional visual changes with `blueprint run screenshots-update`. These are the same images checked in CI.
+
+See [Contributing](CONTRIBUTING.md) to change the package or its gallery.

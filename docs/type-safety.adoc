@@ -38,7 +38,8 @@ Constructors return errors only when their input can be invalid.
 `Scatter.new` is infallible because its coordinates, marker and line already
 carry their guarantees. `Bar.new`, `Pie.new` and `Sankey.new` validate their
 additional numeric or graph inputs. Rendering a valid value needs no new
-user-input validation.
+user-input validation. Text resembling template placeholders remains literal
+data in the encoded output.
 
 == Keep the contract executable
 
