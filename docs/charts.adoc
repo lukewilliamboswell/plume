@@ -31,7 +31,8 @@ html = chart.to_html()
 
 `Chart.new` and `Layout.new` are infallible. Constructors that validate raw
 numeric settings, such as `Bar.new`, return `Try`; use `?` to propagate their
-structured errors. An empty trace list is valid. A figure can contain several
+structured errors. Empty datasets and an empty trace list are valid. Bar width uses axis units
+and may exceed one. A figure can contain several
 trace kinds, and each trace retains the order of its input points or slices.
 
 [cols="1,2,3",options="header"]

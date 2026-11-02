@@ -20,92 +20,13 @@ network access to that CDN. Chart labels and hover text follow Plotly's
 own text and markup rules.
 HTML document titles and embedded JSON are escaped separately.
 
-== API
-
-Plume requires the modern Roc compiler. Construct charts with `Chart.new`,
-passing a `traces` list of `Bar`, `Scatter`, `Pie` or `Sankey` tags and an
-optional layout. Constructors take named props; defaulted fields let callers
-specify only what they need. Use `to_json` for a Plotly figure and `to_html`
-for a complete document. `Color.to_css` returns a CSS color.
-
-Scatter modes and marker symbols use named tags. Axis bounds are structured
-numeric or date values. Sankey links refer to explicit node IDs independently
-of their display labels. See `examples/` for complete, runnable applications.
-
-Construction validates numeric sizes, ranges, pie values and Sankey graphs.
-Cartesian coordinates are opaque text or finite F64 values, with literal
-conversions for ordinary string and numeric literals. Runtime numbers pass
-through `Coordinate.from_number`. Empty data is supported. A bar width is measured
-in axis units and may exceed one. Pie holes range from zero to one inclusive.
-Sankey nodes may share a display label but must have unique IDs; every link
-must reference an existing ID. Self-links are rejected because the renderer
-cannot display them; cycles through distinct nodes are supported.
-
-JSON scalars pass through Roc's builtin encoder. One opaque internal builder
-composes objects and arrays without accepting unchecked JSON fragments.
-`Chart.to_json` returns standalone JSON. `Chart.to_html` separately escapes
-the JSON for an HTML script element and escapes the document title. Values
-that resemble template placeholders remain literal data.
+Read xref:charts.adoc#working-with-charts[Working with charts] for constructors,
+styling and output, and xref:type-safety.adoc#api-guarantees[API guarantees] for
+validation and encoding contracts. The link:api/index.html[API reference]
+describes individual public types and methods.
 
 include::charts.adoc[leveloffset=+1]
 
-== Development and validation
-
-Use the Blueprint release declared in `Blueprint.roc` and the latest Roc
-nightly as `roc` on `PATH`:
-
-[source,sh]
-----
-blueprint check
-blueprint run check
-blueprint run docs
-blueprint run release-package -- build 0.0.1-dryrun
-blueprint run release-test -- test-archive
-----
-
-The documentation build includes the manual and generated API reference in
-`.docs-out/site/`. Pull requests retain that site for preview; the default
-branch deploys the same build to GitHub Pages.
-
-`Blueprint.lock` records the digest and length of each released utility and
-the fixed compiler used for repository scripts. The product compiler is
-supplied by the host and by CI. Checks use the dev backend. These are
-correctness checks, not performance measurements.
-
-`check` formats sources, runs package and consumer `expect` tests, and runs
-every example against `tests/spec.json`. Expected output changes are recorded
-with `blueprint run release-test -- test-examples --update` and reviewed as
-a diff. The release utility builds each example once and compares output,
-stderr and exit status for each case. Failed commands and timeouts fail the
-run. The release archive is tested separately against the exact bundled
-package over loopback.
-
-The README gallery uses the same images as the visual CI check. With Node
-available, run `blueprint run screenshots-setup` to install the configured
-browser, then `blueprint run screenshots` to rebuild the examples and compare
-fresh renders with those images. A mismatch retains
-expected, actual and difference images for review. For an intentional visual
-change, update any changed example output first, then run
-`blueprint run screenshots-update` and review the PNG diff before committing.
-
-The workflows pin shared roc-automation code and use its
-https://lukewilliamboswell.github.io/roc-automation/pure-package.html[pure-package model].
-Roc source follows the
-https://gist.github.com/lukewilliamboswell/241a4e8adb7c89c7e0e02f1d303a8fa1[style guide].
-
-== Release operation
-
-Pull requests run the shared release dry run. Publication requires dispatching
-`Release` from the default branch with a version, after reviewing its artifacts
-and configuring the repository's `release` environment. The required checks
-are `Release / Build and test the source` and
-`Release / Test the release candidate`, plus the documentation job if required
-by repository policy. Adding these workflow files does not configure GitHub
-branch rules or environment protection.
-
-The nightly workflow checks the latest published release, rather than the
-working tree. It requires a published examples archive that follows the
-shared release contract.
-Local checks and dry runs do not establish hosted CI or publication success.
-
 include::type-safety.adoc[leveloffset=+1]
+
+include::contributing.adoc[leveloffset=+1]
