@@ -1,0 +1,23 @@
+= plume 0.5.1
+
+The examples and consumer checks use basic-cli 0.27.0, restoring compatibility
+with the current Roc nightly. The chart API and generated chart output are
+unchanged.
+
+== Use this release
+
+Add the package to an application's dependencies:
+
+[source,roc]
+----
+plume: "{package-url}",
+----
+
+The examples archive contains complete chart applications. They emit HTML to
+stdout; the budget example accepts JSON from a file or standard input.
+
+== Validation
+
+The release checks the package, validated type boundaries, recorded examples,
+serialization fuzz properties and the existing gallery screenshots. Allocation
+checks retain the exact accepted profile and reject baseline drift.

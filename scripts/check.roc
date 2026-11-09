@@ -81,7 +81,9 @@ check_fuzz! = || {
 			}
 			run!({ program: "roc", args: ["test", "--opt=dev", "fuzz/serialization.roc"] })?
 			Path.utf8(".fuzz-out").create_all!()?
-			run!({ program: "roc", args: ["build", "--fuzz", "--opt=speed", "--target=x64musl", "--output=.fuzz-out/serialization", "fuzz/serialization.roc"] })?
+			# Cached imports can change deallocation placement within a measured
+			# region. Compare the exact profile against a canonical clean build.
+			run!({ program: "roc", args: ["build", "--no-cache", "--fuzz", "--opt=speed", "--target=x64musl", "--output=.fuzz-out/serialization", "fuzz/serialization.roc"] })?
 			# run checks every named example and the allocation baseline before
 			# exploring. Missing/stale baselines fail; this never accepts them.
 			report_args = match Env.var_str!("RUNNER_TEMP") {
