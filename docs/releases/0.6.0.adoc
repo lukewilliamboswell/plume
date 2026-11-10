@@ -58,5 +58,6 @@ scatter, styled scatter and mixed trace gallery images show the change.
 
 The release checks the package, type contracts for the new opaque types,
 recorded examples, extended serialization fuzz properties and the gallery
-screenshots. The fuzz allocation profile was re-accepted for the larger
+screenshots. The fuzz target uses roc-fuzz 0.6.0, which supports the
+current Roc nightly. Its allocation profile was re-accepted for the larger
 populated chart and its new numeric and time properties.
