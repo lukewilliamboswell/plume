@@ -1,0 +1,62 @@
+= plume 0.6.0
+
+Plume draws time series, timelines, heatmaps and histograms, and its charts
+can be redrawn in place without losing the viewer's zoom. Output is smaller:
+a style shared by every point is written once.
+
+== Use this release
+
+Add the package to an application's dependencies:
+
+[source,roc]
+----
+plume: "{package-url}",
+----
+
+The examples archive contains complete chart applications, including new
+time series, stacked bar, timeline, heatmap, histogram and WebGL examples.
+They emit HTML to stdout; the budget example accepts JSON from a file or
+standard input.
+
+== Changes
+
+`Time` is a validated UTC instant with millisecond precision, built from epoch
+milliseconds, epoch seconds or calendar fields. `Coordinate.from_time` places
+it on a date axis and `Axis`'s `TimeBounds` bounds one.
+
+`Layout` adds `size` (`Size.new`: width, height and margins), `bar_mode`,
+`hover_mode`, `legend_position`, `shapes` and `ui_revision`. With
+`ui_revision: Preserve(revision)`, a chart redrawn with Plotly's `react`
+keeps the viewer's zoom and pan. `Shape.new` draws reference lines and shaded
+bands with optional labels. `Axis` adds `tick_format`, `tick_suffix`, `grid`
+and a `FromZero` range. `Chart.data_to_json` returns the trace array alone.
+
+`Scatter` adds `fill`, `fill_color`, a `renderer` choice of SVG or WebGL, and
+gaps through a point's `from_previous: Gap`. `Line` adds step shapes. A
+`Bar.Point` can start at a `base`, for floating bars and timelines. New
+`Heatmap` and `Histogram` traces validate their grids, value ranges and bins.
+
+Every existing constructor and prop keeps its meaning; new props have
+defaults. New tags were added to `Chart.Trace` and `Axis.RangeSpec`, so code
+that matches exhaustively on either needs the new cases.
+
+== Output changes
+
+A scatter trace whose points share a marker color, size, symbol or text, or a
+bar trace whose bars share a color or base, now writes that value once rather
+than once per point, and points without text omit the text field, so a long
+line in one style is mostly its coordinates. Applications that decode
+Plume's JSON themselves must accept a single value where every point agrees.
+
+Plotly draws a trace with per-point marker sizes as bubbles: translucent, with
+a light outline. Earlier releases always wrote sizes per point, so every
+marker was drawn that way. Markers that share a size are now drawn opaque in
+their exact colors; traces whose sizes differ look as before. The bubble,
+scatter, styled scatter and mixed trace gallery images show the change.
+
+== Validation
+
+The release checks the package, type contracts for the new opaque types,
+recorded examples, extended serialization fuzz properties and the gallery
+screenshots. The fuzz allocation profile was re-accepted for the larger
+populated chart and its new numeric and time properties.
