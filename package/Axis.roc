@@ -1,6 +1,7 @@
 import Title
 import Color
 import InternalJson
+import Time
 
 ## Plotly axis settings. Numeric and date bounds are explicit closed cases;
 ## arbitrary JSON fragments are never accepted as bounds.
@@ -20,17 +21,33 @@ Axis :: [Automatic, Explicit(Props)].{
 	## are base-10 exponents, so 0 to 2 shows values from 1 to 100.
 	## `DateBounds({ start, end })` supplies date strings interpreted by
 	## Plotly; Plume does not parse or validate their date syntax.
-	RangeSpec : [Auto, Fixed, Reversed, Bounds({ min : F64, max : F64 }), DateBounds({ start : Str, end : Str })]
+	## `TimeBounds({ start, end })` supplies validated [Time] endpoints for
+	## a date axis. `FromZero` chooses bounds automatically but always
+	## includes zero, which suits counts and other nonnegative measures.
+	RangeSpec : [Auto, Fixed, Reversed, FromZero, Bounds({ min : F64, max : F64 }), DateBounds({ start : Str, end : Str }), TimeBounds({ start : Time, end : Time })]
 
-	## Override one axis's scale, range, title and color.
+	## Choose whether grid lines are drawn at the axis ticks.
+	## `Auto` keeps Plotly's choice, which draws them on Cartesian axes.
+	Grid : [Auto, Shown, Hidden]
+
+	## Override one axis's scale, range, title, color and tick labels.
 	## `type: Auto` omits an explicit scale. `range: Auto` selects automatic
 	## bounds. `title` defaults to [Title.default], and `color` defaults to
 	## dark gray. Use [Axis.default] to leave the whole axis to Plotly.
+	## `tick_format: Pattern(pattern)` formats tick labels with a d3 number
+	## pattern such as `".1%"` or `"~s"`, or a d3 time pattern such as
+	## `"%H:%M"` on a date axis; Plotly interprets the pattern and Plume
+	## does not validate it. `Auto` keeps Plotly's labels. `tick_suffix` is
+	## appended to every label, such as `" ms"`, and defaults to none.
+	## `grid` selects grid lines.
 	Props := {
 		title : Title ?? Title.default,
 		type : Type ?? Auto,
 		range : RangeSpec ?? Auto,
 		color : Color ?? Color.rgb({ red: 68, green: 68, blue: 68 }),
+		tick_format : [Auto, Pattern(Str)] ?? Auto,
+		tick_suffix : Str ?? "",
+		grid : Grid ?? Auto,
 	}
 
 	## Leave the entire axis at Plotly defaults, encoding an empty object.
@@ -72,6 +89,10 @@ Axis :: [Automatic, Explicit(Props)].{
 				Auto => [{ name: "autorange", value: InternalJson.encode(Bool.True) ?? crash "Axis.to_json_value: Bool encoding failed" }]
 				Fixed => [{ name: "fixedrange", value: InternalJson.encode(Bool.True) ?? crash "Axis.to_json_value: Bool encoding failed" }]
 				Reversed => [{ name: "autorange", value: InternalJson.string("reversed") }]
+				FromZero => [
+					{ name: "autorange", value: InternalJson.encode(Bool.True) ?? crash "Axis.to_json_value: Bool encoding failed" },
+					{ name: "rangemode", value: InternalJson.string("tozero") },
+				]
 				Bounds(bounds) => [
 					{
 						name: "range",
@@ -82,6 +103,7 @@ Axis :: [Automatic, Explicit(Props)].{
 					},
 				]
 				DateBounds(bounds) => [{ name: "range", value: InternalJson.array([InternalJson.string(bounds.start), InternalJson.string(bounds.end)]) }]
+				TimeBounds(bounds) => [{ name: "range", value: InternalJson.array([InternalJson.string(bounds.start.to_str()), InternalJson.string(bounds.end.to_str())]) }]
 			}
 			type_fields = match props.type {
 				Auto => []
@@ -100,11 +122,26 @@ Axis :: [Automatic, Explicit(Props)].{
 					},
 				]
 			}
+			tick_fields = match props.tick_format {
+				Auto => []
+				Pattern(pattern) => [{ name: "tickformat", value: InternalJson.string(pattern) }]
+			}
+			suffix_fields = if (props.tick_suffix.is_empty()) [] else [{ name: "ticksuffix", value: InternalJson.string(props.tick_suffix) }]
+			grid_fields = match props.grid {
+				Auto => []
+				Shown => [{ name: "showgrid", value: InternalJson.encode(Bool.True) ?? crash "Axis.to_json_value: Bool encoding failed" }]
+				Hidden => [{ name: "showgrid", value: InternalJson.encode(Bool.False) ?? crash "Axis.to_json_value: Bool encoding failed" }]
+			}
 			InternalJson.object(
-				range_fields.concat(type_fields).concat([
-					{ name: "title", value: props.title.to_json_value() },
-					{ name: "color", value: props.color.to_json_value() },
-				]),
+				range_fields
+					.concat(type_fields)
+					.concat([
+						{ name: "title", value: props.title.to_json_value() },
+						{ name: "color", value: props.color.to_json_value() },
+					])
+					.concat(tick_fields)
+					.concat(suffix_fields)
+					.concat(grid_fields),
 			)
 		}
 	}
@@ -189,4 +226,37 @@ expect {
 		$passed = $passed and !(decoded.range != [bounds.min, bounds.max])
 	}
 	$passed
+}
+
+## Validated times bound a date axis by their Plotly date text.
+expect {
+	start = Time.from_calendar({ year: 2026, month: 11, day: 11, hour: 9 })?
+	end = Time.from_calendar({ year: 2026, month: 11, day: 11, hour: 17, minute: 30 })?
+	axis = Axis.new({ type: Date, range: TimeBounds({ start, end }) })?
+	decoded : { type : Str, range : List(Str) }
+	decoded = Json.parse(axis.to_json())?
+	decoded == { type: "date", range: ["2026-11-11 09:00", "2026-11-11 17:30"] }
+}
+
+## Ranges from zero keep autorange and add Plotly's tozero mode.
+expect {
+	axis = Axis.new({ range: FromZero })?
+	decoded : { autorange : Bool, rangemode : Str }
+	decoded = Json.parse(axis.to_json())?
+	decoded == { autorange: True, rangemode: "tozero" }
+}
+
+## Tick patterns, suffixes and grid choices appear only when set.
+expect {
+	plain = Axis.new({})?
+	styled = Axis.new({ tick_format: Pattern("%H:%M"), tick_suffix: " ms", grid: Hidden })?
+	shown = Axis.new({ grid: Shown })?
+	decoded : { tickformat : Str, ticksuffix : Str, showgrid : Bool }
+	decoded = Json.parse(styled.to_json())?
+	actual = [
+		Str.inspect(plain.to_json().contains("tick") or plain.to_json().contains("showgrid")),
+		Str.inspect(decoded == { tickformat: "%H:%M", ticksuffix: " ms", showgrid: False }),
+		Str.inspect(shown.to_json().contains("\"showgrid\":true")),
+	]
+	actual == ["False", "True", "True"]
 }

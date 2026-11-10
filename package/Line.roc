@@ -9,14 +9,24 @@ Line :: Props.{
 	## or long dashes, and their combinations in Plotly's canonical order.
 	Type : [Solid, Dot, Dash, LongDash, DashDot, LongDashDot]
 
+	## Choose how a line travels between consecutive points.
+	## `Linear` draws straight segments. The step shapes draw only
+	## horizontal and vertical segments, for values that hold between
+	## samples: `StepAfter` keeps each value until the next point (Plotly
+	## `hv`), `StepBefore` takes the next value immediately (`vh`), and
+	## `StepMiddle` changes value halfway between the points (`hvh`). Every
+	## shape is available to both scatter renderers.
+	Shape : [Linear, StepAfter, StepBefore, StepMiddle]
+
 	## Style the connected segments of a scatter trace.
 	## `width` is measured in pixels, must be finite and nonnegative, and
 	## defaults to two. Zero hides the stroke. `color` defaults to Plotly
-	## blue and `dash` defaults to `Solid`.
+	## blue, `dash` defaults to `Solid` and `shape` defaults to `Linear`.
 	Props := {
 		width : F64 ?? 2,
 		color : Color ?? Color.rgb({ red: 31, green: 119, blue: 180 }),
 		dash : Type ?? Solid,
+		shape : Shape ?? Linear,
 	}
 
 	## A solid, two-pixel-wide line in Plotly blue.
@@ -45,11 +55,21 @@ Line :: Props.{
 	## Applications normally use [Line.to_json] for complete JSON text;
 	## this returns the package's safe internal value without accepting raw JSON.
 	to_json_value : Line -> InternalJson
-	to_json_value = |Line.(props)| InternalJson.object([
-		{ name: "width", value: InternalJson.encode(props.width) ?? crash "Line.to_json_value: non-finite width passed constructor" },
-		{ name: "color", value: props.color.to_json_value() },
-		{ name: "dash", value: InternalJson.string(dash_to_str(props.dash)) },
-	])
+	to_json_value = |Line.(props)| {
+		shape_fields = match props.shape {
+			Linear => []
+			StepAfter => [{ name: "shape", value: InternalJson.string("hv") }]
+			StepBefore => [{ name: "shape", value: InternalJson.string("vh") }]
+			StepMiddle => [{ name: "shape", value: InternalJson.string("hvh") }]
+		}
+		InternalJson.object(
+			[
+				{ name: "width", value: InternalJson.encode(props.width) ?? crash "Line.to_json_value: non-finite width passed constructor" },
+				{ name: "color", value: props.color.to_json_value() },
+				{ name: "dash", value: InternalJson.string(dash_to_str(props.dash)) },
+			].concat(shape_fields),
+		)
+	}
 
 	## Serialize this validated value as a complete JSON document.
 	to_json : Line -> Str
@@ -104,4 +124,15 @@ expect {
 		$passed = $passed and !(decoded.dash != row.name or Line.dash_to_str(row.dash) != row.name)
 	}
 	$passed
+}
+
+## Linear lines omit Plotly's default shape; steps name their Plotly shape.
+expect {
+	actual = [Linear, StepAfter, StepBefore, StepMiddle].map_try(|shape| Ok(Line.new({ shape: shape })?.to_json()))?
+	actual == [
+		"{\"width\":2,\"color\":\"rgb(31, 119, 180)\",\"dash\":\"solid\"}",
+		"{\"width\":2,\"color\":\"rgb(31, 119, 180)\",\"dash\":\"solid\",\"shape\":\"hv\"}",
+		"{\"width\":2,\"color\":\"rgb(31, 119, 180)\",\"dash\":\"solid\",\"shape\":\"vh\"}",
+		"{\"width\":2,\"color\":\"rgb(31, 119, 180)\",\"dash\":\"solid\",\"shape\":\"hvh\"}",
+	]
 }

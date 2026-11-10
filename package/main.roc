@@ -6,12 +6,17 @@ package
 		Color,
 		Coordinate,
 		Font,
+		Heatmap,
+		Histogram,
 		Layout,
 		Line,
 		Marker,
 		Pie,
 		Sankey,
 		Scatter,
+		Shape,
+		Size,
+		Time,
 		Title,
 	]
 	{}
