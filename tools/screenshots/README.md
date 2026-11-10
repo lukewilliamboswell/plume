@@ -32,7 +32,7 @@ Rendering waits for the actual Plotly promise, loaded fonts and stable completed
 captures. It checks the versioned CDN asset against the current HTML's SRI hash,
 then supplies those exact bytes to the browser. Load errors, browser exceptions,
 invalid Plotly schemas and unexpected requests fail the check. Diagnostics for
-mode-inactive scatter line/marker containers and empty axes on non-Cartesian
+mode-inactive scatter and WebGL scatter line/marker containers and empty axes on non-Cartesian
 figures are retained in the report; all other diagnostics fail the check.
 
 Comparisons use decoded RGBA pixels with zero tolerance. Check failures retain
