@@ -1,5 +1,5 @@
 app [target] {
-	fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.5.0/9WT86CuwM7ZJBSs8iTd1jLyrUFTTiGp5hcJE63TwswGE.tar.zst",
+	fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.6.0/6uc3YKGydgEnS2nrCimSYWDNfT6drYcgU52VAwqrb6DS.tar.zst",
 	plume: "../package/main.roc",
 }
 
@@ -9,12 +9,17 @@ import plume.Bar
 import plume.Chart
 import plume.Coordinate
 import plume.Font
+import plume.Heatmap
+import plume.Histogram
 import plume.Layout
 import plume.Line
 import plume.Marker
 import plume.Pie
 import plume.Sankey
 import plume.Scatter
+import plume.Shape
+import plume.Size
+import plume.Time
 import plume.Title
 
 ## Text, floating-point boundaries and graph defects travel together in each
@@ -31,6 +36,9 @@ test! : Input => Fuzz.Outcome
 test! = |input| {
 	if !is_numeric_policy_correct(input.number) {
 		crash "serialization.test!: constructors accepted invalid numbers or rejected valid numbers: ${Str.inspect(input.number)}"
+	}
+	if !is_time_policy_correct(input.number) {
+		crash "serialization.test!: Time range or calendar round trip disagreed with the reference: ${Str.inspect(input.number)}"
 	}
 	if !is_graph_policy_correct(input.graph_case) {
 		crash "serialization.test!: Sankey endpoint validation disagreed with the generated graph case"
@@ -61,6 +69,9 @@ is_numeric_policy_correct = |number| {
 		line_width: Line.new({ width: number }).is_ok(),
 		font_size: Font.new({ size: number }).is_ok(),
 		axis_bounds: Axis.new({ range: Bounds({ min: number, max: 0 }) }).is_ok(),
+		heatmap_value: Heatmap.new({ x: [1], rows: [{ y: 1, values: [number] }] }).is_ok(),
+		heatmap_range: Heatmap.new({ x: [], rows: [], value_range: Bounds({ min: number, max: 0 }) }).is_ok(),
+		histogram_bins: Histogram.new({ values: [], bins: Fixed({ start: 0, end: 10, size: number }) }).is_ok(),
 	}
 	expected = {
 		coordinate: finite,
@@ -72,8 +83,24 @@ is_numeric_policy_correct = |number| {
 		line_width: nonnegative,
 		font_size: finite and number >= 1,
 		axis_bounds: finite,
+		heatmap_value: finite,
+		heatmap_range: finite and number < 0,
+		histogram_bins: finite and number > 0,
 	}
 	actual == expected
+}
+
+## Time accepts exactly 0001-01-01 through 9999-12-31 and every accepted
+## instant survives a round trip through its calendar fields. The number's
+## bits choose milliseconds on both sides of each supported endpoint.
+is_time_policy_correct : F64 -> Bool
+is_time_policy_correct = |number| {
+	millis = (number.to_bits() % 1_125_899_906_842_624).to_i64_wrap() - 562_949_953_421_312
+	in_range = millis >= -62_135_596_800_000 and millis <= 253_402_300_799_999
+	match Time.from_epoch_millis(millis) {
+		Ok(time) => in_range and Time.from_calendar(time.to_calendar()) == Ok(time) and time.to_epoch_millis() == millis
+		Err(_) => !in_range
+	}
 }
 
 is_graph_policy_correct : U8 -> Bool
@@ -100,10 +127,18 @@ populated_chart = |input| {
 		links: [{ source: "a", target: "b", value: magnitude, hover: Text(input.text) }],
 		name: input.text,
 	})?
+	heatmap = Heatmap.new({ x: [text_coordinate], rows: [{ y: text_coordinate, values: [finite_number] }], name: input.text })?
+	histogram = Histogram.new({ values: [text_coordinate, number_coordinate], name: input.text })?
 	Ok(
 		Chart.new({
-			traces: [Bar(bar), Scatter(scatter), Pie(pie), Sankey(sankey)],
-			layout: Layout.new({ title: Title.new({ text: input.text }) }),
+			traces: [Bar(bar), Scatter(scatter), Pie(pie), Sankey(sankey), Heatmap(heatmap), Histogram(histogram)],
+			layout: Layout.new({
+				title: Title.new({ text: input.text }),
+				size: Size.new({ height: Pixels(320) })?,
+				ui_revision: Preserve(input.text),
+				# A shape omits an empty label, so prefix it to keep one to decode.
+				shapes: [Shape.new({ placement: VerticalLine(text_coordinate), label: "Label: ${input.text}" })],
+			}),
 		}),
 	)
 }
@@ -117,13 +152,15 @@ is_round_trip = |{ input, html }| {
 		}
 		_ => crash "serialization.is_round_trip: document has no unique chartData element"
 	}
-	decoded : Try({ data : List({ type : Str, name : Str }), layout : { title : { text : Str } } }, _)
+	decoded : Try({ data : List({ type : Str, name : Str }), layout : { title : { text : Str }, uirevision : Str, shapes : List({ x0 : Str, label : { text : Str } }) } }, _)
 	decoded = Json.parse(payload)
 	match decoded {
 		Ok(figure) =>
-			figure.data.map(|trace| trace.type) == ["bar", "scatter", "pie", "sankey"]
+			figure.data.map(|trace| trace.type) == ["bar", "scatter", "pie", "sankey", "heatmap", "histogram"]
 				and figure.data.all(|trace| trace.name == input.text)
 				and figure.layout.title.text == input.text
+				and figure.layout.uirevision == input.text
+				and figure.layout.shapes == [{ x0: input.text, label: { text: "Label: ${input.text}" } }]
 				and !payload.contains("<")
 				and is_trace_round_trip(input)
 		Err(_) => False
@@ -184,6 +221,9 @@ expect {
 	chart = populated_chart(input)?
 	is_round_trip({ input, html: chart.to_html() })
 }
+
+## Time endpoints, both neighbours and ordinary instants follow the range rule.
+expect [F64.from_bits(0), F64.from_bits(562_949_953_421_312), F64.from_bits(562_949_953_421_312 - 62_135_596_800_000), F64.from_bits(562_949_953_421_312 - 62_135_596_800_001), F64.from_bits(562_949_953_421_312 + 253_402_300_799_999), F64.from_bits(562_949_953_421_312 + 253_402_300_800_000), 0.5, F64.nan].all(is_time_policy_correct)
 
 ## Every explicitly named graph defect returns its own structured error.
 expect [0, 1, 2, 3, 4, 5].all(is_graph_policy_correct)

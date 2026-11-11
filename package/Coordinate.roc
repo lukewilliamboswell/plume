@@ -1,4 +1,5 @@
 import InternalJson
+import Time
 
 ## One Cartesian coordinate: a category/date string or a finite number.
 ## String and numeric literals are checked by their literal conversions.
@@ -16,6 +17,20 @@ Coordinate :: [Text(Str), Number(F64)].{
 	## according to the selected axis type.
 	from_text : Str -> Coordinate
 	from_text = |text| Text(text)
+
+	## Construct a date coordinate from a validated UTC instant.
+	## The coordinate is the instant's Plotly date text, as returned by
+	## [Time.to_str], so it equals the matching [Coordinate.from_text] value.
+	## Use it on an axis whose type is `Date`, or let Plotly infer the type.
+	##
+	## ```roc
+	## expect {
+	##     start = Time.from_calendar({ year: 2026, month: 11, day: 11, hour: 9 })?
+	##     Coordinate.from_time(start).to_json() == "\"2026-11-11 09:00\""
+	## }
+	## ```
+	from_time : Time -> Coordinate
+	from_time = |time| Text(time.to_str())
 
 	## Construct a numeric coordinate after checking that it is finite.
 	## Returns `NonFiniteCoordinate(number)` for NaN or either infinity.
@@ -93,6 +108,12 @@ expect {
 		$passed = $passed and decoded == number
 	}
 	$passed
+}
+
+## Time coordinates are the instant's Plotly date text.
+expect {
+	time = Time.from_epoch_millis(1_762_853_405_250)?
+	Coordinate.from_time(time) == Coordinate.from_text("2025-11-11 09:30:05.250")
 }
 
 ## Runtime NaN and both infinities are rejected before construction.

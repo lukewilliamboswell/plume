@@ -6,16 +6,22 @@ app [main!] {
 
 import cli.OsStr
 import cli.Stdout
+import plume.Axis
 import plume.Bar
 import plume.Chart
 import plume.Color
 import plume.Coordinate
+import plume.Heatmap
+import plume.Histogram
 import plume.Layout
 import plume.Line
 import plume.Marker
 import plume.Pie
 import plume.Sankey
 import plume.Scatter
+import plume.Shape
+import plume.Size
+import plume.Time
 import plume.Title
 
 # Quotes, controls, Unicode and script delimiters must survive a JSON round trip.
@@ -30,7 +36,9 @@ main! = |_args| {
 	check_html()?
 	check_text_corpus()?
 	check_coordinates()?
-	Stdout.line!("Consumer contract: 7 checks passed")?
+	check_time_series()?
+	check_grids()?
+	Stdout.line!("Consumer contract: 9 checks passed")?
 	Ok({})
 }
 
@@ -38,7 +46,7 @@ check_bar : () -> Try({}, _)
 check_bar = || {
 	color = Color.rgb({ red: 1, green: 2, blue: 3 })
 	series = Bar.new({ data: [{ x: Coordinate.from_text(hostile), y: -2.5, color }], name: hostile, width: 2.5, orientation: Horizontal })?
-	parsed : { x : List(Str), y : List(F64), name : Str, width : F64, orientation : Str, type : Str, marker : { color : List(Str) } }
+	parsed : { x : List(Str), y : List(F64), name : Str, width : F64, orientation : Str, type : Str, marker : { color : Str } }
 	parsed = Json.parse(series.to_json())?
 	expected = {
 		x: [hostile],
@@ -47,7 +55,7 @@ check_bar = || {
 		width: 2.5,
 		orientation: "h",
 		type: "bar",
-		marker: { color: ["rgb(1, 2, 3)"] },
+		marker: { color: "rgb(1, 2, 3)" },
 	}
 	if parsed != expected {
 		return Err(ContractFailure("bar fields or escaping"))
@@ -64,10 +72,10 @@ check_scatter = || {
 		line: Line.new({ width: 3, dash: DashDot })?,
 		name: hostile,
 	})
-	parsed : { x : List(F64), y : List(F64), text : List(Str), mode : Str, type : Str, name : Str, line : { width : F64, dash : Str }, marker : { color : List(Str), size : List(F64), symbol : List(Str) } }
+	parsed : { x : List(F64), y : List(F64), text : Str, mode : Str, type : Str, name : Str, line : { width : F64, dash : Str }, marker : { color : Str, size : F64, symbol : Str } }
 	parsed = Json.parse(curve.to_json())?
 	actual = { x: parsed.x, y: parsed.y, text: parsed.text, mode: parsed.mode, type: parsed.type, name: parsed.name, width: parsed.line.width, dash: parsed.line.dash, marker: parsed.marker }
-	expected = { x: [1.F64], y: [2.F64], text: [hostile], mode: "lines+markers+text", type: "scatter", name: hostile, width: 3.F64, dash: "dashdot", marker: { color: ["rgb(10, 20, 30)"], size: [7.F64], symbol: ["diamond"] } }
+	expected = { x: [1.F64], y: [2.F64], text: hostile, mode: "lines+markers+text", type: "scatter", name: hostile, width: 3.F64, dash: "dashdot", marker: { color: "rgb(10, 20, 30)", size: 7.F64, symbol: "diamond" } }
 	if actual != expected {
 		return Err(ContractFailure("scatter fields or escaping"))
 	}
@@ -221,4 +229,78 @@ check_coordinates = || {
 ## Coordinate literals and checked runtime values serialize as JSON scalars.
 expect {
 	check_coordinates()? == {}
+}
+
+check_time_series : () -> Try({}, _)
+check_time_series = || {
+	# A live time series: typed instants, a gap, a step line, an incident
+	# shape and the layout settings a redrawing host relies on.
+	start = Time.from_calendar({ year: 2026, month: 11, day: 11, hour: 12 })?
+	later = Time.from_epoch_millis(start.to_epoch_millis() + 90_000)?
+	series = Scatter.new({
+		data: [
+			{ x: Coordinate.from_time(start), y: 1 },
+			{ x: Coordinate.from_time(later), y: 2, from_previous: Gap },
+		],
+		line: Line.new({ shape: StepAfter })?,
+		fill: ToZeroY,
+		renderer: WebGl,
+	})
+	layout = Layout.new({
+		x_axis: Axis.new({ type: Date, range: TimeBounds({ start, end: later }), tick_format: Pattern("%H:%M") })?,
+		size: Size.new({ height: Pixels(240), margin: Pixels({ left: 40, right: 8, top: 8, bottom: 32 }) })?,
+		hover_mode: XUnified,
+		ui_revision: Preserve(hostile),
+		legend_position: Below,
+		shapes: [Shape.new({ placement: VerticalLine(Coordinate.from_time(later)), label: hostile })],
+	})
+	chart = Chart.new({ traces: [Scatter(series)], layout })
+	parsed : {
+		data : List({ type : Str, x : List(Str), fill : Str, line : { shape : Str } }),
+		layout : { xaxis : { range : List(Str), tickformat : Str }, height : U16, margin : { l : U16 }, hovermode : Str, uirevision : Str, legend : { orientation : Str }, shapes : List({ x0 : Str, label : { text : Str } }) },
+	}
+	parsed = Json.parse(chart.to_json())?
+	expected = {
+		data: [{ type: "scattergl", x: ["2026-11-11 12:00", "2026-11-11 12:01:30", "2026-11-11 12:01:30"], fill: "tozeroy", line: { shape: "hv" } }],
+		layout: { xaxis: { range: ["2026-11-11 12:00", "2026-11-11 12:01:30"], tickformat: "%H:%M" }, height: 240, margin: { l: 40 }, hovermode: "x unified", uirevision: hostile, legend: { orientation: "h" }, shapes: [{ x0: "2026-11-11 12:01:30", label: { text: hostile } }] },
+	}
+	if parsed != expected or !chart.to_json().contains("\"y\":[1,null,2]") {
+		return Err(ContractFailure("time series, gaps or layout settings"))
+	}
+	if !chart.to_json().starts_with("{\"data\":${chart.data_to_json()},") {
+		return Err(ContractFailure("data part differs from the figure's data"))
+	}
+	Ok({})
+}
+
+## Time series keep typed instants, gaps, step lines and update settings.
+expect {
+	check_time_series()? == {}
+}
+
+check_grids : () -> Try({}, _)
+check_grids = || {
+	grid = Heatmap.new({ x: [Coordinate.from_text(hostile), 2], rows: [{ y: "row", values: [1, -2.5] }], value_range: Bounds({ min: -5, max: 5 }) })?
+	spread = Histogram.new({ values: [1, 2, 2], bins: AtMost(4), normalization: Percent })?
+	bars = Bar.new({ data: [{ x: 3, y: "task", base: At(Coordinate.from_text("2026-11-11")) }], orientation: Horizontal })?
+	parsed : List({ type : Str })
+	parsed = Json.parse(Chart.new({ traces: [Heatmap(grid), Histogram(spread), Bar(bars)], layout: Layout.new({ bar_mode: Overlay }) }).data_to_json())?
+	decoded_grid : { x : (Str, F64), z : List(List(F64)), zmin : F64, zmax : F64 }
+	decoded_grid = Json.parse(grid.to_json())?
+	decoded_spread : { nbinsx : U16, histnorm : Str, x : List(F64) }
+	decoded_spread = Json.parse(spread.to_json())?
+	decoded_bars : { base : Str }
+	decoded_bars = Json.parse(bars.to_json())?
+	if parsed != [{ type: "heatmap" }, { type: "histogram" }, { type: "bar" }] or decoded_grid != { x: (hostile, 2.F64), z: [[1, -2.5]], zmin: -5, zmax: 5 } or decoded_spread != { nbinsx: 4, histnorm: "percent", x: [1, 2, 2] } or decoded_bars.base != "2026-11-11" {
+		return Err(ContractFailure("heatmap, histogram or bar base fields"))
+	}
+	Ok({})
+}
+
+## A ragged heatmap row is rejected with its label and both counts.
+expect Heatmap.new({ x: [1, 2], rows: [{ y: Coordinate.from_text(hostile), values: [1] }] }).map_ok(|_| {}) == Err(RowLengthMismatch({ y: Coordinate.from_text(hostile), expected: 2, actual: 1 }))
+
+## Heatmaps, histograms and floating bars decode with their checked fields.
+expect {
+	check_grids()? == {}
 }

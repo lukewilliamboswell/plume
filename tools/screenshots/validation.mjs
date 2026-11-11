@@ -10,7 +10,7 @@ export function classifyValidation(figure, problems) {
     if (problem.code === 'unused' && path.length === 1) {
       if (problem.container === 'data' && Number.isInteger(problem.trace)) {
         const trace = figure.data[problem.trace];
-        if (trace?.type === 'scatter' && typeof trace.mode === 'string') {
+        if (['scatter', 'scattergl'].includes(trace?.type) && typeof trace.mode === 'string') {
           const components = trace.mode.split('+');
           permitted = (path[0] === 'line' && !components.includes('lines')) ||
             (path[0] === 'marker' && !components.includes('markers'));

@@ -42,7 +42,15 @@ trace kinds, and each trace retains the order of its input points or slices.
 |`Scatter.new` |Lines, scatter plots, bubbles and text |Mode, per-point marker and text, shared line style
 |`Pie.new` |Pies and donuts |Labeled nonnegative slices; hole in the closed interval zero to one
 |`Sankey.new` |Directed flows |Stable node IDs, links, hover overrides and orientation
+|`Heatmap.new` |A grid of values drawn as colors |Column positions, labelled rows of finite values, color scale and fixed value range
+|`Histogram.new` |Distributions counted in the browser |Raw values, bin choice, normalization and orientation
 |===
+
+`Scatter.new`'s `renderer: WebGl` draws with the GPU for many points or
+frequent redraws. A `Bar.Point`'s `base: At(start)` starts a bar away from
+zero, for floating bars and timelines. To show values already counted
+elsewhere, such as bins computed by a worker, draw them with `Bar.new`; a
+histogram sends every raw value to the browser.
 
 == Coordinates and styling
 
@@ -58,9 +66,36 @@ sales = Bar.new({ data: [{ x: label, y: quantity }] })?
 
 Text coordinates remain text even when they contain digits. Numeric
 coordinates use F64 precision, and `Coordinate.from_number` rejects NaN and
-both infinities with `NonFiniteCoordinate(number)`. For date axes, supply
-appropriate date text and select `Axis`'s `Date` type; Plotly interprets the
-strings. Plume does not parse date syntax.
+both infinities with `NonFiniteCoordinate(number)`.
+
+== Time on an axis
+
+`Time` is a validated UTC instant with millisecond precision. Construct one
+from epoch milliseconds, the unit of JavaScript's `Date.now()`, from epoch
+seconds, or from calendar fields, then place it with `Coordinate.from_time`:
+
+[source,roc]
+----
+start = Time.from_calendar({ year: 2026, month: 11, day: 11, hour: 9, minute: 30 })?
+sampled = Time.from_epoch_millis(received_at_millis)?
+point = { x: Coordinate.from_time(sampled), y: latency }
+axis = Axis.new({
+    type: Date,
+    range: TimeBounds({ start, end: sampled }),
+    tick_format: Pattern("%H:%M"),
+})?
+----
+
+Times cover the years 1 to 9999; constructors return `TimeOutOfRange`,
+`InvalidDate` or `InvalidTimeOfDay` for anything else. A time coordinate is
+the instant's Plotly date text, such as `2026-11-11 09:30`, with trailing
+zero fields omitted. Plotly shows it as written, in UTC, without converting it
+to the viewer's time zone. Date text supplied with `Coordinate.from_text` and
+`DateBounds` is passed to Plotly unparsed.
+
+For a timeline, give each bar a time as its `base` and its duration in
+milliseconds as its length on a `Date` axis. `Shape` marks an instant or a
+period, such as a deployment or an incident, with a vertical line or band.
 
 Markers and line styles are validated before they enter a scatter trace:
 
@@ -79,7 +114,10 @@ points = Scatter.new({
 `Scatter.new` is infallible because its coordinates and styles have already
 been checked. The `mode` selects lines, markers, text, or a combination;
 per-point `text` is drawn only by a mode that includes text. Point order is
-also line-connection order. A marker's size is its diameter in pixels, and a
+also line-connection order. A point with `from_previous: Gap` starts a new
+line segment, leaving a visible gap for a missing sample. `Line`'s `shape`
+draws straight segments or steps, and `Scatter`'s `fill` shades the area
+under a line or between two traces. A marker's size is its diameter in pixels, and a
 line's width is measured in pixels. Their zero sizes hide the corresponding
 shape; negative and nonfinite values are errors.
 
@@ -96,6 +134,30 @@ A `Font`'s size must be finite and at least one pixel. Font families are CSS
 family lists resolved by the browser; the package does not load fonts.
 Numeric axis bounds may run in either direction. On logarithmic axes the
 bounds are base-10 exponents: zero to two displays values from one to 100.
+
+Each trace writes a style once when all of its points share it, such as a
+default marker, and per point only when points differ. A 2,000-point line
+with one style is mostly its coordinates. Plotly draws scatter traces whose
+marker sizes differ as bubbles, translucent with a light outline; traces whose
+markers share a size are drawn opaque in their exact colors.
+
+== Layout
+
+`Layout` gathers the presentation shared by every trace:
+
+[cols="1,3",options="header"]
+|===
+|Prop |Use
+|`size` |`Size.new` fixes the width or height in pixels and sets margins. A dashboard usually fixes only the height and lets the width follow its container.
+|`bar_mode` |`Group`, `Stack`, `Overlay` or `Relative` for several bar or histogram traces
+|`hover_mode` |What the pointer reveals; `XUnified` gathers every trace at one time into one label
+|`legend_position` |`Above`, `Below` or an inside corner, when `legend: Shown`
+|`shapes` |Reference lines and shaded bands from `Shape.new`, in data coordinates
+|`ui_revision` |Whether a redraw keeps the viewer's zoom and pan; see <<update-a-chart>>
+|===
+
+`Axis` adds `tick_format` for d3 number or time patterns, `tick_suffix` for a
+unit such as `" ms"`, `grid` and a `FromZero` range for counts.
 
 == Titles, legends and hover text
 
@@ -124,6 +186,35 @@ representation; this does not turn Plotly's text formatting into plain text.
 script and an integrity hash. Viewing that document requires network access
 to the CDN. HTML document-title text and JSON embedded in the script element
 are escaped for their separate contexts.
+
+[#update-a-chart]
+== Update a chart in place
+
+An application that redraws a chart as its data changes, such as a page
+receiving live samples, builds a new `Chart` for each change and hands the
+host the JSON. The host passes the figure to Plotly's `react`, which updates
+the existing chart rather than creating a new one:
+
+[source,js]
+----
+const { data, layout } = JSON.parse(figureJson);
+Plotly.react(element, data, layout, { responsive: true });
+----
+
+Set `ui_revision: Preserve(revision)` in the layout to keep the viewer's zoom,
+pan, selection and legend toggles across these redraws. Keep the revision
+text the same while the chart shows the same view of the same data; change it,
+for example to a new dataset's name, when the chart should return to the
+figure's own ranges. With the default `ResetOnUpdate`, every redraw shows
+exactly the new figure. Keep trace order and names stable between redraws so
+that Plotly matches each trace to its predecessor.
+
+Send the whole figure for each change: Plotly compares it with the previous
+figure itself. A host that wants to skip unchanged parts can send
+`chart.data_to_json()` and `layout.to_json()` separately and re-send the
+layout only when it changes. To bound the cost of each redraw, reduce data
+before charting, such as per-minute aggregates rather than raw events, keep a
+trace to a few thousand points, and use the WebGL renderer for more.
 
 Low-level `to_json_value` methods are composition hooks used by the package's
 renderers. Their `InternalJson` result is an opaque, safely encoded value;

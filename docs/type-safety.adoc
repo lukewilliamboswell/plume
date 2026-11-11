@@ -16,6 +16,15 @@ types and executable tests rather than naming conventions alone.
 | Trace
 | Validated points and presentation; aligned arrays preserve point order
 | Non-generic opaque trace types and decoded-output tests
+| Time
+| A UTC instant from 0001-01-01 to 9999-12-31 with valid calendar fields
+| Opaque `Time`; checked epoch and calendar constructors; placed on an axis only through `Coordinate.from_time`
+| Grid and bins
+| Heatmap rows match the column count; cells, value ranges and fixed bins are finite and ordered
+| Constructor validation with distinct error tags
+| Figure size
+| Fixed dimensions Plotly can draw, at least ten pixels
+| Opaque `Size` with a checked constructor
 | Sankey graph
 | Unique IDs, existing endpoints, nonnegative finite flows and no self-links
 | Constructor validation with distinct error tags
@@ -35,9 +44,11 @@ are not coordinates. Date strings are interpreted by Plotly according to the
 axis configuration; the coordinate type does not validate a date grammar.
 
 Constructors return errors only when their input can be invalid.
-`Scatter.new` is infallible because its coordinates, marker and line already
-carry their guarantees. `Bar.new`, `Pie.new` and `Sankey.new` validate their
-additional numeric or graph inputs. Rendering a valid value needs no new
+`Scatter.new`, `Shape.new` and `Layout.new` are infallible because their
+coordinates, markers, lines, sizes and shapes already carry their guarantees.
+`Bar.new`, `Pie.new`, `Sankey.new`, `Heatmap.new`, `Histogram.new`, `Size.new`
+and the `Time` constructors validate their additional numeric, grid, graph or
+calendar inputs. Rendering a valid value needs no new
 user-input validation. Text resembling template placeholders remains literal
 data in the encoded output.
 

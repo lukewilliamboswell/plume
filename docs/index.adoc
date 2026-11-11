@@ -2,8 +2,10 @@
 :doctype: book
 
 Plume is a pure Roc package that builds Plotly chart specifications and complete
-HTML documents. It supports bar, scatter, pie, donut and Sankey charts. The
-package performs no I/O; applications choose where to send its output.
+HTML documents. It supports bar, scatter and line, area, pie, donut, Sankey,
+heatmap and histogram charts, with typed time axes, reference shapes and
+settings for charts that redraw as their data changes. The package performs
+no I/O; applications choose where to send its output.
 
 == Run an example
 

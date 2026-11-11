@@ -67,7 +67,7 @@ check_fuzz! = || {
 	host_platform = Env.platform!()
 	match (host_platform.arch, host_platform.os) {
 		(X64, LINUX) => {
-			# roc-fuzz 0.5 permits unbaselined checks. Require the committed
+			# roc-fuzz 0.6 permits unbaselined checks. Require the committed
 			# target/profile explicitly so a missing file or profile fails CI.
 			baseline : {
 				format : Str,

@@ -224,6 +224,74 @@
       "module_names": [
         "Axis"
       ]
+    },
+    {
+      "id": "time-wrapper",
+      "purpose": "Times outside the supported years cannot be wrapped around a raw millisecond count.",
+      "positive": "_time = Time.from_epoch_millis(0)?",
+      "negative": "_time = Time.(I64.highest)",
+      "diagnostics": [
+        "opaque",
+        "Time"
+      ],
+      "module_names": [
+        "Time"
+      ]
+    },
+    {
+      "id": "time-coordinate",
+      "purpose": "A time enters a point only through its date coordinate.",
+      "positive": "time = Time.from_epoch_millis(0)?\n_scatter = Scatter.new({ data: [{ x: Coordinate.from_time(time), y: 0 }] })",
+      "negative": "time = Time.from_epoch_millis(0)?\n_scatter = Scatter.new({ data: [{ x: time, y: 0 }] })",
+      "diagnostics": [
+        "type mismatch",
+        "Coordinate"
+      ],
+      "module_names": [
+        "Coordinate",
+        "Scatter",
+        "Time"
+      ]
+    },
+    {
+      "id": "size-wrapper",
+      "purpose": "Size validation cannot be bypassed with a height Plotly cannot draw.",
+      "positive": "_size = Size.new({ height: Pixels(10) })?",
+      "negative": "_size = Size.(Explicit({ height: Pixels(0) }))",
+      "diagnostics": [
+        "opaque",
+        "Size"
+      ],
+      "module_names": [
+        "Size"
+      ]
+    },
+    {
+      "id": "spline-line-shape",
+      "purpose": "Line shapes are the closed set every scatter renderer supports.",
+      "positive": "_line = Line.new({ shape: StepAfter })?",
+      "negative": "_line = Line.new({ shape: Spline })?",
+      "diagnostics": [
+        "type mismatch",
+        "Spline"
+      ],
+      "module_names": [
+        "Line"
+      ]
+    },
+    {
+      "id": "nan-shape-position",
+      "purpose": "Shape positions are checked coordinates, not raw floating-point numbers.",
+      "positive": "_shape = Shape.new({ placement: VerticalLine(Coordinate.from_number(1)?) })",
+      "negative": "_shape = Shape.new({ placement: VerticalLine(F64.nan) })",
+      "diagnostics": [
+        "type mismatch",
+        "Coordinate"
+      ],
+      "module_names": [
+        "Coordinate",
+        "Shape"
+      ]
     }
   ]
 }

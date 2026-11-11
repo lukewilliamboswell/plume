@@ -4,6 +4,8 @@ import Scatter
 import Sankey
 import Layout
 import Pie
+import Heatmap
+import Histogram
 
 ## A complete Plotly figure containing any supported trace kinds.
 ## Construct validated traces first, then pass their tags to [Chart.new].
@@ -12,10 +14,11 @@ import Pie
 Chart :: { traces : List(Trace), layout : Layout, title : [FromLayout, Text(Str)] }.{
 
 	## A trace paired with its chart kind.
-	## Wrap values produced by [Bar.new], [Scatter.new], [Pie.new] or
-	## [Sankey.new] in the matching tag. Different kinds and coordinate
-	## shapes can share one chart; list order controls trace order.
-	Trace : [Bar(Bar), Scatter(Scatter), Sankey(Sankey), Pie(Pie)]
+	## Wrap values produced by [Bar.new], [Scatter.new], [Pie.new],
+	## [Sankey.new], [Heatmap.new] or [Histogram.new] in the matching tag.
+	## Different kinds and coordinate shapes can share one chart; list order
+	## controls trace order.
+	Trace : [Bar(Bar), Scatter(Scatter), Sankey(Sankey), Pie(Pie), Heatmap(Heatmap), Histogram(Histogram)]
 
 	## Configure the whole figure and its HTML document title.
 	## - `traces` defaults to an empty list, producing a valid empty figure.
@@ -45,20 +48,17 @@ Chart :: { traces : List(Trace), layout : Layout, title : [FromLayout, Text(Str)
 	## It contains no script tags or renderer dependency. An application can
 	## parse it or pass the object to its own Plotly instance.
 	to_json : Chart -> Str
-	to_json = |Chart.(chart)| {
-		traces = chart.traces.map(
-			|trace| match trace {
-				Bar(bar) => bar.to_json_value()
-				Scatter(scatter) => scatter.to_json_value()
-				Sankey(sankey) => sankey.to_json_value()
-				Pie(pie) => pie.to_json_value()
-			},
-		)
-		InternalJson.object([
-			{ name: "data", value: InternalJson.array(traces) },
-			{ name: "layout", value: chart.layout.to_json_value() },
-		]).to_json()
-	}
+	to_json = |Chart.(chart)| InternalJson.object([
+		{ name: "data", value: traces_json_value(chart.traces) },
+		{ name: "layout", value: chart.layout.to_json_value() },
+	]).to_json()
+
+	## Return only the figure's `data`: the JSON array of traces, in order.
+	## Together with [Layout.to_json] for the layout, this lets a host that
+	## redraws often send the two parts separately and skip resending a
+	## layout that has not changed. See [Chart.to_json] for the whole figure.
+	data_to_json : Chart -> Str
+	data_to_json = |Chart.(chart)| traces_json_value(chart.traces).to_json()
 
 	## Return a complete HTML document loading the pinned Plotly CDN script.
 	## Viewing it requires access to `cdn.plot.ly`. The document includes
@@ -128,6 +128,17 @@ expect {
 	decoded.data == [{ type: "bar" }, { type: "scatter" }]
 }
 
+## The data part is exactly the figure's data array.
+expect {
+	bar = Bar.new({ data: [{ x: "a", y: 1 }] })?
+	spread = Histogram.new({ values: [1, 2] })?
+	grid = Heatmap.new({ x: [1], rows: [{ y: 1, values: [2] }] })?
+	chart = Chart.new({ traces: [Bar(bar), Histogram(spread), Heatmap(grid)] })
+	decoded : List({ type : Str })
+	decoded = Json.parse(chart.data_to_json())?
+	decoded == [{ type: "bar" }, { type: "histogram" }, { type: "heatmap" }] and chart.to_json() == "{\"data\":${chart.data_to_json()},\"layout\":${Layout.new({}).to_json()}}"
+}
+
 ## HTML titles cannot inject markup and template-like data remains literal.
 expect {
 	chart = Chart.new({ title: Text("</title><script>alert('x')</script>&{{CHART_JSON}}") })
@@ -140,6 +151,20 @@ expect {
 	html = Chart.new({ traces: [Pie(pie)] }).to_html()
 	html.contains("\\u003c/script\\u003e\\u003cscript\\u003ealert(1)\\u003c/script\\u003e\\u0026雪")
 }
+
+traces_json_value : List(Chart.Trace) -> InternalJson
+traces_json_value = |traces| InternalJson.array(
+	traces.map(
+		|trace| match trace {
+			Bar(bar) => bar.to_json_value()
+			Scatter(scatter) => scatter.to_json_value()
+			Sankey(sankey) => sankey.to_json_value()
+			Pie(pie) => pie.to_json_value()
+			Heatmap(heatmap) => heatmap.to_json_value()
+			Histogram(histogram) => histogram.to_json_value()
+		},
+	),
+)
 
 replace_sequences : Str, List({ pattern : Str, replacement : Str }) -> Str
 replace_sequences = |text, replacements| replacements.fold(text, |escaped, rule| Str.join_with(escaped.split_on(rule.pattern), rule.replacement))

@@ -24,6 +24,20 @@ InternalJson :: Str.{
 	array : List(InternalJson) -> InternalJson
 	array = |values| InternalJson.("[${Str.join_with(values.map(to_json), ",")}]")
 
+	## The JSON null literal. Plotly reads it as a missing value, such as a
+	## gap in a line or a bar without an explicit base.
+	null : InternalJson
+	null = InternalJson.("null")
+
+	## Encode one value per point compactly. A nonempty column whose values
+	## are all equal becomes that single value, which Plotly applies to every
+	## point; any other column, including an empty one, stays an array.
+	column : List(InternalJson) -> InternalJson
+	column = |values| match values {
+		[first, .. as rest] if rest.all(|value| value == first) => first
+		_ => array(values)
+	}
+
 	## Read the complete JSON document.
 	to_json : InternalJson -> Str
 	to_json = |InternalJson.(json)| json
@@ -40,6 +54,17 @@ expect {
 
 ## Empty objects serialize exactly.
 expect InternalJson.object([]).to_json() == "{}"
+
+## Uniform columns collapse to one value; mixed and empty columns stay arrays.
+expect {
+	one = InternalJson.string("a")
+	two = InternalJson.string("b")
+	actual = [[one, one, one], [one, two], [one], []].map(|values| InternalJson.column(values).to_json())
+	actual == ["\"a\"", "[\"a\",\"b\"]", "\"a\"", "[]"]
+}
+
+## The null literal is valid JSON.
+expect InternalJson.array([InternalJson.null, InternalJson.string("x")]).to_json() == "[null,\"x\"]"
 
 ## Empty arrays serialize exactly.
 expect InternalJson.array([]).to_json() == "[]"
