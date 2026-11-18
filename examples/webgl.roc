@@ -1,7 +1,7 @@
 # Draw two thousand points with the GPU, using the WebGL scatter renderer.
 # Run from the repository root: roc examples/webgl.roc > chart.html
 app [main!] {
-	cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.27.0/9yjxqdGTP4xSpSEmDazwTmRsehfRZzA19pwEKkR6fj1g.tar.zst",
+	cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.28.1/7brgwR8YUqfeGrkdfF1V4GPPN7DnP7ftqub9KcrTEZtr.tar.zst",
 	plume: "../package/main.roc",
 }
 
@@ -26,7 +26,7 @@ main! = |_args| {
 			radius = 1 + index.to_f64() / 200
 			x = Coordinate.from_number(radius * F64.cos(angle))?
 			y = Coordinate.from_number(radius * F64.sin(angle))?
-			Ok({ x, y, marker })
+			Ok(Scatter.Point.{ x, y, marker })
 		},
 	)?
 	spiral = Scatter.new({ data: points, mode: Markers, renderer: WebGl, name: "Spiral" })

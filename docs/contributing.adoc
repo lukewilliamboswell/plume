@@ -41,6 +41,19 @@ stderr and exit status for each case. Failed commands and timeouts fail the
 run. The release archive is tested separately against the exact bundled
 package over loopback.
 
+On x64 Linux, `check` also runs the fuzz target's named examples and verifies
+their allocation baseline, without starting a fuzz campaign. After that build,
+run campaigns locally with:
+
+[source,sh]
+----
+.fuzz-out/serialization run .roc-fuzz/corpus --baseline=fuzz/serialization-baseline.json --profile=linux-x64-speed
+----
+
+Keep campaign corpora, reports and run-specific diagnostics local and untracked
+under `.roc-fuzz/`, `.fuzz-out/` or `fuzz/diagnostics/`. Summarize allocation
+baseline review evidence in the pull request rather than committing run reports.
+
 The README gallery uses the same images as the visual CI check. With Node
 available, run `blueprint run screenshots-setup` to install the configured
 browser, then `blueprint run screenshots` to rebuild the examples and compare

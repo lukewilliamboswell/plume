@@ -12,6 +12,6 @@ function run(program, args) {
 mkdirSync('.screenshots-out', { recursive: true });
 run(process.execPath, ['tools/screenshots/setup.mjs']);
 run(process.execPath, ['--test', 'tools/screenshots/compare.test.mjs', 'tools/screenshots/validation.test.mjs']);
-run('roc-stable', ['test', '--opt=dev', 'scripts/screenshots.roc']);
+run('roc-stable', ['test', '--no-cache', '--opt=dev', 'scripts/screenshots.roc']);
 run('roc-stable', ['build', '--opt=dev', '--output=.screenshots-out/driver', 'scripts/screenshots.roc']);
 run('.screenshots-out/driver', process.argv.slice(2));

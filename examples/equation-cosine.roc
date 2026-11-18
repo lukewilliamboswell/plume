@@ -1,7 +1,7 @@
 # Sample cos(x) at evenly spaced coordinates.
 # Run from the repository root: roc examples/equation-cosine.roc > chart.html
 app [main!] {
-	cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.27.0/9yjxqdGTP4xSpSEmDazwTmRsehfRZzA19pwEKkR6fj1g.tar.zst",
+	cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.28.1/7brgwR8YUqfeGrkdfF1V4GPPN7DnP7ftqub9KcrTEZtr.tar.zst",
 	plume: "../package/main.roc",
 }
 
@@ -21,7 +21,7 @@ main! = |_args| {
 			number = step.to_f64() / 5
 			x = Coordinate.from_number(number)?
 			y = Coordinate.from_number(F64.cos(number))?
-			Ok({ x, y })
+			Ok(Scatter.Point.{ x, y })
 		},
 	)?
 	curve = Scatter.new({ data: points, mode: Lines })

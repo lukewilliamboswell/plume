@@ -1,7 +1,7 @@
 # Stack log entries per hour by level, with a time axis.
 # Run from the repository root: roc examples/stacked-bars.roc > chart.html
 app [main!] {
-	cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.27.0/9yjxqdGTP4xSpSEmDazwTmRsehfRZzA19pwEKkR6fj1g.tar.zst",
+	cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.28.1/7brgwR8YUqfeGrkdfF1V4GPPN7DnP7ftqub9KcrTEZtr.tar.zst",
 	plume: "../package/main.roc",
 }
 
@@ -32,7 +32,7 @@ main! = |_args| {
 				|hour| {
 					x = Coordinate.from_time(Time.from_epoch_millis(midnight.to_epoch_millis() + hour * 3_600_000)?)
 					y = Coordinate.from_number(hourly_count({ level: level.level, hour }))?
-					Ok({ x, y, color: level.color })
+					Ok(Bar.Point.{ x, y, color: level.color })
 				},
 			)?
 			bars = Bar.new({ data, name: level.name, width: 3_000_000 })?
