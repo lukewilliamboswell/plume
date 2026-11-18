@@ -1,0 +1,40 @@
+= plume 0.6.1
+
+The examples and repository tooling support Roc
+`nightly-2026-11-18-a520eed` with basic-cli 0.28.1. The package source, public
+chart API and generated chart output are unchanged from 0.6.0.
+
+== Use this release
+
+Use a compatible platform and add Plume to the application's dependencies:
+
+[source,roc]
+----
+app [main!] {
+    cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.28.1/7brgwR8YUqfeGrkdfF1V4GPPN7DnP7ftqub9KcrTEZtr.tar.zst",
+    plume: "{package-url}",
+}
+----
+
+The examples archive contains complete chart applications using this platform.
+They emit HTML to stdout; the budget example accepts JSON from a file or
+standard input.
+
+== Changes
+
+Generated point lists explicitly construct nominal points so the current
+compiler applies their default fields. Repository scripts use the updated
+command and system APIs, and the pinned tooling compiler uses the same
+November 18 nightly.
+
+The serialization target uses roc-fuzz 0.6.2 for compatibility with the current
+Linux compiler. Its allocation baseline was reviewed against independent
+clean builds. CI checks the named examples and their allocation baseline;
+fuzz campaigns and run-specific diagnostics remain local and untracked.
+
+== Validation
+
+Package and consumer tests, paired type contracts, recorded example output,
+allocation checks, documentation and gallery screenshot comparisons pass.
+The release dry run also tests the archived examples against the bundled
+package.
