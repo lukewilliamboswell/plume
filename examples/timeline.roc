@@ -1,7 +1,7 @@
 # Show a release's stages as bars on a timeline, starting each at its own time.
 # Run from the repository root: roc examples/timeline.roc > chart.html
 app [main!] {
-	cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.27.0/9yjxqdGTP4xSpSEmDazwTmRsehfRZzA19pwEKkR6fj1g.tar.zst",
+	cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.28.1/7brgwR8YUqfeGrkdfF1V4GPPN7DnP7ftqub9KcrTEZtr.tar.zst",
 	plume: "../package/main.roc",
 }
 
@@ -35,7 +35,7 @@ main! = |_args| {
 		|stage| {
 			start = Time.from_calendar({ year: 2026, month: 11, day: 11, hour: stage.start.hour, minute: stage.start.minute })?
 			length = Coordinate.from_number((stage.minutes * 60_000).to_f64())?
-			Ok({ x: length, y: Coordinate.from_text(stage.name), color: stage.color, base: At(Coordinate.from_time(start)) })
+			Ok(Bar.Point.{ x: length, y: Coordinate.from_text(stage.name), color: stage.color, base: At(Coordinate.from_time(start)) })
 		},
 	)?
 	stages_bar = Bar.new({ data, orientation: Horizontal, width: 0.6, name: "Stages" })?

@@ -1,10 +1,11 @@
 #!/usr/bin/env roc-stable
 app [main!] {
-	cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.25.0/CZsY7tYZwR3rj9kYbpaCfxki2yVAaRL8bBwMLvB2xkbA.tar.zst",
-	roc: "nightly-2026-10-18-1df370f",
+	cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.28.1/7brgwR8YUqfeGrkdfF1V4GPPN7DnP7ftqub9KcrTEZtr.tar.zst",
+	roc: "nightly-2026-11-18-a520eed",
 }
 
 import cli.Cmd
+import cli.Duration
 import cli.Env
 import cli.OsStr
 import cli.Path
@@ -61,16 +62,17 @@ render! = |mode| {
 			.args(selected.args.map(OsStr.from_str))
 			.cwd(parent)
 			.stdin(Bytes(selected.stdin.to_utf8()))
-			.timeout_ms(30_000)
+			.timeout(Duration.millis(30_000))
 			.manage_tree(True)
-			.exec_output!()?
-		if actual.stdout_utf8 != selected.stdout or actual.stderr_utf8_lossy != selected.stderr {
+			.run!()?.require_success()?
+		stdout = actual.stdout_utf8()?
+		if stdout != selected.stdout or actual.stderr_utf8_lossy() != selected.stderr {
 			return Err(ExampleOutputChanged({ path: application.path, case: selected.name }))
 		}
-		if !actual.stdout_utf8.trim_start().starts_with("<!doctype html>") {
+		if !stdout.trim_start().starts_with("<!doctype html>") {
 			return Err(ExampleDidNotProduceHtml(application.path))
 		}
-		output.join("html").join("${name}.html").write_utf8!(actual.stdout_utf8)?
+		output.join("html").join("${name}.html").write_utf8!(stdout)?
 		$examples = $examples.append({ name, source: application.path, case_name: selected.name })
 	}
 	manifest = Json.to_str({ format: "plume-screenshot-inputs/1", examples: $examples })
@@ -93,7 +95,7 @@ render! = |mode| {
 run! : { program : Str, args : List(Str) } => Try({}, _)
 run! = |{ program, args }| {
 	Stdout.line!("+ ${program} ${Str.join_with(args, " ")}")?
-	Cmd.new(OsStr.from_str(program)).args(args.map(OsStr.from_str)).timeout_ms(600_000).manage_tree(True).exec_cmd!()
+	Cmd.new(OsStr.from_str(program)).args(args.map(OsStr.from_str)).timeout(Duration.millis(600_000)).manage_tree(True).call!()
 }
 
 discover_examples! : Path => Try(List(Str), _)

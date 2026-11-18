@@ -1,0 +1,399 @@
+{
+  "format": "plume-compiler-allocation-review/1",
+  "previous_commit": "4c59b6a90f41dce46a7e533ca2f725a8c3784059",
+  "previous_baseline_sha256": "6804a6c60bf2d80e09634a3a48588b127dc0859c8abd2deaf39a6a7473d4f5dd",
+  "compiler": "nightly-2026-11-18-a520eed",
+  "compiler_assets": {
+    "linux_x86_64_sha256": "d9395495f9dd07c39629c33f156f7fee68e8d22f8a764522e5cdd1cc30879b51",
+    "macos_arm64_sha256": "3b9ba3cc7357e47916f03689979be6c35c1986a1fd5a54bf0d06ea609fe0648d"
+  },
+  "fuzz_platform": "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.6.2/3kyiehxxzwAsjM23uCQGJ3Hx7dAAdzSGtK3k9Jq7Egtu.tar.zst",
+  "measurement_mode": "Roc --opt=speed --no-cache --fuzz --target=x64musl; allocation observations, not timing; executed on Ubuntu 24.04 x86_64 under Docker emulation on Apple Silicon.",
+  "builds": [
+    {
+      "compiler_host": "x86_64-linux",
+      "independent_clean_build": true,
+      "command": "roc build --no-cache --fuzz --opt=speed --target=x64musl --output=.fuzz-out/serialization-linux fuzz/serialization.roc",
+      "binary_sha256": "50819e3d526e81dff2012dd7ae1ecd1c4540c1ea9504938aae9cf23a036471d8"
+    },
+    {
+      "compiler_host": "x86_64-linux",
+      "independent_clean_build": true,
+      "command": "roc build --no-cache --fuzz --opt=speed --target=x64musl --output=.fuzz-out/serialization-linux-second fuzz/serialization.roc",
+      "binary_sha256": "50819e3d526e81dff2012dd7ae1ecd1c4540c1ea9504938aae9cf23a036471d8"
+    },
+    {
+      "compiler_host": "aarch64-darwin",
+      "independent_clean_build": true,
+      "command": "roc build --no-cache --fuzz --opt=speed --target=x64musl --output=.fuzz-out/serialization-mac-cross fuzz/serialization.roc",
+      "binary_sha256": "50819e3d526e81dff2012dd7ae1ecd1c4540c1ea9504938aae9cf23a036471d8"
+    }
+  ],
+  "sources_sha256": {
+    "fuzz/serialization.roc": "3e9b640f4eff0665a81102d292ef030791df5da9c7e3f40d3f90423ab83df054",
+    "package/Axis.roc": "66c16c1c9755d7f35b0376eed52db9a83d5a8e6ad2da8dd6f5bf158d94eb108a",
+    "package/Bar.roc": "1eab209f841c74075d5d6bb2cdac64fca6629ff27241290eeb141446781dbc12",
+    "package/Chart.roc": "d5a0a04c36772173cd8c5ae969ba6d8f0cfeb83b4069958c2567ffa4b2c6af15",
+    "package/Color.roc": "8ea4840f9b600b37a75498a89836d54b8e409988d2234e6ab17d18d657ad48e4",
+    "package/Coordinate.roc": "e4bb9a3a26173f117d5480bbf37d402e76e9c6ac4b8b6b7f8b8a4ffdaa400a00",
+    "package/Font.roc": "aa8d0f5e45a52b9609baf20c9fa129ad9c6d5a6fea17575fd6b258308403497d",
+    "package/Heatmap.roc": "680d08e5a4213ed903b5ab90592725d80c71cee43ddeb536cc1913e9ae8f7b3b",
+    "package/Histogram.roc": "071742118cd52e1e38ea68803d7eb5a11e165d8d1fed6947b3f183bbbd61bb10",
+    "package/InternalJson.roc": "c39f5a996685b99eb8e08e515b6f673299e92c6547ca4b53bf8efc3c512b4ff9",
+    "package/Layout.roc": "0fe4229e793856978dafc76c9811d4596ca2e162b3f6f1ea747999899b19df65",
+    "package/Line.roc": "18948182ab71f1847009b6ca6c363b150025c9d90d9b91134d25709f9c5fd7c9",
+    "package/Marker.roc": "91078cdc3089607ac1f7127a3d14a44d2bdab74ad2434d2c97258b706b1e15d3",
+    "package/Pie.roc": "be043a83295eb96726d14d2d6a8890dc5601ef6c8c5a1017857595b0ad0b94c1",
+    "package/Sankey.roc": "4c973e9139908b1eb25fe92b5c49fef1f4f4448221316ac51a2f728582eb6da1",
+    "package/Scatter.roc": "9517b574ea7b93250117982187a865138002a15eadd7c573c2a80d112c927d9c",
+    "package/Shape.roc": "6857d069a99c67eeb36b2711b4d985cfc9c6ccd0730077a5a13db2b418eb1ae8",
+    "package/Size.roc": "e4c2b26a3952265f2c0e7c4a25109d7f57c9094366b848307ecb7aa7bdcbc6c3",
+    "package/Time.roc": "9fb9676f7c3ba8d980756d1532e5f45e637eb2466be59b311fa8254f796ecb37",
+    "package/Title.roc": "a39287c2995c54528b2492b9b3d067ea1ac3b86eb18b8b9b1d9d48a4a93902b5",
+    "package/main.roc": "6f4da694da90e76accdea182378018edf20ea636d6b54f2e3f73ea8d8757495d"
+  },
+  "comparison": {
+    "examples": 14,
+    "same_input_digests_and_regions": true,
+    "identical_observations_across_all_builds": true,
+    "all_examples_passed": true,
+    "deltas": [
+      {
+        "name": "empty",
+        "input_sha256": "535ab4eb947f61e5c1870cb3ffb77285b08cd6eba31ced66b566444bf9b0a1de",
+        "regions": [
+          {
+            "name": "$property",
+            "delta": {
+              "allocs": -3,
+              "deallocs": -3,
+              "requested_bytes": -687,
+              "peak_live_bytes": -687
+            }
+          },
+          {
+            "name": "chart-html",
+            "delta": {
+              "allocs": -3,
+              "deallocs": -3,
+              "requested_bytes": -687,
+              "peak_live_bytes": -687
+            }
+          }
+        ]
+      },
+      {
+        "name": "controls",
+        "input_sha256": "f9df118fc6680f85f001318326580ceb6940051187bce15ae13d11075668069e",
+        "regions": [
+          {
+            "name": "$property",
+            "delta": {
+              "allocs": -3,
+              "deallocs": -3,
+              "requested_bytes": -687,
+              "peak_live_bytes": -687
+            }
+          },
+          {
+            "name": "chart-html",
+            "delta": {
+              "allocs": -3,
+              "deallocs": -3,
+              "requested_bytes": -687,
+              "peak_live_bytes": -687
+            }
+          }
+        ]
+      },
+      {
+        "name": "script",
+        "input_sha256": "e5d3b1b7739d6ae36ee96e77b4098f8192975d8a9f5f31a5917faa6208c491a4",
+        "regions": [
+          {
+            "name": "$property",
+            "delta": {
+              "allocs": -3,
+              "deallocs": -3,
+              "requested_bytes": -687,
+              "peak_live_bytes": -104
+            }
+          },
+          {
+            "name": "chart-html",
+            "delta": {
+              "allocs": -3,
+              "deallocs": -3,
+              "requested_bytes": -687,
+              "peak_live_bytes": -104
+            }
+          }
+        ]
+      },
+      {
+        "name": "unicode",
+        "input_sha256": "133afc329d507260ef4722363e47528e6f935a48c3467811204a90a465d74b15",
+        "regions": [
+          {
+            "name": "$property",
+            "delta": {
+              "allocs": -3,
+              "deallocs": -3,
+              "requested_bytes": -687,
+              "peak_live_bytes": -687
+            }
+          },
+          {
+            "name": "chart-html",
+            "delta": {
+              "allocs": -3,
+              "deallocs": -3,
+              "requested_bytes": -687,
+              "peak_live_bytes": -687
+            }
+          }
+        ]
+      },
+      {
+        "name": "nan",
+        "input_sha256": "a7b307a85fc05dc637c46e02d88c6faf4d0c04bb592bbf768f5863a9854a981d",
+        "regions": [
+          {
+            "name": "$property",
+            "delta": {
+              "allocs": -3,
+              "deallocs": -3,
+              "requested_bytes": -687,
+              "peak_live_bytes": -687
+            }
+          },
+          {
+            "name": "chart-html",
+            "delta": {
+              "allocs": -3,
+              "deallocs": -3,
+              "requested_bytes": -687,
+              "peak_live_bytes": -687
+            }
+          }
+        ]
+      },
+      {
+        "name": "positive-infinity",
+        "input_sha256": "7f6f463d0e4184433f4a455d325816c4084ad1e1b32b035a78203c5b6fd9b20c",
+        "regions": [
+          {
+            "name": "$property",
+            "delta": {
+              "allocs": -3,
+              "deallocs": -3,
+              "requested_bytes": -687,
+              "peak_live_bytes": -687
+            }
+          },
+          {
+            "name": "chart-html",
+            "delta": {
+              "allocs": -3,
+              "deallocs": -3,
+              "requested_bytes": -687,
+              "peak_live_bytes": -687
+            }
+          }
+        ]
+      },
+      {
+        "name": "negative-infinity",
+        "input_sha256": "04b11ae9d6dc001e99995f056f2a995b82934933e88479057f0faf418d867080",
+        "regions": [
+          {
+            "name": "$property",
+            "delta": {
+              "allocs": -3,
+              "deallocs": -3,
+              "requested_bytes": -687,
+              "peak_live_bytes": -687
+            }
+          },
+          {
+            "name": "chart-html",
+            "delta": {
+              "allocs": -3,
+              "deallocs": -3,
+              "requested_bytes": -687,
+              "peak_live_bytes": -687
+            }
+          }
+        ]
+      },
+      {
+        "name": "tiny-finite",
+        "input_sha256": "d1bca5c06450b6fcf82a42d20497cdc90326cf0f6bd40a236aaccad67cc835a7",
+        "regions": [
+          {
+            "name": "$property",
+            "delta": {
+              "allocs": -3,
+              "deallocs": -3,
+              "requested_bytes": -687,
+              "peak_live_bytes": -687
+            }
+          },
+          {
+            "name": "chart-html",
+            "delta": {
+              "allocs": -3,
+              "deallocs": -3,
+              "requested_bytes": -687,
+              "peak_live_bytes": -687
+            }
+          }
+        ]
+      },
+      {
+        "name": "large-finite",
+        "input_sha256": "61bfe3cd4d45dc0a2b4e0472d00c942eec25aa9a3cb4c7f0c7da1de1c8c99a9a",
+        "regions": [
+          {
+            "name": "$property",
+            "delta": {
+              "allocs": -3,
+              "deallocs": -3,
+              "requested_bytes": -687,
+              "peak_live_bytes": -687
+            }
+          },
+          {
+            "name": "chart-html",
+            "delta": {
+              "allocs": -3,
+              "deallocs": -3,
+              "requested_bytes": -687,
+              "peak_live_bytes": -687
+            }
+          }
+        ]
+      },
+      {
+        "name": "duplicate-node",
+        "input_sha256": "2f20e3bf5de0012eda87c3db2609ee4b7d698113fcce11faaaa8b4681e6db51a",
+        "regions": [
+          {
+            "name": "$property",
+            "delta": {
+              "allocs": -3,
+              "deallocs": -3,
+              "requested_bytes": -687,
+              "peak_live_bytes": -687
+            }
+          },
+          {
+            "name": "chart-html",
+            "delta": {
+              "allocs": -3,
+              "deallocs": -3,
+              "requested_bytes": -687,
+              "peak_live_bytes": -687
+            }
+          }
+        ]
+      },
+      {
+        "name": "missing-source",
+        "input_sha256": "93b0c95467ab3d8d1eff0fbc670b5bd775db60a9e3081cd1501b564538c1d6f5",
+        "regions": [
+          {
+            "name": "$property",
+            "delta": {
+              "allocs": -3,
+              "deallocs": -3,
+              "requested_bytes": -687,
+              "peak_live_bytes": -687
+            }
+          },
+          {
+            "name": "chart-html",
+            "delta": {
+              "allocs": -3,
+              "deallocs": -3,
+              "requested_bytes": -687,
+              "peak_live_bytes": -687
+            }
+          }
+        ]
+      },
+      {
+        "name": "missing-target",
+        "input_sha256": "f80e87825aaa780120c533e3b22d27f20a97cf093cd4c0b054f375de2b38637e",
+        "regions": [
+          {
+            "name": "$property",
+            "delta": {
+              "allocs": -3,
+              "deallocs": -3,
+              "requested_bytes": -687,
+              "peak_live_bytes": -687
+            }
+          },
+          {
+            "name": "chart-html",
+            "delta": {
+              "allocs": -3,
+              "deallocs": -3,
+              "requested_bytes": -687,
+              "peak_live_bytes": -687
+            }
+          }
+        ]
+      },
+      {
+        "name": "self-link",
+        "input_sha256": "3b87607c135628bed8a031a297a7cf7b6ee5425a1af30ad8b3d1b396aedb44dc",
+        "regions": [
+          {
+            "name": "$property",
+            "delta": {
+              "allocs": -3,
+              "deallocs": -3,
+              "requested_bytes": -687,
+              "peak_live_bytes": -687
+            }
+          },
+          {
+            "name": "chart-html",
+            "delta": {
+              "allocs": -3,
+              "deallocs": -3,
+              "requested_bytes": -687,
+              "peak_live_bytes": -687
+            }
+          }
+        ]
+      },
+      {
+        "name": "two-node-cycle",
+        "input_sha256": "bd27e8579109b5942188075cf5424f0fc128a88960e2c4cc2d53e35a5a88e7fa",
+        "regions": [
+          {
+            "name": "$property",
+            "delta": {
+              "allocs": -3,
+              "deallocs": -3,
+              "requested_bytes": -687,
+              "peak_live_bytes": -687
+            }
+          },
+          {
+            "name": "chart-html",
+            "delta": {
+              "allocs": -3,
+              "deallocs": -3,
+              "requested_bytes": -687,
+              "peak_live_bytes": -687
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

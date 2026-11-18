@@ -1,7 +1,7 @@
 # Watch request latency through an incident on a live-updating time axis.
 # Run from the repository root: roc examples/latency.roc > chart.html
 app [main!] {
-	cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.27.0/9yjxqdGTP4xSpSEmDazwTmRsehfRZzA19pwEKkR6fj1g.tar.zst",
+	cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.28.1/7brgwR8YUqfeGrkdfF1V4GPPN7DnP7ftqub9KcrTEZtr.tar.zst",
 	plume: "../package/main.roc",
 }
 
@@ -31,14 +31,14 @@ main! = |_args| {
 		|minute| {
 			x = Coordinate.from_time(at_minute(minute)?)
 			y = Coordinate.from_number(40 + 8 * F64.sin(minute.to_f64() / 7) + incident(minute) / 4)?
-			Ok({ x, y, from_previous: if (minute == 33) Gap else Connected })
+			Ok(Scatter.Point.{ x, y, from_previous: if (minute == 33) Gap else Connected })
 		},
 	)?
 	tail = samples.map_try(
 		|minute| {
 			x = Coordinate.from_time(at_minute(minute)?)
 			y = Coordinate.from_number(120 + 25 * F64.sin(minute.to_f64() / 5) + incident(minute))?
-			Ok({ x, y, from_previous: if (minute == 33) Gap else Connected })
+			Ok(Scatter.Point.{ x, y, from_previous: if (minute == 33) Gap else Connected })
 		},
 	)?
 	blue = Color.rgb({ red: 31, green: 119, blue: 180 })

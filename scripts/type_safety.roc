@@ -1,10 +1,11 @@
 #!/usr/bin/env roc-stable
 app [main!] {
-	cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.25.0/CZsY7tYZwR3rj9kYbpaCfxki2yVAaRL8bBwMLvB2xkbA.tar.zst",
-	roc: "nightly-2026-10-18-1df370f",
+	cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.28.1/7brgwR8YUqfeGrkdfF1V4GPPN7DnP7ftqub9KcrTEZtr.tar.zst",
+	roc: "nightly-2026-11-18-a520eed",
 }
 
 import cli.Cmd
+import cli.Duration
 import cli.Env
 import cli.OsStr
 import cli.Path
@@ -84,7 +85,7 @@ check_contract! = |{ roots, contract, kind }| {
 	indented = Str.join_with(body.split_on("\n").map(|line| "    ${line}"), "\n")
 	source =
 		\\app [main!] {
-		\\    cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.27.0/9yjxqdGTP4xSpSEmDazwTmRsehfRZzA19pwEKkR6fj1g.tar.zst",
+		\\    cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.28.1/7brgwR8YUqfeGrkdfF1V4GPPN7DnP7ftqub9KcrTEZtr.tar.zst",
 		\\    plume: "../../package/main.roc",
 		\\}
 		\\import cli.OsStr
@@ -100,8 +101,8 @@ check_contract! = |{ roots, contract, kind }| {
 	persist!(roots, { name: "${base_name}.roc", contents: "${source}\n" })?
 	output = Cmd.new("roc")
 		.args(["check", "--no-cache", source_path.to_os_str()])
-		.timeout_ms(60_000)
-		.output_limit(2_000_000)
+		.timeout(Duration.millis(60_000))
+		.output_limit(MaxBytes(2_000_000))
 		.manage_tree(True)
 		.run!()
 	observed = match output {
@@ -113,9 +114,9 @@ check_contract! = |{ roots, contract, kind }| {
 			}
 			{ status, stdout: Str.from_utf8_lossy(result.stdout_bytes), stderr: Str.from_utf8_lossy(result.stderr_bytes) }
 		}
-		Err(Timeout(partial)) => { status: Timeout, stdout: Str.from_utf8_lossy(partial.stdout_bytes), stderr: Str.from_utf8_lossy(partial.stderr_bytes) }
-		Err(OutputLimit(partial)) => { status: OutputLimit, stdout: Str.from_utf8_lossy(partial.stdout_bytes), stderr: Str.from_utf8_lossy(partial.stderr_bytes) }
-		Err(IO(error)) => { status: IO, stdout: "", stderr: Str.inspect(error) }
+		Err(CmdErr(TimedOut(partial))) => { status: Timeout, stdout: Str.from_utf8_lossy(partial.stdout_bytes), stderr: Str.from_utf8_lossy(partial.stderr_bytes) }
+		Err(CmdErr(OutputLimitExceeded(partial))) => { status: OutputLimit, stdout: Str.from_utf8_lossy(partial.stdout_bytes), stderr: Str.from_utf8_lossy(partial.stderr_bytes) }
+		Err(error) => { status: IO, stdout: "", stderr: Str.inspect(error) }
 	}
 	combined = "${observed.stdout}\n${observed.stderr}"
 	unchanged = source_path.read_utf8!()? == "${source}\n"
