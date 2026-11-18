@@ -29,6 +29,7 @@ scripts/check
 tests/consumer/main
 .fuzz-out/
 .roc-fuzz/
+fuzz/diagnostics/
 .playwright-mcp/
 .screenshots-out/
 tools/screenshots/node_modules/

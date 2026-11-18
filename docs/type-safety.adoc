@@ -60,18 +60,19 @@ data in the encoded output.
 * Consumer tests use the public API and independently decode the JSON.
 * Type-contract tests compile valid controls and require invalid programs to
   fail for the intended reason, including opacity bypass attempts.
-* The roc-fuzz target generates text, floating-point boundaries and graph
-  cases, checking constructor policy and safe populated-chart round trips.
+* The roc-fuzz target's named examples cover text, floating-point boundaries
+  and graph cases, checking constructor policy and safe populated-chart round
+  trips against the committed allocation baseline.
 
 Type-contract fixtures are data; the driver writes temporary Roc applications
 and requires a normal compiler rejection with the expected diagnostic. A
 warning, timeout, signal or unrelated setup failure cannot satisfy a case.
 The corresponding positive control must compile successfully first.
 
-The fuzz smoke checks the target's declared examples and committed allocation
-baseline before a bounded exploration. The check task owns the build options,
-execution budget and process deadline. Its output identifies skipped checks
-and records diagnostics for failures.
+The deterministic fuzz check runs only the target's declared examples and
+committed allocation baseline. Fuzz campaigns run locally, outside pull-request
+CI. The check task owns the build options and process deadline. Its output
+identifies skipped checks and records diagnostics for failures.
 
 Compile the measured target with `--no-cache`: cached compilation can change
 where deallocations fall within a measured region. The exact profile therefore
@@ -79,7 +80,8 @@ describes a clean build. Before accepting a compiler-driven baseline change,
 compare independent clean builds with the same source, platform, input digests
 and regions. Record the compiler, platform and source identities with the
 review evidence; repeated runs of one executable cannot establish build
-reproducibility.
+reproducibility. Keep run-specific reports and provenance local and untracked;
+summarize the measured evidence in the pull request.
 
 Review changes to expected output and allocation baselines as code changes.
 Use the test reports to understand the observations behind a baseline change;

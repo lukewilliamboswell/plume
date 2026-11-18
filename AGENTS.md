@@ -23,9 +23,10 @@ Plume is a pure Roc package. Preserve the public guarantees documented in
   to check them and `blueprint run screenshots-update` for an intentional
   visual change. Review the image diff; do not hand-edit stale screenshots.
 - Keep named `##` comments before every top-level `expect`. Run
-  `blueprint run check`; it includes consumer, type-contract and bounded fuzz
-  checks. Review allocation baseline changes with measured evidence. A check
-  must never accept a new baseline or rewrite expected example output.
+  `blueprint run check`; it includes consumer, type-contract and deterministic
+  fuzz checks. Run fuzz campaigns locally; keep run-specific diagnostics local
+  and untracked. Review allocation baseline changes with measured evidence.
+  A check must never accept a new baseline or rewrite expected example output.
 - Follow the style guide linked from the manual and the SHA-pinned roc-automation
   workflows. Package/apps use the current nightly; scripts keep the fixed
   tooling compiler. Format each with its corresponding compiler.

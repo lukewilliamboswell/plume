@@ -39,7 +39,7 @@ main! = |_args| {
 		}
 	}
 	run!({ program: "release-package", args: ["test-examples"] })?
-	Stdout.line!("PASS formatting, documentation policy, package and consumer expects, bounded fuzz checks, and recorded examples")?
+	Stdout.line!("PASS formatting, documentation policy, package and consumer expects, deterministic fuzz checks, and recorded examples")?
 	Ok({})
 }
 
@@ -86,8 +86,8 @@ check_fuzz! = || {
 			# Cached imports can change deallocation placement within a measured
 			# region. Compare the exact profile against a canonical clean build.
 			run!({ program: "roc", args: ["build", "--no-cache", "--fuzz", "--opt=speed", "--target=x64musl", "--output=.fuzz-out/serialization", "fuzz/serialization.roc"] })?
-			# run checks every named example and the allocation baseline before
-			# exploring. Missing/stale baselines fail; this never accepts them.
+			# Check only named examples and their allocation baseline. Campaigns
+			# run locally; missing/stale baselines fail and are never accepted here.
 			report_args = match Env.var_str!("RUNNER_TEMP") {
 				Ok(directory) => {
 					Path.utf8("${directory}/release-package").create_all!()?
@@ -97,15 +97,10 @@ check_fuzz! = || {
 				Err(error) => return Err(error)
 			}
 			args = [
-				"run",
-				".roc-fuzz/corpus",
+				"check",
 				"--baseline=fuzz/serialization-baseline.json",
 				"--profile=linux-x64-speed",
-				"--runs=16",
-				"--time=1",
 				"--timeout=2",
-				"--max-input-size=512",
-				"--seed=1",
 			].concat(report_args)
 			Stdout.line!("+ .fuzz-out/serialization ${Str.join_with(args, " ")}")?
 			Cmd.new(OsStr.from_str(".fuzz-out/serialization"))
