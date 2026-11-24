@@ -20,10 +20,7 @@ jobs:
         with:
           cache: 'true'
           cache-workload: screenshots
-      - uses: roc-lang/setup-roc@30af91a173612e462a5df47f3b697c53c211f48c
-        with:
-          version: nightly-new-compiler
-          download-method: asset-api
+      - uses: lukewilliamboswell/roc-automation/actions/setup-roc-nightly@dd30a5dd576973b6e224db70d96e3e12c96bcc95
       - run: blueprint check
       - run: blueprint run screenshots-setup -- --with-deps
       - run: blueprint run screenshots
