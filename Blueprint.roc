@@ -7,11 +7,11 @@ import pf.Recipes
 config = [
 	Name("plume"),
 	Systems(["x86_64-linux", "aarch64-linux", "aarch64-darwin"]),
-	Environment("package", [Programs([Fetch("roc-stable", Recipes.roc_nightly("nightly-2026-11-18-a520eed")), Fetch("release-package", Recipes.file("https://github.com/lukewilliamboswell/roc-automation/releases/download/tools-0.10.1/release-package-{system}")), Fetch("roc-policy", Recipes.file("https://github.com/lukewilliamboswell/roc-automation/releases/download/tools-0.10.1/roc-policy-{system}"))]), Expect(["roc"])]),
+	Environment("package", [Programs([Fetch("roc-stable", Recipes.roc_nightly("nightly-2026-11-23-b5c77fc")), Fetch("release-package", Recipes.file("https://github.com/lukewilliamboswell/roc-automation/releases/download/tools-0.10.1/release-package-{system}")), Fetch("roc-policy", Recipes.file("https://github.com/lukewilliamboswell/roc-automation/releases/download/tools-0.10.1/roc-policy-{system}"))]), Expect(["roc"])]),
 	Environment("release", [Programs([Fetch("release-package", Recipes.file("https://github.com/lukewilliamboswell/roc-automation/releases/download/tools-0.10.1/release-package-{system}"))]), Expect(["roc", "git", "gh", "tar", "unzip", "zip", "chmod", "touch", "env"])]),
 	Environment("release-test", [Programs([Fetch("release-package", Recipes.file("https://github.com/lukewilliamboswell/roc-automation/releases/download/tools-0.10.1/release-package-{system}"))]), Expect(["roc"])]),
 	Environment("docs", [Programs([Fetch("roc-docs", Recipes.file("https://github.com/lukewilliamboswell/roc-automation/releases/download/tools-0.10.1/roc-docs-{system}"))]), Expect(["sh", "realpath", "roc"])]),
-	Environment("screenshots", [Programs([Fetch("roc-stable", Recipes.roc_nightly("nightly-2026-11-18-a520eed"))]), Expect(["roc", "node", "npm"])]),
+	Environment("screenshots", [Programs([Fetch("roc-stable", Recipes.roc_nightly("nightly-2026-11-23-b5c77fc"))]), Expect(["roc", "node", "npm"])]),
 	Task("check", [Use("package"), Run(["roc-stable", "scripts/check.roc"])]),
 	Task("policy", [Use("package"), Run(["roc-policy", "check", "--root", "."])]),
 	Task("api-docs", [Use("package"), Run(["roc", "docs", "package/main.roc", "--output=generated-docs"])]),
