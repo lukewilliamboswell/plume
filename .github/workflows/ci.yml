@@ -16,14 +16,11 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
-      - uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@e12512e2605608588782edb044dd766137e34869
+      - uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@2b0ffc9c556f465759ca81055bb819c7e15624eb
         with:
           cache: 'true'
           cache-workload: screenshots
-      - uses: roc-lang/setup-roc@30af91a173612e462a5df47f3b697c53c211f48c
-        with:
-          version: nightly-new-compiler
-          download-method: asset-api
+      - uses: lukewilliamboswell/roc-automation/actions/setup-roc-nightly@dd30a5dd576973b6e224db70d96e3e12c96bcc95
       - run: blueprint check
       - run: blueprint run screenshots-setup -- --with-deps
       - run: blueprint run screenshots
